@@ -21,10 +21,7 @@ export default defineConfig({
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url:
-      process.env.DATABASE_MIGRATION_URL ||
-      process.env.DATABASE_URL ||
-      'postgresql://postgres.nnaxrcknrbnaukyeotvq:Makememad%401122@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres',
+    url: process.env.DATABASE_MIGRATION_URL || process.env.DATABASE_URL || '',
   },
 });
 

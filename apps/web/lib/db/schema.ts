@@ -6,14 +6,12 @@ import {
   jsonb,
   numeric,
   pgEnum,
-  pgPolicy,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { authenticatedRole, authUid, authUsers } from 'drizzle-orm/supabase';
 
 // Enums
 export const resumeProcessingStatusEnum = pgEnum('resume_processing_status', [
@@ -46,9 +44,7 @@ export const jobStateEnum = pgEnum('job_state', ['saved', 'dismissed']);
 export const profiles = pgTable(
   'profiles',
   {
-    id: uuid('id')
-      .primaryKey()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    id: uuid('id').primaryKey(),
     fullName: text('full_name'),
     phone: text('phone'),
     location: text('location'),
@@ -103,14 +99,7 @@ export const profiles = pgTable(
       .defaultNow()
       .notNull(),
   },
-  () => [
-    pgPolicy('profiles_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`id = ${authUid}`,
-      withCheck: sql`id = ${authUid}`,
-    }),
-  ]
+  () => []
 );
 
 // 2. Work Experiences
@@ -118,9 +107,7 @@ export const workExperiences = pgTable(
   'work_experiences',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     company: text('company').notNull(),
     title: text('title').notNull(),
     location: text('location'),
@@ -151,12 +138,6 @@ export const workExperiences = pgTable(
   },
   (table) => [
     index('work_experiences_user_id_idx').on(table.userId),
-    pgPolicy('work_experiences_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -165,9 +146,7 @@ export const educationEntries = pgTable(
   'education_entries',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     institution: text('institution').notNull(),
     degree: text('degree'),
     fieldOfStudy: text('field_of_study'),
@@ -187,12 +166,6 @@ export const educationEntries = pgTable(
   },
   (table) => [
     index('education_entries_user_id_idx').on(table.userId),
-    pgPolicy('education_entries_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -201,9 +174,7 @@ export const skills = pgTable(
   'skills',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     name: text('name').notNull(),
     category: text('category'),
     proficiency: text('proficiency'),
@@ -221,12 +192,6 @@ export const skills = pgTable(
       table.userId,
       sql`lower(${table.name})`
     ),
-    pgPolicy('skills_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -235,9 +200,7 @@ export const projects = pgTable(
   'projects',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     name: text('name').notNull(),
     description: text('description'),
     role: text('role'),
@@ -265,12 +228,6 @@ export const projects = pgTable(
   },
   (table) => [
     index('projects_user_id_idx').on(table.userId),
-    pgPolicy('projects_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -279,9 +236,7 @@ export const certifications = pgTable(
   'certifications',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     name: text('name').notNull(),
     issuer: text('issuer'),
     issueDate: timestamp('issue_date', { withTimezone: true }),
@@ -295,12 +250,6 @@ export const certifications = pgTable(
   },
   (table) => [
     index('certifications_user_id_idx').on(table.userId),
-    pgPolicy('certifications_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -309,9 +258,7 @@ export const resumes = pgTable(
   'resumes',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     versionLabel: text('version_label').notNull(),
     originalFilename: text('original_filename').notNull(),
     mimeType: text('mime_type').notNull(),
@@ -331,12 +278,6 @@ export const resumes = pgTable(
   },
   (table) => [
     index('resumes_user_id_idx').on(table.userId),
-    pgPolicy('resumes_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -349,9 +290,7 @@ export const resumeParsedData = pgTable(
       .notNull()
       .unique()
       .references(() => resumes.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     structuredData: jsonb('structured_data').notNull(),
     overallConfidence: numeric('overall_confidence', { precision: 4, scale: 3 }),
     reviewStatus: reviewStatusEnum('review_status')
@@ -367,12 +306,6 @@ export const resumeParsedData = pgTable(
   },
   (table) => [
     index('resume_parsed_data_user_id_idx').on(table.userId),
-    pgPolicy('resume_parsed_data_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -381,9 +314,7 @@ export const auditLogs = pgTable(
   'audit_logs',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id').references(() => authUsers.id, {
-      onDelete: 'set null',
-    }),
+    userId: uuid('user_id'),
     action: text('action').notNull(),
     metadata: jsonb('metadata'),
     ipAddress: text('ip_address'),
@@ -394,12 +325,6 @@ export const auditLogs = pgTable(
   },
   (table) => [
     index('audit_logs_user_id_created_at_idx').on(table.userId, table.createdAt),
-    pgPolicy('audit_logs_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -432,11 +357,6 @@ export const jobs = pgTable(
       table.externalId
     ),
     index('jobs_company_idx').on(table.company),
-    pgPolicy('jobs_authenticated_read_policy', {
-      for: 'select',
-      to: authenticatedRole,
-      using: sql`true`,
-    }),
   ]
 );
 
@@ -445,9 +365,7 @@ export const applications = pgTable(
   'applications',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
     company: text('company').notNull(),
     title: text('title').notNull(),
@@ -468,12 +386,6 @@ export const applications = pgTable(
   },
   (table) => [
     index('applications_user_id_idx').on(table.userId),
-    pgPolicy('applications_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -485,9 +397,7 @@ export const applicationEvents = pgTable(
     applicationId: uuid('application_id')
       .notNull()
       .references(() => applications.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     type: text('type').notNull(), // 'created' | 'status_change' | 'note'
     description: text('description').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -496,12 +406,6 @@ export const applicationEvents = pgTable(
   },
   (table) => [
     index('application_events_app_id_idx').on(table.applicationId),
-    pgPolicy('application_events_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -510,9 +414,7 @@ export const tailoredDocuments = pgTable(
   'tailored_documents',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
     applicationId: uuid('application_id').references(() => applications.id, {
       onDelete: 'set null',
@@ -532,12 +434,6 @@ export const tailoredDocuments = pgTable(
   (table) => [
     index('tailored_documents_user_id_idx').on(table.userId),
     index('tailored_documents_user_job_idx').on(table.userId, table.jobId),
-    pgPolicy('tailored_documents_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -546,9 +442,7 @@ export const extensionSessions = pgTable(
   'extension_sessions',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     label: text('label').default('Chrome Extension').notNull(),
     tokenHash: text('token_hash').notNull(),
     lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
@@ -560,12 +454,6 @@ export const extensionSessions = pgTable(
   (table) => [
     index('extension_sessions_user_id_idx').on(table.userId),
     uniqueIndex('extension_sessions_token_hash_idx').on(table.tokenHash),
-    pgPolicy('extension_sessions_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
 
@@ -574,9 +462,7 @@ export const jobStates = pgTable(
   'job_states',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id')
       .notNull()
       .references(() => jobs.id, { onDelete: 'cascade' }),
@@ -591,11 +477,5 @@ export const jobStates = pgTable(
   (table) => [
     uniqueIndex('job_states_user_job_idx').on(table.userId, table.jobId),
     index('job_states_user_state_idx').on(table.userId, table.state),
-    pgPolicy('job_states_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
 );
