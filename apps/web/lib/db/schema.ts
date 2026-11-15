@@ -569,7 +569,25 @@ export const extensionSessions = pgTable(
   ]
 );
 
-// 15. Job States (Saved bookmarks & dismissed jobs per user)
+// 15. Job Boards (Configurable company ATS sources)
+export const jobBoards = pgTable(
+  'job_boards',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    companyName: text('company_name').notNull(),
+    provider: text('provider').notNull(),
+    slug: text('slug').notNull(),
+    enabled: boolean('enabled').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('job_boards_provider_slug_idx').on(table.provider, table.slug),
+  ]
+);
+
+// 16. Job States (Saved bookmarks & dismissed jobs per user)
 export const jobStates = pgTable(
   'job_states',
   {
