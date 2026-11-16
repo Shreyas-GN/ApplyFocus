@@ -2,9 +2,12 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres.nnaxrcknrbnaukyeotvq:Makememad%401122@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres';
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error(
+    'DATABASE_URL is not set. Add it to .env.local (see .env.example).'
+  );
+}
 
 const globalForDb = globalThis as unknown as {
   conn: postgres.Sql | undefined;

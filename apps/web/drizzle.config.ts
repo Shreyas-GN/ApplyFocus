@@ -16,15 +16,19 @@ if (fs.existsSync(envLocalPath)) {
   }
 }
 
+const migrationUrl = process.env.DATABASE_MIGRATION_URL || process.env.DATABASE_URL;
+if (!migrationUrl) {
+  throw new Error(
+    'DATABASE_MIGRATION_URL (or DATABASE_URL) is not set. Add it to .env.local (see .env.example).'
+  );
+}
+
 export default defineConfig({
   schema: './lib/db/schema.ts',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url:
-      process.env.DATABASE_MIGRATION_URL ||
-      process.env.DATABASE_URL ||
-      'postgresql://postgres.nnaxrcknrbnaukyeotvq:Makememad%401122@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres',
+    url: migrationUrl,
   },
 });
 
