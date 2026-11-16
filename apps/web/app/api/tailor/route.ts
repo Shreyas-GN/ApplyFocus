@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         ? 404
         : message.includes('required') ||
             message.includes('profile') ||
-            message.includes('ANTHROPIC_API_KEY')
+            message.includes('OPENROUTER_API_KEY')
           ? 400
           : 500;
     return NextResponse.json({ detail: message }, { status });

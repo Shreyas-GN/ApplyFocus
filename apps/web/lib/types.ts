@@ -259,9 +259,25 @@ export interface ResumeParsedDataDto {
 export type ApplicationStatus =
   | "saved"
   | "applied"
+  | "under_review"
+  | "assessment"
   | "interviewing"
   | "offer"
-  | "rejected";
+  | "rejected"
+  | "withdrawn";
+
+export interface ScreeningAnswerDto {
+  id: string;
+  jobId: string | null;
+  applicationId: string | null;
+  question: string;
+  answer: string;
+  groundedFacts: string[];
+  source: string;
+  approved: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export type JobUserState = "saved" | "dismissed" | null;
 

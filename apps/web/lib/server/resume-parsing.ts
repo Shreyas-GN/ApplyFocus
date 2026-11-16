@@ -2,7 +2,7 @@
 import { db } from '@/lib/db';
 import { resumeParsedData, resumes } from '@/lib/db/schema';
 import { createAdminClient } from '@/lib/supabase/admin';
-import Anthropic from '@anthropic-ai/sdk';
+import { resolveAiClient } from './ai-provider';
 import {
   resumeParsedDataSchema,
   type ResumeParsedData,
@@ -70,15 +70,7 @@ function cleanJsonFence(raw: string): string {
 export async function parseResumeWithClaude(
   text: string
 ): Promise<ResumeParsedData> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'ANTHROPIC_API_KEY is not configured. Please add it to .env.local to enable AI parsing.'
-    );
-  }
-
-  const client = new Anthropic({ apiKey });
-  const model = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
+  const { client, model } = resolveAiClient();
 
   const response = await client.messages.create({
     model,
@@ -88,8 +80,8 @@ export async function parseResumeWithClaude(
   });
 
   const rawText = response.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
+    .filter((block) => block.type === 'text' && typeof block.text === 'string')
+    .map((block) => block.text ?? '')
     .join('');
 
   try {

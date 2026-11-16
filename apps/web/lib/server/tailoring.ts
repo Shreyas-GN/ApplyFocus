@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '@/lib/db';
@@ -17,6 +16,7 @@ import type {
   TailoredDocumentType,
   TailoredResumeContent,
 } from '@/lib/types';
+import { resolveAiClient, type AiMessagesClient } from './ai-provider';
 import { recordAudit } from './audit';
 import { getProfile } from './profile';
 
@@ -48,18 +48,8 @@ export const coverLetterContentSchema = z.object({
   keyPointsHighlighted: z.array(z.string()).default([]),
 });
 
-export interface ClaudeMessagesClient {
-  messages: {
-    create(params: {
-      model: string;
-      max_tokens: number;
-      system: string;
-      messages: { role: 'user'; content: string }[];
-    }): Promise<{
-      content: Array<{ type: string; text?: string }>;
-    }>;
-  };
-}
+// Backward-compatible alias
+export type ClaudeMessagesClient = AiMessagesClient;
 
 export interface CreateTailoredDocumentInput {
   type: TailoredDocumentType;
@@ -189,35 +179,14 @@ export function buildCandidateContext(profile: ProfileDto) {
   };
 }
 
-function resolveClaudeClient(client?: ClaudeMessagesClient): {
-  claude: ClaudeMessagesClient;
-  model: string;
-} {
-  if (client) {
-    return {
-      claude: client,
-      model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
-    };
-  }
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'ANTHROPIC_API_KEY is not configured. Add it to your environment to enable AI tailoring.'
-    );
-  }
-  return {
-    claude: new Anthropic({ apiKey }) as unknown as ClaudeMessagesClient,
-    model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
-  };
-}
 
 async function runClaudeJson<T>(
   system: string,
   userContent: string,
   schema: z.ZodType<T>,
-  injectedClient?: ClaudeMessagesClient
+  injectedClient?: AiMessagesClient
 ): Promise<T> {
-  const { claude, model } = resolveClaudeClient(injectedClient);
+  const { client: claude, model } = resolveAiClient(injectedClient);
 
   const response = await claude.messages.create({
     model,
@@ -245,7 +214,7 @@ async function runClaudeJson<T>(
 export async function tailorResumeWithClaude(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<TailoredResumeContent> {
   const candidate = buildCandidateContext(profile);
   const userMessage = JSON.stringify({
@@ -265,7 +234,7 @@ export async function draftCoverLetterWithClaude(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
   tone: CoverLetterTone,
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<CoverLetterContent> {
   const candidate = buildCandidateContext(profile);
   const userMessage = JSON.stringify({
@@ -365,9 +334,9 @@ export async function generateScreeningAnswer(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
   question: string,
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<ScreeningAnswerResult> {
-  if (!client && !process.env.ANTHROPIC_API_KEY) {
+  if (!client && !process.env.OPENROUTER_API_KEY) {
     return buildGroundedScreeningAnswer(profile, job, question);
   }
 
@@ -491,7 +460,7 @@ export async function listTailoredDocuments(
 export async function createTailoredDocument(
   userId: string,
   input: CreateTailoredDocumentInput,
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<TailoredDocumentDto> {
   let resolvedJobId = input.jobId ?? null;
   const resolvedAppId = input.applicationId ?? null;
