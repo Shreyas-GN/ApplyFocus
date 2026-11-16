@@ -2,16 +2,15 @@ import { CheckCircle2, FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const STAGES = [
-  { label: "Saved", count: 12, color: "bg-slate-100 text-slate-500" },
-  { label: "Applied", count: 7, color: "bg-lp-accent-soft text-lp-accent" },
-  { label: "Interview", count: 3, color: "bg-amber-50 text-amber-700" },
-  { label: "Offer", count: 1, color: "bg-emerald-50 text-emerald-700" },
+  { label: "Saved", count: 6, color: "bg-slate-100 text-slate-500" },
+  { label: "Applied", count: 3, color: "bg-lp-accent-soft text-lp-accent" },
+  { label: "Interview", count: 1, color: "bg-amber-50 text-amber-700" },
 ];
 
 const APPS = [
-  { role: "Senior Product Designer", co: "Figma · Remote", stage: "Interview", resume: "v3_figma.pdf", note: "2nd round scheduled — focus on design systems work" },
-  { role: "Design Systems Lead", co: "Notion · SF", stage: "Applied", resume: "v2_notion.pdf", note: "Applied 3 days ago — follow up due in 4 days" },
-  { role: "Head of Product Design", co: "Linear · Remote", stage: "Saved", resume: "—", note: "Strong match — tailor resume before applying" },
+  { role: "Backend Engineer", co: "Northstar Systems · Bengaluru", stage: "Interview", resume: "v2_northstar.pdf", note: "2nd round scheduled — focus on distributed systems" },
+  { role: "API Platform Engineer", co: "Cloudstride · Remote", stage: "Applied", resume: "v1_cloudstride.pdf", note: "Applied 2 days ago — follow up in 3 days" },
+  { role: "Software Engineer II", co: "Vaulted Labs · Bengaluru", stage: "Saved", resume: "—", note: "Strong match — tailor resume before applying" },
 ];
 
 const STAGE_STYLE: Record<string, string> = {
@@ -28,7 +27,7 @@ export function LandingTracking() {
           {/* Left — mockup */}
           <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_32px_rgba(53,92,255,0.08)]">
             {/* Stage strip */}
-            <div className="grid grid-cols-4 divide-x divide-lp-border border-b border-lp-border">
+            <div className="grid grid-cols-3 divide-x divide-lp-border border-b border-lp-border">
               {STAGES.map((s) => (
                 <div key={s.label} className="p-3 text-center sm:p-4">
                   <p className={`inline-flex rounded-full px-1.5 py-0.5 font-mono text-[9px] font-medium sm:px-2 sm:text-[10px] ${s.color}`}>
@@ -67,7 +66,7 @@ export function LandingTracking() {
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-lp-accent">
               Application tracking
             </p>
-            <h2 className="mt-3 font-ui text-[36px] font-bold leading-[1.08] tracking-[-0.03em] text-lp-ink sm:text-[46px]">
+            <h2 className="mt-3 font-display text-[36px] leading-[1.08] text-lp-ink sm:text-[46px]">
               Know where every application stands.
             </h2>
             <p className="mt-5 font-ui text-[16px] leading-[1.7] text-lp-body">

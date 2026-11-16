@@ -16,12 +16,12 @@ export function LandingCta() {
             <div className="mx-auto mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-lp-accent font-ui text-sm font-bold text-white">
               AP
             </div>
-            <h2 className="mx-auto max-w-[560px] font-ui text-[32px] font-bold leading-[1.1] tracking-[-0.03em] text-white sm:text-[46px]">
+            <h2 className="mx-auto max-w-[560px] font-display text-[32px] leading-[1.1] text-white sm:text-[46px]">
               Make your next move a considered one.
             </h2>
             <p className="mx-auto mt-4 max-w-[460px] font-ui text-[16px] leading-[1.65] text-white/50">
-              Bring your experience together, find opportunities worth pursuing, and prepare
-              every application with intention.
+              Bring your experience together, find roles worth pursuing, and prepare
+              every application with intention — not volume.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <Link
