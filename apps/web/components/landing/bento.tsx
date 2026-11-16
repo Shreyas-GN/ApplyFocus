@@ -1,4 +1,158 @@
-import { FileEdit, Search, ListChecks, UserRound, Sparkles, ShieldCheck } from "lucide-react";
+import { User2, Search, ListChecks } from "lucide-react";
+
+function PreviewBadge() {
+  return (
+    <span className="rounded-full border border-lp-border bg-lp-surface px-2.5 py-0.5 font-mono text-[10px] text-lp-muted">
+      Illustrative preview
+    </span>
+  );
+}
+
+function ProfileMockup() {
+  return (
+    <div className="rounded-2xl border border-lp-border bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <p className="font-ui text-[13px] font-semibold text-lp-ink">Asha Rao</p>
+          <p className="font-ui text-[11px] text-lp-muted">Backend Software Engineer · Bengaluru / Remote</p>
+        </div>
+        <PreviewBadge />
+      </div>
+      <div className="mb-4 flex flex-wrap gap-1.5">
+        {["Python", "FastAPI", "PostgreSQL"].map((s) => (
+          <span key={s} className="rounded-full border border-lp-border bg-lp-surface px-2.5 py-0.5 font-ui text-[12px] text-lp-body">
+            {s}
+          </span>
+        ))}
+      </div>
+      <div className="mb-4 rounded-xl border border-lp-border bg-lp-surface px-4 py-3">
+        <p className="font-ui text-[12px] font-semibold text-lp-ink">Software Intern · Tekvine Systems</p>
+        <p className="font-ui text-[11px] text-lp-muted">2023 – 2024</p>
+      </div>
+      <button
+        type="button"
+        className="inline-flex items-center gap-1.5 rounded-full border border-lp-accent px-4 py-1.5 font-ui text-[12px] font-medium text-lp-accent transition-colors hover:bg-lp-accent-soft"
+      >
+        Review extracted data
+      </button>
+    </div>
+  );
+}
+
+function OpportunityMockup() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-lp-border px-5 py-3">
+        <p className="font-ui text-[13px] font-semibold text-lp-ink">Matched roles</p>
+        <PreviewBadge />
+      </div>
+      <div className="divide-y divide-lp-border">
+        <div className="px-5 py-3.5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-ui text-[13px] font-semibold text-lp-ink">Backend Engineer · Northstar Systems</p>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {["Python", "FastAPI", "PostgreSQL"].map((t) => (
+                  <span key={t} className="rounded-full border border-lp-border bg-lp-surface px-2 py-0.5 font-ui text-[11px] text-lp-body">{t}</span>
+                ))}
+              </div>
+            </div>
+            <span className="flex-shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 font-ui text-[11px] font-medium text-emerald-700">Strong alignment</span>
+          </div>
+        </div>
+        <div className="px-5 py-3.5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-ui text-[13px] font-semibold text-lp-ink">API Platform Engineer · Cloudstride</p>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {["Python", "REST APIs"].map((t) => (
+                  <span key={t} className="rounded-full border border-lp-border bg-lp-surface px-2 py-0.5 font-ui text-[11px] text-lp-body">{t}</span>
+                ))}
+              </div>
+            </div>
+            <span className="flex-shrink-0 rounded-full bg-amber-50 px-2.5 py-0.5 font-ui text-[11px] font-medium text-amber-700">Partial match</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiffMockup() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-lp-border px-5 py-3">
+        <p className="font-ui text-[13px] font-semibold text-lp-ink">Resume comparison</p>
+        <PreviewBadge />
+      </div>
+      <div className="grid divide-y divide-lp-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+        <div className="p-4">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-lp-muted">Original</p>
+          <div className="rounded-xl border border-lp-border bg-lp-surface p-3">
+            <p className="font-ui text-[12px] leading-relaxed text-lp-body">
+              Built REST APIs using FastAPI and PostgreSQL. Worked on backend services for internal tooling.
+            </p>
+          </div>
+        </div>
+        <div className="bg-lp-accent/[0.03] p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-lp-accent">Suggested</p>
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 font-ui text-[10px] font-medium text-amber-700">Awaiting approval</span>
+          </div>
+          <div className="rounded-xl border border-lp-accent/20 bg-white p-3 shadow-sm">
+            <p className="font-ui text-[12px] leading-relaxed text-lp-ink">
+              Developed and maintained REST APIs using FastAPI and PostgreSQL,{" "}
+              <span className="rounded bg-lp-accent-soft px-0.5">directly relevant to the backend platform requirements of this role.</span>
+            </p>
+          </div>
+          <button
+            type="button"
+            className="mt-3 inline-flex h-7 w-full items-center justify-center rounded-lg bg-lp-accent px-4 font-ui text-[12px] font-semibold text-white"
+          >
+            Approve change
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrackerMockup() {
+  const rows = [
+    { role: "Backend Engineer", company: "Northstar Systems", status: "Interview", note: "2nd round scheduled" },
+    { role: "API Platform Engineer", company: "Cloudstride", status: "Applied", note: "Follow up in 3 days" },
+    { role: "Software Engineer II", company: "Vaulted Labs", status: "Saved", note: "Tailor resume to apply" },
+  ];
+  const statusColor: Record<string, string> = {
+    Interview: "bg-amber-50 text-amber-700",
+    Applied: "bg-lp-accent-soft text-lp-accent",
+    Saved: "bg-lp-surface text-lp-muted",
+  };
+  return (
+    <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-lp-border px-5 py-3">
+        <p className="font-ui text-[13px] font-semibold text-lp-ink">Application tracker</p>
+        <PreviewBadge />
+      </div>
+      <div className="divide-y divide-lp-border">
+        {rows.map((row) => (
+          <div key={row.role} className="flex items-center justify-between gap-3 px-5 py-3.5">
+            <div className="min-w-0">
+              <p className="truncate font-ui text-[12px] font-semibold text-lp-ink">{row.role}</p>
+              <p className="font-ui text-[11px] text-lp-muted">{row.company}</p>
+            </div>
+            <div className="flex flex-shrink-0 flex-col items-end gap-1">
+              <span className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-medium ${statusColor[row.status]}`}>
+                {row.status}
+              </span>
+              <p className="font-ui text-[11px] text-lp-muted">{row.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const CARDS = [
   {
