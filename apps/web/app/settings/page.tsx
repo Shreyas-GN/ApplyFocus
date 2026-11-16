@@ -361,7 +361,7 @@ function SettingsContent() {
                       [item.key]: e.target.checked,
                     })
                   }
-                  className="mt-1 h-4 w-4 rounded border-ui-border text-ui-violet focus:ring-brand-500"
+                  className="mt-1 h-4 w-4 rounded border-ui-border text-ui-teal focus:ring-ui-teal/20"
                 />
               </label>
             ))}
@@ -456,7 +456,7 @@ function SettingsContent() {
           <div className="flex justify-end">
             <Link
               href="/copilot"
-              className="text-xs font-medium text-ui-violet hover:underline"
+              className="text-xs font-medium text-ui-teal hover:underline"
             >
               Open full Browser Copilot hub →
             </Link>

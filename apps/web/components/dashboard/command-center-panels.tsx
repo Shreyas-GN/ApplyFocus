@@ -65,7 +65,7 @@ export function NextActionsPanel({
               key={item.id}
               className={`flex flex-col justify-between gap-2.5 rounded-xl border p-3.5 sm:flex-row sm:items-center ${
                 item.priority === "high"
-                  ? "border-ap-vermilion/30 bg-ui-lilac-soft/30"
+                  ? "border-ui-teal/30 bg-ui-teal-soft/30"
                   : "border-ui-border bg-ui-linen/35"
               }`}
             >
@@ -75,7 +75,7 @@ export function NextActionsPanel({
                     {item.title}
                   </p>
                   {item.priority === "high" && (
-                    <span className="rounded-full bg-ui-lilac-soft px-2 py-0.5 font-mono text-[10px] font-medium uppercase text-ui-violet">
+                    <span className="rounded-full bg-ui-teal-soft px-2 py-0.5 font-mono text-[10px] font-medium uppercase text-ui-teal">
                       Priority
                     </span>
                   )}
@@ -139,7 +139,7 @@ export function ApplicationProgressPanel({
 
         <Link
           href="/applications"
-          className="text-xs font-medium text-ui-violet hover:underline"
+          className="text-xs font-medium text-ui-teal hover:underline"
         >
           Open tracker →
         </Link>
@@ -161,11 +161,11 @@ export function ApplicationProgressPanel({
       ) : summary.total === 0 ? (
         <div className="rounded-xl border border-dashed border-ui-border bg-ui-linen/40 p-4 text-sm text-ui-muted">
           No applications tracked yet. Save promising roles from{" "}
-          <Link href="/jobs" className="font-medium text-ui-violet hover:underline">
+          <Link href="/jobs" className="font-medium text-ui-teal hover:underline">
             Discover Jobs
           </Link>{" "}
           or add one in{" "}
-          <Link href="/applications" className="font-medium text-ui-violet hover:underline">
+          <Link href="/applications" className="font-medium text-ui-teal hover:underline">
             Applications
           </Link>
           .
@@ -197,7 +197,7 @@ export function ApplicationProgressPanel({
               </span>
               <Link
                 href="/applications?view=list"
-                className="font-semibold text-ui-violet hover:underline"
+                className="font-semibold text-ui-teal hover:underline"
               >
                 Review →
               </Link>
@@ -240,7 +240,7 @@ export function ProfileReadinessPanel({
 
         <Link
           href="/profile"
-          className="text-xs font-medium text-ui-violet hover:underline"
+          className="text-xs font-medium text-ui-teal hover:underline"
         >
           Edit dossier →
         </Link>
@@ -270,7 +270,7 @@ export function ProfileReadinessPanel({
               <p className="mt-1.5 text-xs text-ui-ink">
                 {readiness.unverifiedAiCount} AI-extracted item
                 {readiness.unverifiedAiCount === 1 ? "" : "s"} awaiting your confirmation (
-                <Link href="/profile" className="font-medium text-ui-violet hover:underline">
+                <Link href="/profile" className="font-medium text-ui-teal hover:underline">
                   review in Profile
                 </Link>
                 ).
@@ -286,7 +286,7 @@ export function ProfileReadinessPanel({
               </span>
               <Link
                 href="/resumes"
-                className="text-xs font-medium text-ui-violet hover:underline"
+                className="text-xs font-medium text-ui-teal hover:underline"
               >
                 Manage →
               </Link>
@@ -307,7 +307,7 @@ export function ProfileReadinessPanel({
             ) : (
               <p className="mt-1 text-xs text-ui-muted">
                 No resume uploaded yet.{" "}
-                <Link href="/resumes" className="font-medium text-ui-violet hover:underline">
+                <Link href="/resumes" className="font-medium text-ui-teal hover:underline">
                   Upload PDF or DOCX
                 </Link>
               </p>
@@ -396,7 +396,7 @@ export function RecentActivityPanel({
               <div className="min-w-0">
                 <Link
                   href={item.href}
-                  className="block truncate text-xs font-medium text-ui-ink hover:text-ui-violet hover:underline"
+                  className="block truncate text-xs font-medium text-ui-ink hover:text-ui-teal hover:underline"
                 >
                   {item.title}
                 </Link>

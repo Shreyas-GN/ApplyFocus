@@ -90,7 +90,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-wine text-xs font-semibold tracking-tight text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
             AP
           </span>
           <span className="text-lg font-semibold tracking-tight text-ui-ink">ApplyPilot</span>
@@ -125,7 +125,7 @@ export default function LoginPage() {
               required
             />
             <div className="text-right text-sm">
-              <Link href="/forgot-password" className="text-ui-violet hover:underline">
+              <Link href="/forgot-password" className="text-ui-teal hover:underline">
                 Forgot password?
               </Link>
             </div>
@@ -135,7 +135,7 @@ export default function LoginPage() {
           </form>
           <p className="mt-6 text-center text-sm text-ui-muted">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-medium text-ui-violet hover:underline">
+            <Link href="/signup" className="font-medium text-ui-teal hover:underline">
               Sign up
             </Link>
           </p>

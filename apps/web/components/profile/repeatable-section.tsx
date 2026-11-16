@@ -369,7 +369,7 @@ export function RepeatableSection({
                           href={rawValue.trim()}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-1 inline-block text-xs font-medium text-ui-violet hover:underline"
+                          className="mt-1 inline-block text-xs font-medium text-ui-teal hover:underline"
                         >
                           Open link ↗
                         </a>

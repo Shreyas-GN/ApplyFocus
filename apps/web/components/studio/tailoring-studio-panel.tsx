@@ -288,7 +288,7 @@ export function TailoringStudioPanel({
                     onClick={() => setDocType("resume")}
                     className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium ${
                       docType === "resume"
-                        ? "border-ui-violet bg-ui-lilac-soft text-ui-violet"
+                        ? "border-ui-teal bg-ui-teal-soft text-ui-teal"
                         : "border-ui-border bg-white text-ui-body hover:bg-ui-canvas"
                     }`}
                   >
@@ -299,7 +299,7 @@ export function TailoringStudioPanel({
                     onClick={() => setDocType("cover_letter")}
                     className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium ${
                       docType === "cover_letter"
-                        ? "border-ui-violet bg-ui-lilac-soft text-ui-violet"
+                        ? "border-ui-teal bg-ui-teal-soft text-ui-teal"
                         : "border-ui-border bg-white text-ui-body hover:bg-ui-canvas"
                     }`}
                   >
@@ -316,7 +316,7 @@ export function TailoringStudioPanel({
                   <select
                     value={tone}
                     onChange={(e) => setTone(e.target.value as CoverLetterTone)}
-                    className="w-full rounded-lg border border-ui-border bg-white px-3 py-2 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+                    className="w-full rounded-lg border border-ui-border bg-white px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
                   >
                     <option value="conversational">Conversational</option>
                     <option value="formal">Formal</option>
@@ -333,7 +333,7 @@ export function TailoringStudioPanel({
                   <select
                     value={selectedJobId}
                     onChange={(e) => handleSelectSavedJob(e.target.value)}
-                    className="w-full rounded-lg border border-ui-border bg-white px-3 py-2 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+                    className="w-full rounded-lg border border-ui-border bg-white px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
                   >
                     <option value="">Custom job / manual entry</option>
                     {jobs.map((job) => (
@@ -361,7 +361,7 @@ export function TailoringStudioPanel({
                         setJobTitle(app.title);
                       }
                     }}
-                    className="w-full rounded-lg border border-ui-border bg-white px-3 py-2 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+                    className="w-full rounded-lg border border-ui-border bg-white px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
                   >
                     <option value="">None</option>
                     {applications.map((app) => (
@@ -396,7 +396,7 @@ export function TailoringStudioPanel({
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="Paste the role description or requirements..."
-                  className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+                  className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
                 />
               </div>
 
@@ -428,7 +428,7 @@ export function TailoringStudioPanel({
                     <li
                       key={doc.id}
                       className={`flex items-center justify-between gap-2 rounded-lg border p-2.5 text-sm ${
-                        selected ? "border-ui-violet bg-ui-lilac-soft" : "border-ui-border bg-white"
+                        selected ? "border-ui-teal bg-ui-teal-soft" : "border-ui-border bg-white"
                       }`}
                     >
                       <button
@@ -535,7 +535,7 @@ function ResumeDraftEditor({
     <Card>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ui-violet">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ui-copper">
             Tailored Resume
           </p>
           <h2 className="text-lg font-semibold text-ui-ink">
@@ -609,7 +609,7 @@ function ResumeDraftEditor({
             rows={4}
             value={content.summary}
             onChange={(e) => onChange({ ...content, summary: e.target.value })}
-            className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+            className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
           />
         </div>
 
@@ -639,7 +639,7 @@ function ResumeDraftEditor({
                     </p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ui-violet">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ui-copper">
                       Tailored (editable)
                     </p>
                     <textarea
@@ -651,7 +651,7 @@ function ResumeDraftEditor({
                         );
                         onChange({ ...content, experience: updated });
                       }}
-                      className="w-full rounded border border-ui-border p-2 text-xs text-ui-ink focus:border-ui-violet focus:outline-none"
+                      className="w-full rounded border border-ui-border p-2 text-xs text-ui-ink focus:border-ui-teal focus:outline-none"
                     />
                   </div>
                 </div>
@@ -685,7 +685,7 @@ function CoverLetterEditor({
     <Card>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ui-violet">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ui-copper">
             Cover Letter ({doc.tone ?? "conversational"})
           </p>
           <h2 className="text-lg font-semibold text-ui-ink">
@@ -709,7 +709,7 @@ function CoverLetterEditor({
         {content.keyPointsHighlighted.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {content.keyPointsHighlighted.map((point) => (
-              <Badge key={point} className="bg-ui-lilac-soft text-ui-violet">
+              <Badge key={point} className="bg-ui-teal-soft text-ui-teal">
                 {point}
               </Badge>
             ))}
@@ -744,7 +744,7 @@ function CoverLetterEditor({
                   .filter(Boolean),
               })
             }
-            className="w-full rounded-lg border border-ui-border p-3 text-sm leading-relaxed text-ui-ink focus:border-ui-violet focus:outline-none"
+            className="w-full rounded-lg border border-ui-border p-3 text-sm leading-relaxed text-ui-ink focus:border-ui-teal focus:outline-none"
           />
         </div>
 

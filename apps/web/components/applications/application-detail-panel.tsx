@@ -174,7 +174,7 @@ export function ApplicationDetailPanel({
                     "Stage updated."
                   )
                 }
-                className="rounded-lg border border-ui-border bg-white px-2.5 py-1.5 text-xs font-medium text-ui-ink focus:border-ui-violet focus:outline-none"
+                className="rounded-lg border border-ui-border bg-white px-2.5 py-1.5 text-xs font-medium text-ui-ink focus:border-ui-teal focus:outline-none"
               >
                 {STATUSES.map((st) => (
                   <option key={st} value={st}>
@@ -232,7 +232,7 @@ export function ApplicationDetailPanel({
                   className={
                     readiness.completedCount === readiness.totalCount
                       ? "bg-emerald-50 text-emerald-700"
-                      : "bg-ui-lilac-soft text-ui-violet"
+                      : "bg-ui-teal-soft text-ui-teal"
                   }
                 >
                   {`${readiness.completedCount}/${readiness.totalCount} ready`}
@@ -250,7 +250,7 @@ export function ApplicationDetailPanel({
                     <span>Candidate profile is at least 70% complete</span>
                   </span>
                   {!readiness.profileComplete && (
-                    <Link href="/profile" className="font-medium text-ui-violet hover:underline">
+                    <Link href="/profile" className="font-medium text-ui-teal hover:underline">
                       Complete profile
                     </Link>
                   )}
@@ -267,7 +267,7 @@ export function ApplicationDetailPanel({
                   {!readiness.hasResume && (
                     <Link
                       href="/studio?tab=resumes"
-                      className="font-medium text-ui-violet hover:underline"
+                      className="font-medium text-ui-teal hover:underline"
                     >
                       Upload resume
                     </Link>
@@ -285,7 +285,7 @@ export function ApplicationDetailPanel({
                   {!readiness.tailoredResume && (
                     <Link
                       href={`/studio?tab=tailored&applicationId=${application.id}`}
-                      className="font-medium text-ui-violet hover:underline"
+                      className="font-medium text-ui-teal hover:underline"
                     >
                       Tailor now
                     </Link>
@@ -303,7 +303,7 @@ export function ApplicationDetailPanel({
                   {!readiness.coverLetter && (
                     <Link
                       href={`/studio?tab=cover-letters&applicationId=${application.id}`}
-                      className="font-medium text-ui-violet hover:underline"
+                      className="font-medium text-ui-teal hover:underline"
                     >
                       Draft letter
                     </Link>
@@ -318,7 +318,7 @@ export function ApplicationDetailPanel({
                       onChange={(e) =>
                         handleToggleChecklist("screeningPrepared", e.target.checked)
                       }
-                      className="rounded border-ui-border text-ui-violet focus:ring-brand-500"
+                      className="rounded border-ui-border text-ui-teal focus:ring-ui-teal/20"
                     />
                     <span>Screening answers prepared and grounded</span>
                   </label>
@@ -332,7 +332,7 @@ export function ApplicationDetailPanel({
                       onChange={(e) =>
                         handleToggleChecklist("finalReviewed", e.target.checked)
                       }
-                      className="rounded border-ui-border text-ui-violet focus:ring-brand-500"
+                      className="rounded border-ui-border text-ui-teal focus:ring-ui-teal/20"
                     />
                     <span>Final application details verified before submission</span>
                   </label>
@@ -348,7 +348,7 @@ export function ApplicationDetailPanel({
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <CalendarClock className="h-4 w-4 text-ui-violet" />
+                <CalendarClock className="h-4 w-4 text-ui-teal" />
                 <h3 className="text-sm font-semibold text-ui-ink">
                   Notes & Follow-up Reminder
                 </h3>
@@ -359,7 +359,7 @@ export function ApplicationDetailPanel({
                   type="date"
                   value={followUpDate}
                   onChange={(e) => setFollowUpDate(e.target.value)}
-                  className="rounded-lg border border-ui-border px-2.5 py-1 text-xs text-ui-ink focus:border-ui-violet focus:outline-none"
+                  className="rounded-lg border border-ui-border px-2.5 py-1 text-xs text-ui-ink focus:border-ui-teal focus:outline-none"
                 />
                 {followUpDate && (
                   <button
@@ -378,7 +378,7 @@ export function ApplicationDetailPanel({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Recruiter contacts, interview notes, compensation notes, next steps..."
-              className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+              className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
             />
 
             <div className="flex items-center justify-between">
@@ -398,7 +398,7 @@ export function ApplicationDetailPanel({
           {/* Screening Question Assistant */}
           <div className="flex flex-col gap-3 rounded-xl border border-ui-border p-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-ui-violet" />
+              <Sparkles className="h-4 w-4 text-ui-teal" />
               <h3 className="text-sm font-semibold text-ui-ink">
                 Screening Question Assistant
               </h3>
@@ -426,7 +426,7 @@ export function ApplicationDetailPanel({
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Paste a screening question from the application form..."
-                className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+                className="w-full rounded-lg border border-ui-border p-2.5 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
               />
               <div>
                 <Button type="submit" className="px-3 py-1.5 text-xs" loading={answering}>
@@ -436,9 +436,9 @@ export function ApplicationDetailPanel({
             </form>
 
             {screeningResult && (
-              <div className="rounded-lg border border-ui-lilac bg-ui-lilac-soft/40 p-3">
+              <div className="rounded-lg border border-ui-teal-soft bg-ui-teal-soft/40 p-3">
                 <div className="mb-1.5 flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-ui-violet">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-ui-copper">
                     Suggested Answer
                   </span>
                   <button
@@ -447,7 +447,7 @@ export function ApplicationDetailPanel({
                       void navigator.clipboard.writeText(screeningResult.answer);
                       setCopiedAnswer(true);
                     }}
-                    className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium text-ui-violet hover:bg-brand-100"
+                    className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium text-ui-teal hover:bg-ui-teal-soft"
                   >
                     <Copy className="h-3 w-3" />
                     <span>{copiedAnswer ? "Copied" : "Copy"}</span>

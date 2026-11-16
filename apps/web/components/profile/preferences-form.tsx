@@ -214,7 +214,7 @@ export function PreferencesForm({ profile, onUpdated }: PreferencesFormProps) {
                   onClick={() => toggleEmploymentType(opt.value)}
                   className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
                     active
-                      ? "border-ap-ink bg-ui-wine text-ap-surface"
+                      ? "border-ui-teal bg-ui-teal text-white"
                       : "border-ui-border bg-ui-linen text-ui-body hover:text-ui-ink"
                   }`}
                 >

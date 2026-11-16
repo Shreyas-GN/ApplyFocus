@@ -82,7 +82,7 @@ function CopilotContent() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border border-ui-border bg-ui-canvas/70 p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ui-ink">
-              <Puzzle className="h-4 w-4 text-ui-violet" />
+              <Puzzle className="h-4 w-4 text-ui-teal" />
               <span>1. Load Chrome Extension</span>
             </div>
             <p className="text-xs leading-relaxed text-ui-body">
@@ -91,7 +91,7 @@ function CopilotContent() {
           </div>
           <div className="rounded-lg border border-ui-border bg-ui-canvas/70 p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ui-ink">
-              <Bot className="h-4 w-4 text-ui-violet" />
+              <Bot className="h-4 w-4 text-ui-teal" />
               <span>2. Pair Your Browser</span>
             </div>
             <p className="text-xs leading-relaxed text-ui-body">
@@ -100,7 +100,7 @@ function CopilotContent() {
           </div>
           <div className="rounded-lg border border-ui-border bg-ui-canvas/70 p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ui-ink">
-              <ShieldCheck className="h-4 w-4 text-ui-violet" />
+              <ShieldCheck className="h-4 w-4 text-ui-teal" />
               <span>3. Autofill & Review</span>
             </div>
             <p className="text-xs leading-relaxed text-ui-body">
@@ -138,7 +138,7 @@ function CopilotContent() {
                   className={
                     ats.status === "Supported"
                       ? "bg-emerald-50 text-emerald-700"
-                      : "bg-ui-lilac-soft text-ui-violet"
+                      : "bg-ui-teal-soft text-ui-teal"
                   }
                 >
                   {ats.status}
@@ -147,8 +147,8 @@ function CopilotContent() {
             ))}
           </ul>
 
-          <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-ui-lilac-soft/60 p-3 text-xs text-ui-ink">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ui-violet" />
+          <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-ui-teal-soft/60 p-3 text-xs text-ui-ink">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ui-teal" />
             <p>
               <strong>Review-before-submit guarantee:</strong> ApplyPilot populates detected form inputs and suggests answers grounded in your profile, but never clicks final submission buttons automatically.
             </p>
@@ -194,10 +194,10 @@ function CopilotContent() {
           <div className="mt-5 border-t border-slate-100 pt-4">
             <div className="mb-2 flex items-center justify-between">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-muted">
-                <Sparkles className="h-3.5 w-3.5 text-ui-violet" />
+                <Sparkles className="h-3.5 w-3.5 text-ui-teal" />
                 <span>Recent tracked roles</span>
               </p>
-              <Link href="/applications" className="text-xs font-medium text-ui-violet hover:underline">
+              <Link href="/applications" className="text-xs font-medium text-ui-teal hover:underline">
                 Open tracker
               </Link>
             </div>

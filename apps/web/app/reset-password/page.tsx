@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <Link
           href="/"
-          className="mb-6 block text-center text-lg font-semibold text-ui-violet"
+          className="mb-6 block text-center text-lg font-semibold text-ui-teal"
         >
           ApplyPilot
         </Link>

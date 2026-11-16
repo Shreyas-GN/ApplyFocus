@@ -124,7 +124,7 @@ export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
                   <div className="flex items-center gap-2">
                     <p className="truncate font-medium text-ui-ink">{resume.versionLabel}</p>
                     {resume.isPrimary && (
-                      <span className="rounded-full bg-ui-lilac-soft px-2 py-0.5 text-xs font-medium text-ui-violet">
+                      <span className="rounded-full bg-ui-teal-soft px-2 py-0.5 text-xs font-medium text-ui-teal">
                         Primary
                       </span>
                     )}

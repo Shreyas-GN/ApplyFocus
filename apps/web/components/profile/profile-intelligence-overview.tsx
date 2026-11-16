@@ -61,7 +61,7 @@ export function ProfileIntelligenceOverview({
             </Link>
             <Link
               href="/studio"
-              className="inline-flex h-9 items-center justify-center rounded-full bg-ui-wine px-4 text-xs font-medium text-ap-surface transition hover:bg-ap-body"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-ui-teal px-4 text-xs font-medium text-white transition hover:bg-ui-teal-hover"
             >
               Open Tailoring Studio
             </Link>
@@ -162,7 +162,7 @@ export function ProfileIntelligenceOverview({
               {suggestions.slice(0, 3).map((sug) => {
                 const priorityStyle =
                   sug.priority === "high"
-                    ? "border-ap-vermilion/30 bg-ui-lilac-soft/40"
+                    ? "border-ui-teal/30 bg-ui-teal-soft/40"
                     : "border-ui-border bg-ui-linen/40";
                 return (
                   <div
@@ -180,7 +180,7 @@ export function ProfileIntelligenceOverview({
                     <button
                       type="button"
                       onClick={() => jumpToSection(sug.sectionId)}
-                      className="self-start text-xs font-medium text-ui-violet hover:underline"
+                      className="self-start text-xs font-medium text-ui-teal hover:underline"
                     >
                       {sug.actionLabel} →
                     </button>

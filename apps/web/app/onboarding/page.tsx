@@ -399,7 +399,7 @@ function Step2Resume({
           </div>
           <Link
             href={`/resumes/${resume.id}/review`}
-            className="inline-flex w-full items-center justify-center rounded-[10px] bg-ui-wine px-4 py-2.5 text-sm font-medium text-white transition hover:bg-ui-wine-hover"
+            className="inline-flex w-full items-center justify-center rounded-[10px] bg-ui-teal px-4 py-2.5 text-sm font-medium text-white transition hover:bg-ui-teal-hover"
           >
             Review extracted data →
           </Link>

@@ -44,7 +44,7 @@ export function OpportunitySnapshot({
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-ui-border pb-4">
         <div>
-          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-violet">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-copper">
             Priority Feed · Opportunity Snapshot
           </span>
           <h2
@@ -98,7 +98,7 @@ export function OpportunitySnapshot({
           <div className="mt-4 flex flex-wrap justify-center gap-2.5">
             <Link
               href="/jobs"
-              className="inline-flex h-9 items-center justify-center rounded-full bg-ui-wine px-4 text-xs font-medium text-ap-surface hover:bg-ui-wine-hover"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-ui-teal px-4 text-xs font-medium text-white hover:bg-ui-teal-hover"
             >
               Sync & explore jobs
             </Link>
@@ -133,7 +133,7 @@ export function OpportunitySnapshot({
                       <h3 className="mt-1 text-base font-semibold leading-snug text-ui-ink">
                         <Link
                           href={`/jobs/${job.id}`}
-                          className="hover:text-ui-violet hover:underline"
+                          className="hover:text-ui-teal hover:underline"
                         >
                           {job.title}
                         </Link>
@@ -174,13 +174,13 @@ export function OpportunitySnapshot({
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ui-border/70 pt-3">
                   <Link
                     href={`/jobs/${job.id}`}
-                    className="text-xs font-medium text-ui-ink hover:text-ui-violet hover:underline"
+                    className="text-xs font-medium text-ui-ink hover:text-ui-teal hover:underline"
                   >
                     Inspect breakdown →
                   </Link>
                   <Link
                     href={`/studio?tab=tailored&jobId=${job.id}`}
-                    className="inline-flex h-8 items-center justify-center rounded-full bg-ui-wine px-3.5 text-xs font-medium text-ap-surface transition hover:bg-ui-wine-hover"
+                    className="inline-flex h-8 items-center justify-center rounded-full bg-ui-teal px-3.5 text-xs font-medium text-white transition hover:bg-ui-teal-hover"
                   >
                     Tailor resume
                   </Link>
@@ -257,11 +257,11 @@ export function ExploreAdjacentRoles({
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="truncate text-sm font-semibold text-ui-ink hover:text-ui-violet hover:underline"
+                        className="truncate text-sm font-semibold text-ui-ink hover:text-ui-teal hover:underline"
                       >
                         {job.title}
                       </Link>
-                      <span className="rounded-full bg-ui-lilac-soft px-2 py-0.5 font-mono text-[10px] font-medium text-ui-violet">
+                      <span className="rounded-full bg-ui-teal-soft px-2 py-0.5 font-mono text-[10px] font-medium text-ui-teal">
                         Adjacent fit
                       </span>
                     </div>
@@ -293,7 +293,7 @@ export function ExploreAdjacentRoles({
           ) : (
             <div className="rounded-xl border border-dashed border-ui-border bg-ui-linen/40 p-4 text-sm text-ui-muted">
               No adjacent role postings surfaced in your current feed yet. Add confirmed skills or check the{" "}
-              <Link href="/jobs?tab=adjacent" className="font-medium text-ui-violet hover:underline">
+              <Link href="/jobs?tab=adjacent" className="font-medium text-ui-teal hover:underline">
                 Adjacent Roles tab
               </Link>{" "}
               after syncing jobs.
@@ -308,7 +308,7 @@ export function ExploreAdjacentRoles({
                 </span>
                 <Link
                   href="/profile#section-career_interests"
-                  className="text-xs font-medium text-ui-violet hover:underline"
+                  className="text-xs font-medium text-ui-teal hover:underline"
                 >
                   Edit in Career Interests →
                 </Link>
@@ -328,7 +328,7 @@ export function ExploreAdjacentRoles({
                     key={sug.role}
                     href="/profile#section-career_interests"
                     title={sug.reason}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-ap-vermilion/25 bg-ui-lilac-soft px-2.5 py-1 text-xs font-medium text-ui-violet"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-ui-teal/25 bg-ui-teal-soft px-2.5 py-1 text-xs font-medium text-ui-teal"
                   >
                     {sug.role}
                     <span className="font-mono text-[10px] opacity-80">

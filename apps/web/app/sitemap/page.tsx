@@ -91,7 +91,7 @@ export default function SitemapPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <Link href="/" className="text-sm font-semibold text-ui-violet hover:underline">
+            <Link href="/" className="text-sm font-semibold text-ui-teal hover:underline">
               ← Back to ApplyPilot
             </Link>
             <h1 className="mt-2 text-3xl font-semibold text-ui-ink">ApplyPilot Sitemap</h1>
@@ -101,7 +101,7 @@ export default function SitemapPage() {
           </div>
           <Link
             href="/dashboard"
-            className="rounded-lg bg-ui-wine px-4 py-2 text-sm font-medium text-white hover:bg-ui-wine-hover"
+            className="rounded-lg bg-ui-teal px-4 py-2 text-sm font-medium text-white hover:bg-ui-teal-hover"
           >
             Open workspace
           </Link>
@@ -115,7 +115,7 @@ export default function SitemapPage() {
               <ul className="mt-4 flex flex-col gap-2 text-sm">
                 {section.links.map((item) => (
                   <li key={item.href}>
-                    <Link href={item.href} className="text-ui-violet hover:underline">
+                    <Link href={item.href} className="text-ui-teal hover:underline">
                       {item.label}
                     </Link>
                   </li>

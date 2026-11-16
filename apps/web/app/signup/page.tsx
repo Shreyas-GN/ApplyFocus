@@ -80,7 +80,7 @@ export default function SignupPage() {
       <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
         <div className="w-full max-w-md">
           <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-wine text-xs font-semibold tracking-tight text-white">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
               AP
             </span>
             <span className="text-lg font-semibold tracking-tight text-ui-ink">ApplyPilot</span>
@@ -112,7 +112,7 @@ export default function SignupPage() {
               </Button>
               <Link
                 href="/login"
-                className="text-center text-sm font-medium text-ui-violet hover:underline"
+                className="text-center text-sm font-medium text-ui-teal hover:underline"
               >
                 Already confirmed? Log in →
               </Link>
@@ -127,7 +127,7 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-wine text-xs font-semibold tracking-tight text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
             AP
           </span>
           <span className="text-lg font-semibold tracking-tight text-ui-ink">ApplyPilot</span>
@@ -168,7 +168,7 @@ export default function SignupPage() {
           </form>
           <p className="mt-6 text-center text-sm text-ui-muted">
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-ui-violet hover:underline">
+            <Link href="/login" className="font-medium text-ui-teal hover:underline">
               Log in
             </Link>
           </p>

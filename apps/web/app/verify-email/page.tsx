@@ -44,7 +44,7 @@ function VerifyEmailStatus() {
     return (
       <div className="flex flex-col gap-3">
         <Alert tone="success">Your email has been verified. Thanks!</Alert>
-        <Link href="/dashboard" className="text-sm font-medium text-ui-violet hover:underline">
+        <Link href="/dashboard" className="text-sm font-medium text-ui-teal hover:underline">
           Continue to dashboard →
         </Link>
       </div>
@@ -57,7 +57,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="mb-6 block text-center text-lg font-semibold text-ui-violet">
+        <Link href="/" className="mb-6 block text-center text-lg font-semibold text-ui-teal">
           ApplyPilot
         </Link>
         <Card>

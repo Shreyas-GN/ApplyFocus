@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="mb-6 block text-center text-lg font-semibold text-ui-violet">
+        <Link href="/" className="mb-6 block text-center text-lg font-semibold text-ui-teal">
           ApplyPilot
         </Link>
         <Card>
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
             </form>
           )}
           <p className="mt-6 text-center text-sm text-ui-muted">
-            <Link href="/login" className="font-medium text-ui-violet hover:underline">
+            <Link href="/login" className="font-medium text-ui-teal hover:underline">
               Back to log in
             </Link>
           </p>

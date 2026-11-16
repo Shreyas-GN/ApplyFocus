@@ -126,7 +126,7 @@ export function SectionFrame({
               type="button"
               onClick={onSave}
               loading={saving}
-              className="rounded-full bg-ui-wine px-4 text-xs font-medium text-ap-surface hover:bg-ap-body"
+              className="rounded-full bg-ui-teal px-4 text-xs font-medium text-white hover:bg-ui-teal-hover"
             >
               {saveLabel}
             </Button>
@@ -208,7 +208,7 @@ export function TagListInput({
     tone === "sage"
       ? "border-ap-sage/30 bg-emerald-50 text-emerald-700"
       : tone === "vermilion"
-        ? "border-ap-vermilion/25 bg-ui-lilac-soft text-ui-violet"
+        ? "border-ui-teal/25 bg-ui-teal-soft text-ui-teal"
         : "border-ui-border bg-ui-linen text-ui-ink";
 
   return (
@@ -250,7 +250,7 @@ export function TagListInput({
           onKeyDown={handleKeyDown}
           onBlur={commitDraft}
           placeholder={placeholder}
-          className="h-9 min-w-0 flex-1 rounded-lg border border-ui-border bg-ui-surface px-3 text-sm text-ui-ink placeholder:text-ui-muted outline-none focus:border-ap-vermilion"
+          className="h-9 min-w-0 flex-1 rounded-lg border border-ui-border bg-ui-surface px-3 text-sm text-ui-ink placeholder:text-ui-muted outline-none focus:border-ui-teal"
         />
         <button
           type="button"
@@ -332,7 +332,7 @@ export function BulletListInput({
                 value={item}
                 aria-label={`${label} item ${index + 1}`}
                 onChange={(e) => updateLine(index, e.target.value)}
-                className="h-8 min-w-0 flex-1 rounded-md border border-ui-border bg-ui-surface px-2.5 text-sm text-ui-ink outline-none focus:border-ap-vermilion"
+                className="h-8 min-w-0 flex-1 rounded-md border border-ui-border bg-ui-surface px-2.5 text-sm text-ui-ink outline-none focus:border-ui-teal"
               />
               <button
                 type="button"
@@ -360,7 +360,7 @@ export function BulletListInput({
             }
           }}
           placeholder={placeholder}
-          className="h-9 min-w-0 flex-1 rounded-lg border border-ui-border bg-ui-surface px-3 text-sm text-ui-ink placeholder:text-ui-muted outline-none focus:border-ap-vermilion"
+          className="h-9 min-w-0 flex-1 rounded-lg border border-ui-border bg-ui-surface px-3 text-sm text-ui-ink placeholder:text-ui-muted outline-none focus:border-ui-teal"
         />
         <button
           type="button"
