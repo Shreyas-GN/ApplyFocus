@@ -22,7 +22,7 @@ describe("Landing HomePage", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /Your next opportunity deserves a better approach\./i,
+        name: /Your next role starts with knowing yourself\./i,
       })
     ).toBeInTheDocument();
 
@@ -36,12 +36,17 @@ describe("Landing HomePage", () => {
 
     expect(screen.getByRole("link", { name: /See how it works/i })).toHaveAttribute(
       "href",
-      "#how-it-works"
+      "#features"
     );
 
     expect(
       screen.getByRole("heading", {
-        name: /One professional profile\. A resume tailored to every opportunity\./i,
+        name: /A complete career workspace\./i,
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /One profile\. A resume tailored to every opportunity\./i,
       })
     ).toBeInTheDocument();
     expect(
@@ -56,18 +61,14 @@ describe("Landing HomePage", () => {
     ).toBeInTheDocument();
   });
 
-  it("supports interactive Adaptive Resume approval and FAQ accordion", () => {
+  it("supports interactive FAQ accordion", () => {
     render(<HomePage />);
-
-    const approveBtn = screen.getByRole("button", { name: /Approve change/i });
-    fireEvent.click(approveBtn);
-    expect(screen.getByRole("button", { name: /Approved/i })).toBeInTheDocument();
 
     const secondFaq = screen.getByRole("button", {
       name: /Who is ApplyPilot for\?/i,
     });
-    expect(secondFaq).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText(/designed for job seekers at different career stages/i)).not.toBeInTheDocument();
     fireEvent.click(secondFaq);
-    expect(secondFaq).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText(/designed for job seekers at different career stages/i)).toBeInTheDocument();
   });
 });
