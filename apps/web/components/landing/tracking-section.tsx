@@ -30,11 +30,11 @@ export function LandingTracking() {
             {/* Stage strip */}
             <div className="grid grid-cols-4 divide-x divide-lp-border border-b border-lp-border">
               {STAGES.map((s) => (
-                <div key={s.label} className="p-4 text-center">
-                  <p className={`inline-flex rounded-full px-2 py-0.5 font-mono text-[10px] font-medium ${s.color}`}>
+                <div key={s.label} className="p-3 text-center sm:p-4">
+                  <p className={`inline-flex rounded-full px-1.5 py-0.5 font-mono text-[9px] font-medium sm:px-2 sm:text-[10px] ${s.color}`}>
                     {s.label}
                   </p>
-                  <p className="mt-1 font-ui text-2xl font-semibold text-lp-ink">{s.count}</p>
+                  <p className="mt-1 font-ui text-xl font-semibold text-lp-ink sm:text-2xl">{s.count}</p>
                 </div>
               ))}
             </div>

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 export function LandingHero() {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-lp-lagoon pt-[60px]">
+    <section className="relative min-h-screen min-h-[100dvh] overflow-hidden bg-lp-lagoon pt-[60px]">
       {/* Background radial glow */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div
@@ -55,7 +55,7 @@ export function LandingHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.07 }}
-          className="mx-auto mt-8 max-w-[860px] text-center font-ui text-[52px] font-bold leading-[1.04] tracking-[-0.04em] text-white sm:text-[70px] lg:text-[84px]"
+          className="mx-auto mt-8 max-w-[860px] text-center font-ui text-[36px] font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-[56px] sm:leading-[1.04] sm:tracking-[-0.04em] lg:text-[84px]"
         >
           Your next role starts with knowing yourself.
         </motion.h1>
@@ -65,7 +65,7 @@ export function LandingHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.14 }}
-          className="mx-auto mt-6 max-w-[560px] text-center font-ui text-[18px] leading-[1.6] text-white/55 sm:text-[20px]"
+          className="mx-auto mt-5 max-w-[560px] text-center font-ui text-[16px] leading-[1.6] text-white/55 sm:mt-6 sm:text-[20px]"
         >
           One workspace to understand your strengths, discover the right opportunities, and build applications that actually reflect your work.
         </motion.p>
@@ -106,7 +106,7 @@ export function LandingHero() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.35 }}
-          className="relative mt-16 sm:mt-20"
+          className="relative mt-12 sm:mt-20"
         >
           {/* Fade-out gradient at bottom so it blends into white */}
           <div
@@ -134,9 +134,9 @@ export function LandingHero() {
             </div>
 
             {/* Dashboard content */}
-            <div className="bg-[#0d1f20] p-5 sm:p-7">
+            <div className="bg-[#0d1f20] p-4 sm:p-7">
               {/* Stats row */}
-              <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="mb-4 grid grid-cols-2 gap-2.5 sm:mb-5 sm:grid-cols-4 sm:gap-3">
                 {[
                   { label: "Matched roles", value: "24", delta: "+6 today", up: true },
                   { label: "Active pipeline", value: "7", delta: "3 interviewing", up: true },
