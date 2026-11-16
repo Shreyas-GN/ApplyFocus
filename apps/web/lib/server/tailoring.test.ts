@@ -4,10 +4,10 @@ import {
   buildCandidateContext,
   buildGroundedScreeningAnswer,
   cleanJsonFence,
-  draftCoverLetterWithClaude,
+  draftCoverLetterWithAi,
   generateScreeningAnswer,
-  tailorResumeWithClaude,
-  type ClaudeMessagesClient,
+  tailorResumeWithAi,
+  type AiMessagesClient,
 } from './tailoring';
 
 const SAMPLE_PROFILE: ProfileDto = {
@@ -91,8 +91,8 @@ describe('tailoring utilities', () => {
     expect(ctx.experience[0]?.endDate).toBe('Present');
   });
 
-  it('parses and validates tailored resume JSON from Claude', async () => {
-    const mockClient: ClaudeMessagesClient = {
+  it('parses and validates tailored resume JSON from AI', async () => {
+    const mockClient: AiMessagesClient = {
       messages: {
         create: vi.fn().mockResolvedValue({
           content: [
@@ -126,7 +126,7 @@ describe('tailoring utilities', () => {
       },
     };
 
-    const result = await tailorResumeWithClaude(
+    const result = await tailorResumeWithAi(
       SAMPLE_PROFILE,
       {
         company: 'Vercel',
@@ -161,7 +161,7 @@ describe('tailoring utilities', () => {
       ],
     });
 
-    const result = await draftCoverLetterWithClaude(
+    const result = await draftCoverLetterWithAi(
       SAMPLE_PROFILE,
       {
         company: 'Vercel',
@@ -181,8 +181,8 @@ describe('tailoring utilities', () => {
     expect(payload.tone).toBe('concise');
   });
 
-  it('throws a clean error when Claude returns invalid JSON', async () => {
-    const mockClient: ClaudeMessagesClient = {
+  it('throws a clean error when AI returns invalid JSON', async () => {
+    const mockClient: AiMessagesClient = {
       messages: {
         create: vi.fn().mockResolvedValue({
           content: [{ type: 'text', text: 'Not valid JSON' }],
@@ -191,7 +191,7 @@ describe('tailoring utilities', () => {
     };
 
     await expect(
-      tailorResumeWithClaude(
+      tailorResumeWithAi(
         SAMPLE_PROFILE,
         { company: 'Stripe', title: 'Engineer', description: 'API role' },
         mockClient
@@ -216,8 +216,8 @@ describe('tailoring utilities', () => {
     expect(res.groundedFacts.length).toBeGreaterThan(0);
   });
 
-  it('generates structured screening answers via injected Claude client', async () => {
-    const mockClient: ClaudeMessagesClient = {
+  it('generates structured screening answers via injected AI client', async () => {
+    const mockClient: AiMessagesClient = {
       messages: {
         create: vi.fn().mockResolvedValue({
           content: [
@@ -241,7 +241,7 @@ describe('tailoring utilities', () => {
       mockClient
     );
 
-    expect(res.source).toBe('claude');
+    expect(res.source).toBe('ai');
     expect(res.answer).toContain('TypeScript');
     expect(res.groundedFacts).toContain('Analytical Engines');
   });

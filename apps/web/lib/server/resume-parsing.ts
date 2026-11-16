@@ -2,7 +2,6 @@
 import { db } from '@/lib/db';
 import { resumeParsedData, resumes } from '@/lib/db/schema';
 import { createAdminClient } from '@/lib/supabase/admin';
-import Anthropic from '@anthropic-ai/sdk';
 import {
   resumeParsedDataSchema,
   type ResumeParsedData,
@@ -10,6 +9,7 @@ import {
 import { eq } from 'drizzle-orm';
 import mammoth from 'mammoth';
 import { extractText } from 'unpdf';
+import { createAiClient, getAiModel } from './ai-client';
 
 const SYSTEM_PROMPT = `You extract structured information from resume text for a job-search product. You must follow these rules exactly:
 
@@ -67,36 +67,30 @@ function cleanJsonFence(raw: string): string {
   return match && match[1] ? match[1].trim() : stripped;
 }
 
-export async function parseResumeWithClaude(
+export async function parseResumeWithAi(
   text: string
 ): Promise<ResumeParsedData> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'ANTHROPIC_API_KEY is not configured. Please add it to .env.local to enable AI parsing.'
-    );
-  }
+  const client = createAiClient();
+  const model = getAiModel();
 
-  const client = new Anthropic({ apiKey });
-  const model = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
-
-  const response = await client.messages.create({
+  const response = await client.chat.completions.create({
     model,
     max_tokens: 4096,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: `Resume text:\n\n${text}` }],
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: `Resume text:\n\n${text}` },
+    ],
   });
 
-  const rawText = response.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
+  const rawText = response.choices
+    .map((choice) => choice.message.content ?? '')
     .join('');
 
   try {
     const parsed = JSON.parse(cleanJsonFence(rawText));
     return resumeParsedDataSchema.parse(parsed);
   } catch (error) {
-    console.error('Claude parsing response validation failed:', rawText, error);
+    console.error('AI parsing response validation failed:', rawText, error);
     throw new Error(
       'Failed to parse resume into structured JSON. Please retry.'
     );
@@ -152,7 +146,7 @@ export async function processResumeBackground(
       })
       .where(eq(resumes.id, resumeId));
 
-    const parsedData = await parseResumeWithClaude(extractedText);
+    const parsedData = await parseResumeWithAi(extractedText);
 
     // Step 3: Save parsed data & mark as parsed
     await db.transaction(async (tx) => {

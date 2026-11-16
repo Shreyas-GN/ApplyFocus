@@ -347,7 +347,7 @@ export interface ApplicationReadiness {
 export interface ScreeningAnswerResult {
   answer: string;
   groundedFacts: string[];
-  source: "claude" | "grounded_fallback";
+  source: "ai" | "grounded_fallback";
 }
 
 export interface ApplicationDto {

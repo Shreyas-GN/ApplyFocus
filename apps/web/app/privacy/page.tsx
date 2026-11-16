@@ -26,7 +26,7 @@ export default function PrivacyPage() {
             <p className="mt-1.5">
               Authentication, relational storage, and private résumé files are hosted on
               Supabase. When you upload a résumé or trigger AI tailoring, relevant text is
-              sent to Anthropic Claude solely to extract your profile or draft your requested
+              sent to our AI provider (OpenRouter) solely to extract your profile or draft your requested
               material. ApplyPilot never requests or stores your third-party ATS passwords.
             </p>
           </section>

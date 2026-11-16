@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '@/lib/db';
@@ -18,6 +17,7 @@ import type {
   TailoredResumeContent,
 } from '@/lib/types';
 import { recordAudit } from './audit';
+import { createAiClient, getAiModel } from './ai-client';
 import { getProfile } from './profile';
 
 export const tailoredResumeExperienceItemSchema = z.object({
@@ -48,7 +48,7 @@ export const coverLetterContentSchema = z.object({
   keyPointsHighlighted: z.array(z.string()).default([]),
 });
 
-export interface ClaudeMessagesClient {
+export interface AiMessagesClient {
   messages: {
     create(params: {
       model: string;
@@ -189,37 +189,51 @@ export function buildCandidateContext(profile: ProfileDto) {
   };
 }
 
-function resolveClaudeClient(client?: ClaudeMessagesClient): {
-  claude: ClaudeMessagesClient;
+function resolveAiClient(client?: AiMessagesClient): {
+  ai: AiMessagesClient;
   model: string;
 } {
   if (client) {
     return {
-      claude: client,
-      model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+      ai: client,
+      model: getAiModel(),
     };
   }
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'ANTHROPIC_API_KEY is not configured. Add it to your environment to enable AI tailoring.'
-    );
-  }
+  const openaiClient = createAiClient();
   return {
-    claude: new Anthropic({ apiKey }) as unknown as ClaudeMessagesClient,
-    model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+    ai: {
+      messages: {
+        create: async (params) => {
+          const response = await openaiClient.chat.completions.create({
+            model: params.model,
+            max_tokens: params.max_tokens,
+            messages: [
+              { role: 'system', content: params.system },
+              ...params.messages,
+            ],
+          });
+          return {
+            content: response.choices.map((c) => ({
+              type: 'text',
+              text: c.message.content ?? '',
+            })),
+          };
+        },
+      },
+    },
+    model: getAiModel(),
   };
 }
 
-async function runClaudeJson<T>(
+async function runAiJson<T>(
   system: string,
   userContent: string,
   schema: z.ZodType<T>,
-  injectedClient?: ClaudeMessagesClient
+  injectedClient?: AiMessagesClient
 ): Promise<T> {
-  const { claude, model } = resolveClaudeClient(injectedClient);
+  const { ai, model } = resolveAiClient(injectedClient);
 
-  const response = await claude.messages.create({
+  const response = await ai.messages.create({
     model,
     max_tokens: 4096,
     system,
@@ -235,17 +249,17 @@ async function runClaudeJson<T>(
     const parsed = JSON.parse(cleanJsonFence(rawText));
     return schema.parse(parsed);
   } catch (error) {
-    console.error('Claude tailoring response validation failed:', rawText, error);
+    console.error('AI tailoring response validation failed:', rawText, error);
     throw new Error(
       'AI tailoring returned an unexpected response format. Please retry.'
     );
   }
 }
 
-export async function tailorResumeWithClaude(
+export async function tailorResumeWithAi(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<TailoredResumeContent> {
   const candidate = buildCandidateContext(profile);
   const userMessage = JSON.stringify({
@@ -253,7 +267,7 @@ export async function tailorResumeWithClaude(
     candidateProfile: candidate,
   });
 
-  return runClaudeJson(
+  return runAiJson(
     RESUME_TAILOR_SYSTEM_PROMPT,
     userMessage,
     tailoredResumeContentSchema,
@@ -261,11 +275,11 @@ export async function tailorResumeWithClaude(
   );
 }
 
-export async function draftCoverLetterWithClaude(
+export async function draftCoverLetterWithAi(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
   tone: CoverLetterTone,
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<CoverLetterContent> {
   const candidate = buildCandidateContext(profile);
   const userMessage = JSON.stringify({
@@ -274,7 +288,7 @@ export async function draftCoverLetterWithClaude(
     candidateProfile: candidate,
   });
 
-  return runClaudeJson(
+  return runAiJson(
     COVER_LETTER_SYSTEM_PROMPT,
     userMessage,
     coverLetterContentSchema,
@@ -365,14 +379,14 @@ export async function generateScreeningAnswer(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
   question: string,
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<ScreeningAnswerResult> {
-  if (!client && !process.env.ANTHROPIC_API_KEY) {
+  if (!client && !process.env.OPENROUTER_API_KEY) {
     return buildGroundedScreeningAnswer(profile, job, question);
   }
 
   const candidate = buildCandidateContext(profile);
-  const parsed = await runClaudeJson(
+  const parsed = await runAiJson(
     SCREENING_ANSWER_SYSTEM_PROMPT,
     JSON.stringify({
       question,
@@ -386,7 +400,7 @@ export async function generateScreeningAnswer(
   return {
     answer: parsed.answer,
     groundedFacts: parsed.groundedFacts,
-    source: 'claude',
+    source: 'ai',
   };
 }
 
@@ -491,7 +505,7 @@ export async function listTailoredDocuments(
 export async function createTailoredDocument(
   userId: string,
   input: CreateTailoredDocumentInput,
-  client?: ClaudeMessagesClient
+  client?: AiMessagesClient
 ): Promise<TailoredDocumentDto> {
   let resolvedJobId = input.jobId ?? null;
   const resolvedAppId = input.applicationId ?? null;
@@ -558,12 +572,12 @@ export async function createTailoredDocument(
 
   const content =
     input.type === 'resume'
-      ? await tailorResumeWithClaude(
+      ? await tailorResumeWithAi(
           profile,
           { company, title: jobTitle, description: jobDescription },
           client
         )
-      : await draftCoverLetterWithClaude(
+      : await draftCoverLetterWithAi(
           profile,
           { company, title: jobTitle, description: jobDescription },
           tone ?? 'conversational',
