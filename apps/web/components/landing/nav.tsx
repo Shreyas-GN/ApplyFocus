@@ -1,102 +1,106 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
-const NAV_LINKS = [
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#adaptive-resume", label: "Resume Engine" },
+const LINKS = [
+  { href: "#features", label: "Features" },
+  { href: "#resume", label: "Resume Engine" },
   { href: "#tracking", label: "Tracking" },
   { href: "#faq", label: "FAQ" },
 ];
 
-export function Nav() {
+export function LandingNav() {
+  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-lp-border bg-lp-bg/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-3.5 sm:px-8">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-white/95 backdrop-blur-md shadow-[0_1px_0_rgba(0,0,0,0.06)]"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between px-5 sm:px-8">
+        <Link href="/" className="flex items-center gap-2.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lp-accent font-ui text-xs font-bold text-white">
             AP
           </span>
-          <span className="font-ui text-[17px] font-semibold tracking-tight text-lp-ink">
+          <span className={`font-ui text-[16px] font-semibold tracking-tight transition-colors ${scrolled ? "text-lp-ink" : "text-white"}`}>
             ApplyPilot
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
-          {NAV_LINKS.map((link) => (
+        <nav className="hidden items-center gap-8 md:flex">
+          {LINKS.map((l) => (
             <a
-              key={link.href}
-              href={link.href}
-              className="font-ui text-[14px] text-lp-body transition-colors hover:text-lp-ink"
+              key={l.href}
+              href={l.href}
+              className={`font-ui text-[14px] transition-colors hover:opacity-100 ${
+                scrolled ? "text-lp-body opacity-80 hover:text-lp-ink" : "text-white/70 hover:text-white"
+              }`}
             >
-              {link.label}
+              {l.label}
             </a>
           ))}
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="font-ui text-[14px] text-lp-body transition-colors hover:text-lp-ink"
+            className={`hidden font-ui text-[14px] transition-colors md:block ${
+              scrolled ? "text-lp-body hover:text-lp-ink" : "text-white/70 hover:text-white"
+            }`}
           >
             Sign in
           </Link>
           <Link
             href="/signup"
-            className="inline-flex h-9 items-center justify-center rounded-lg bg-lp-accent px-4 font-ui text-[13px] font-semibold text-white transition-colors hover:bg-lp-accent-hover"
+            className={`inline-flex h-9 items-center rounded-lg px-4 font-ui text-[13px] font-semibold transition-all ${
+              scrolled
+                ? "bg-lp-accent text-white hover:bg-lp-accent-hover"
+                : "bg-white text-lp-lagoon hover:bg-white/90"
+            }`}
           >
             Get started free
           </Link>
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-label="Menu"
+            className={`flex h-9 w-9 flex-col items-center justify-center gap-[5px] rounded-lg md:hidden ${scrolled ? "" : ""}`}
+          >
+            <span className={`block h-[1.5px] w-5 transition-all ${scrolled ? "bg-lp-ink" : "bg-white"} ${open ? "translate-y-[6.5px] rotate-45" : ""}`} />
+            <span className={`block h-[1.5px] w-5 transition-all ${scrolled ? "bg-lp-ink" : "bg-white"} ${open ? "opacity-0" : ""}`} />
+            <span className={`block h-[1.5px] w-5 transition-all ${scrolled ? "bg-lp-ink" : "bg-white"} ${open ? "-translate-y-[6.5px] -rotate-45" : ""}`} />
+          </button>
         </div>
-
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          className="flex items-center rounded-lg p-2 text-lp-body hover:text-lp-ink md:hidden"
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
       </div>
 
-      {/* Mobile drawer */}
       {open && (
-        <div className="border-t border-lp-border bg-lp-bg px-5 pb-5 pt-3 md:hidden">
-          <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
-            {NAV_LINKS.map((link) => (
+        <div className="border-t border-white/10 bg-lp-lagoon px-5 pb-6 pt-4 md:hidden">
+          <nav className="flex flex-col gap-1">
+            {LINKS.map((l) => (
               <a
-                key={link.href}
-                href={link.href}
+                key={l.href}
+                href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 font-ui text-[15px] text-lp-body hover:bg-lp-surface hover:text-lp-ink"
+                className="rounded-lg px-3 py-2.5 font-ui text-[15px] text-white/70 hover:bg-white/5 hover:text-white"
               >
-                {link.label}
+                {l.label}
               </a>
             ))}
           </nav>
-          <div className="mt-4 flex flex-col gap-2">
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-lp-border bg-lp-bg font-ui text-sm font-semibold text-lp-ink"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              onClick={() => setOpen(false)}
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-lp-accent font-ui text-sm font-semibold text-white"
-            >
-              Get started free
-            </Link>
+          <div className="mt-4 flex flex-col gap-2.5 border-t border-white/10 pt-4">
+            <Link href="/login" onClick={() => setOpen(false)} className="py-2.5 text-center font-ui text-sm text-white/70">Sign in</Link>
+            <Link href="/signup" onClick={() => setOpen(false)} className="rounded-lg bg-lp-accent py-2.5 text-center font-ui text-sm font-semibold text-white">Get started free</Link>
           </div>
         </div>
       )}

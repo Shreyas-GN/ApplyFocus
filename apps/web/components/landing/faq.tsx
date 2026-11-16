@@ -1,145 +1,90 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Minus } from "lucide-react";
 
-const FAQS: Array<{ question: string; answer: string }> = [
+const FAQS = [
   {
-    question: "What is ApplyPilot?",
-    answer:
-      "ApplyPilot is a career intelligence workspace that helps you organize your professional profile, discover relevant job opportunities, prepare tailored applications and manage your job search.",
+    q: "What is ApplyPilot?",
+    a: "ApplyPilot is a career intelligence workspace that helps you organize your professional profile, discover relevant job opportunities, prepare tailored applications, and manage your job search.",
   },
   {
-    question: "Who is ApplyPilot for?",
-    answer:
-      "ApplyPilot is designed for job seekers at different career stages, from fresh graduates and early-career professionals to experienced candidates looking for their next opportunity.",
+    q: "Who is ApplyPilot for?",
+    a: "ApplyPilot is designed for job seekers at different career stages — from fresh graduates and early-career professionals to experienced candidates looking for their next opportunity.",
   },
   {
-    question: "Do I need to create a new resume?",
-    answer:
-      "No. You can start with your existing resume and build a structured professional profile from your experience, skills, education and projects.",
+    q: "Do I need to create a new resume?",
+    a: "No. You can start with your existing resume and build a structured professional profile from your experience, skills, education, and projects. ApplyPilot extracts the data; you review and confirm it.",
   },
   {
-    question: "Can I use a different resume for every job?",
-    answer:
-      "Yes. ApplyPilot's Adaptive Resume Engine is designed to create job-specific resume versions using your existing professional information. You can review and approve suggested changes before using them.",
+    q: "Can I use a different resume for every job?",
+    a: "Yes. ApplyPilot's Adaptive Resume Engine creates job-specific resume versions using your existing professional information. You review and approve suggested changes before using them.",
   },
   {
-    question: "Does ApplyPilot guarantee ATS compatibility?",
-    answer:
-      "No platform can guarantee that every employer's ATS will parse a resume perfectly. ApplyPilot aims to create clear, structured and machine-readable application documents.",
+    q: "Does ApplyPilot apply automatically?",
+    a: "No. ApplyPilot prioritizes candidate control. You review your application materials and confirm before anything is submitted.",
   },
   {
-    question: "Do I have to apply through ApplyPilot?",
-    answer:
-      "No. The product is designed around your job-search workflow, including applications that take place on external employer websites. Browser extension assistance depends on supported functionality.",
+    q: "Can I track jobs I found outside ApplyPilot?",
+    a: "Yes. The application tracker is designed to work with opportunities from any source, including external employer websites and job boards.",
   },
   {
-    question: "Does ApplyPilot apply automatically?",
-    answer:
-      "ApplyPilot prioritizes candidate control. You review your application materials and confirm consequential submissions.",
+    q: "Is there a free plan?",
+    a: "Yes, you can create a free account to get started. Usage limits and paid features are described in the published pricing information.",
   },
   {
-    question: "Can I track jobs I found outside ApplyPilot?",
-    answer:
-      "The intended experience includes connecting external opportunities to your application tracker. The exact import and extension capabilities depend on the available implementation.",
-  },
-  {
-    question: "Is my existing resume information editable?",
-    answer:
-      "Yes. You should be able to review, correct and update information extracted from your resume before using it.",
-  },
-  {
-    question: "Is there a free plan?",
-    answer:
-      "You can start with the free account option shown on the current signup flow. Any usage limits and paid features should be described in the published pricing information.",
+    q: "Does ApplyPilot guarantee ATS compatibility?",
+    a: "No platform can guarantee perfect ATS parsing. ApplyPilot creates clear, structured, machine-readable application documents designed to work well with common systems.",
   },
 ];
 
-export function Faq() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+export function LandingFaq() {
+  const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="border-b border-lp-border bg-lp-bg py-20 sm:py-28">
+    <section id="faq" className="border-t border-lp-border bg-lp-bg py-20 sm:py-28">
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
-        <div className="grid gap-10 lg:grid-cols-[380px_1fr] lg:gap-16">
-          {/* Left Column: Heading & Support Link */}
+        <div className="grid gap-12 lg:grid-cols-[300px_1fr] lg:gap-16">
+          {/* Left */}
           <div>
-            <p className="inline-flex rounded-full bg-lp-accent-soft px-3 py-1 font-mono text-[11px] font-medium tracking-wider text-lp-accent">
-              GOT QUESTIONS?
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-lp-accent">
+              FAQ
             </p>
-            <h2 className="mt-4 font-ui text-[32px] font-bold leading-[1.12] tracking-[-0.025em] text-lp-ink sm:text-[42px]">
+            <h2 className="mt-3 font-ui text-[32px] font-bold leading-[1.1] tracking-[-0.03em] text-lp-ink sm:text-[40px]">
               Questions, answered plainly.
             </h2>
             <p className="mt-4 font-ui text-[15px] leading-relaxed text-lp-body">
-              Everything you need to know about our candidate intelligence platform, privacy
-              guarantees, and tailoring workflow.
+              Everything you need to know about how ApplyPilot works.
             </p>
-            <div className="mt-6">
-              <a
-                href="mailto:support@applypilot.com"
-                className="inline-flex items-center gap-1.5 font-ui text-sm font-semibold text-lp-accent hover:underline"
-              >
-                Still have questions? Reach out to support →
-              </a>
-            </div>
+            <a
+              href="mailto:support@applypilot.app"
+              className="mt-6 inline-flex font-ui text-[14px] font-semibold text-lp-accent hover:underline"
+            >
+              Still have questions? Contact us →
+            </a>
           </div>
 
-          {/* Right Column: Accordion Cards */}
-          <div className="space-y-3">
-            {FAQS.map((item, index) => {
-              const isOpen = openIndex === index;
-              const panelId = `faq-panel-${index}`;
-              const buttonId = `faq-button-${index}`;
-              return (
-                <div
-                  key={item.question}
-                  className="rounded-2xl border border-lp-border bg-white p-5 shadow-[0_2px_8px_rgba(43,35,32,0.02)] transition-colors hover:border-lp-border/80"
+          {/* Right — accordion */}
+          <div className="divide-y divide-lp-border rounded-2xl border border-lp-border bg-white overflow-hidden">
+            {FAQS.map((item, i) => (
+              <div key={item.q}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(open === i ? null : i)}
+                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
                 >
-                  <button
-                    id={buttonId}
-                    type="button"
-                    aria-expanded={isOpen}
-                    aria-controls={panelId}
-                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="flex w-full cursor-pointer items-center justify-between gap-4 text-left font-ui text-[16px] font-semibold text-lp-ink transition-colors hover:text-lp-wine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lp-wine"
-                  >
-                    <span>{item.question}</span>
-                    <motion.div
-                      animate={{ rotate: isOpen ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex-shrink-0"
-                    >
-                      <ChevronDown
-                        className="h-5 w-5 text-lp-muted"
-                        strokeWidth={1.75}
-                        aria-hidden="true"
-                      />
-                    </motion.div>
-                  </button>
-
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        id={panelId}
-                        role="region"
-                        aria-labelledby={buttonId}
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.22, ease: "easeInOut" }}
-                        className="overflow-hidden"
-                      >
-                        <p className="mt-3.5 pt-3 border-t border-lp-border/60 font-ui text-[15px] leading-relaxed text-lp-body">
-                          {item.answer}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
+                  <span className="font-ui text-[15px] font-semibold text-lp-ink">{item.q}</span>
+                  <span className="flex-shrink-0 text-lp-muted">
+                    {open === i ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  </span>
+                </button>
+                {open === i && (
+                  <div className="border-t border-lp-border bg-lp-surface px-6 py-5">
+                    <p className="font-ui text-[15px] leading-relaxed text-lp-body">{item.a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

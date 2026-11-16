@@ -1,234 +1,228 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { ArrowRight, Sparkles, TrendingUp, FileCheck } from "lucide-react";
+import { motion } from "framer-motion";
 
-const TRUST_ITEMS = [
-  "Free to start",
-  "No credit card required",
-  "Candidate control guaranteed",
-];
-
-const FEATURE_PILLS = [
-  { label: "Verified Master Profile", color: "bg-lp-accent-soft text-lp-accent" },
-  { label: "AI Match Scoring", color: "bg-lp-copper-soft text-lp-copper" },
-  { label: "Adaptive Resume Engine", color: "bg-emerald-50 text-emerald-700" },
-  { label: "Application Tracking", color: "bg-slate-100 text-slate-600" },
-];
-
-export function Hero() {
+export function LandingHero() {
   return (
-    <section className="relative overflow-hidden bg-lp-bg pt-16 pb-24 sm:pt-24 sm:pb-32">
-      {/* Gradient blobs */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <section className="relative min-h-screen overflow-hidden bg-lp-lagoon pt-[60px]">
+      {/* Background radial glow */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div
-          className="absolute -top-32 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-          style={{ background: "radial-gradient(ellipse, #c8e8e9 0%, transparent 70%)" }}
+          className="absolute left-1/2 top-0 h-[700px] w-[900px] -translate-x-1/2 opacity-40"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 0%, #155e63 0%, transparent 65%)",
+          }}
         />
         <div
-          className="absolute top-16 -right-64 h-[400px] w-[500px] rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(ellipse, #f0d4c3 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute bottom-0 -left-48 h-[350px] w-[500px] rounded-full opacity-15 blur-3xl"
-          style={{ background: "radial-gradient(ellipse, #c8e8e9 0%, transparent 70%)" }}
+          className="absolute -right-64 top-1/3 h-[500px] w-[600px] opacity-10"
+          style={{
+            background:
+              "radial-gradient(ellipse, #b86f4b 0%, transparent 70%)",
+          }}
         />
       </div>
 
-      <div className="relative mx-auto max-w-[1200px] px-5 sm:px-8">
+      {/* Grid texture */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-[1200px] px-5 pb-0 pt-24 sm:px-8 sm:pt-32">
         {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.4 }}
           className="flex justify-center"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-lp-border bg-white px-4 py-1.5 font-mono text-[11px] font-medium tracking-widest text-lp-muted shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-lp-accent" aria-hidden="true" />
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 font-mono text-[11px] tracking-[0.14em] text-white/50">
+            <span className="h-1.5 w-1.5 rounded-full bg-lp-accent" />
             CAREER INTELLIGENCE PLATFORM
           </span>
         </motion.div>
 
-        {/* Heading */}
+        {/* H1 */}
         <motion.h1
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.07 }}
-          className="mx-auto mt-7 max-w-[820px] text-center font-ui text-[44px] font-bold leading-[1.06] tracking-[-0.04em] text-lp-ink sm:text-[60px] lg:text-[72px]"
+          transition={{ duration: 0.5, delay: 0.07 }}
+          className="mx-auto mt-8 max-w-[860px] text-center font-ui text-[52px] font-bold leading-[1.04] tracking-[-0.04em] text-white sm:text-[70px] lg:text-[84px]"
         >
-          Your next opportunity deserves a better approach.
+          Your next role starts with knowing yourself.
         </motion.h1>
 
         {/* Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.13 }}
-          className="mx-auto mt-6 max-w-[580px] text-center font-ui text-[17px] leading-[1.7] text-lp-body sm:text-[19px]"
+          transition={{ duration: 0.5, delay: 0.14 }}
+          className="mx-auto mt-6 max-w-[560px] text-center font-ui text-[18px] leading-[1.6] text-white/55 sm:text-[20px]"
         >
-          Understand your strengths. Find opportunities that fit. Build an application that
-          reflects your best work — from one career workspace.
+          One workspace to understand your strengths, discover the right opportunities, and build applications that actually reflect your work.
         </motion.p>
 
-        {/* CTA row */}
+        {/* CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.19 }}
-          className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row"
         >
           <Link
             href="/signup"
-            className="group inline-flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-lp-accent px-8 font-ui text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-lp-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lp-accent sm:w-auto"
+            className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-7 font-ui text-[15px] font-semibold text-lp-lagoon shadow-lg transition-all hover:bg-lp-accent-soft sm:w-auto"
           >
             Get started — it&apos;s free
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
           </Link>
           <a
-            href="#how-it-works"
-            className="inline-flex h-13 w-full items-center justify-center rounded-xl border border-lp-border bg-white px-7 font-ui text-[15px] font-semibold text-lp-ink shadow-sm transition-colors hover:bg-lp-surface sm:w-auto"
+            href="#features"
+            className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/10 px-7 font-ui text-[15px] font-medium text-white/70 transition-all hover:border-white/20 hover:text-white sm:w-auto"
           >
             See how it works
           </a>
         </motion.div>
 
-        {/* Trust row */}
-        <motion.div
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.25 }}
-          className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5"
+          transition={{ duration: 0.4, delay: 0.28 }}
+          className="mt-4 text-center font-ui text-[13px] text-white/30"
         >
-          {TRUST_ITEMS.map((item) => (
-            <span key={item} className="flex items-center gap-1.5 font-ui text-[13px] text-lp-muted">
-              <CheckCircle2 className="h-3.5 w-3.5 text-lp-accent" aria-hidden="true" />
-              {item}
-            </span>
-          ))}
-        </motion.div>
+          Free account · No credit card · Full candidate control
+        </motion.p>
 
-        {/* Product window mockup */}
+        {/* Product window — anchored to bottom of dark section */}
         <motion.div
-          initial={{ opacity: 0, y: 32 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.32 }}
-          className="mt-16 overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_24px_80px_rgba(21,94,99,0.10),0_4px_16px_rgba(0,0,0,0.04)]"
+          transition={{ duration: 0.7, delay: 0.35 }}
+          className="relative mt-16 sm:mt-20"
         >
-          {/* Window chrome */}
-          <div className="flex items-center justify-between border-b border-lp-border bg-lp-surface px-5 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="flex gap-1.5" aria-hidden="true">
-                <span className="h-2.5 w-2.5 rounded-full bg-lp-border" />
-                <span className="h-2.5 w-2.5 rounded-full bg-lp-border" />
-                <span className="h-2.5 w-2.5 rounded-full bg-lp-border" />
+          {/* Fade-out gradient at bottom so it blends into white */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-32"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, #0c2a2b)",
+            }}
+          />
+
+          <div className="overflow-hidden rounded-t-2xl border border-white/10 shadow-[0_-24px_80px_rgba(21,94,99,0.3)]">
+            {/* Window chrome */}
+            <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.04] px-5 py-3.5">
+              <div className="flex gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
               </div>
-              <span className="font-ui text-[13px] font-medium text-lp-muted">
-                ApplyPilot · Career Workspace
-              </span>
-            </div>
-            <span className="rounded border border-lp-border bg-white px-2 py-0.5 font-mono text-[10px] text-lp-muted">
-              applypilot.app/dashboard
-            </span>
-          </div>
-
-          {/* Dashboard preview */}
-          <div className="grid gap-px bg-lp-border lg:grid-cols-3">
-            {/* Stat cards */}
-            <div className="col-span-3 grid grid-cols-2 gap-px bg-lp-border sm:grid-cols-4">
-              {[
-                { label: "Matched roles", value: "24", sub: "this week" },
-                { label: "Active pipeline", value: "7", sub: "applications" },
-                { label: "Response rate", value: "32%", sub: "above average" },
-                { label: "Interviews", value: "3", sub: "scheduled" },
-              ].map((stat) => (
-                <div key={stat.label} className="bg-white p-5">
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-lp-muted">
-                    {stat.label}
-                  </p>
-                  <p className="mt-1 font-ui text-3xl font-semibold tracking-tight text-lp-ink">
-                    {stat.value}
-                  </p>
-                  <p className="mt-0.5 font-ui text-xs text-lp-muted">{stat.sub}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Job cards col */}
-            <div className="col-span-2 bg-white p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="font-ui text-sm font-semibold text-lp-ink">Top matches</span>
-                <span className="rounded-md bg-lp-accent-soft px-2 py-0.5 font-mono text-[10px] text-lp-accent">
-                  For you
+              <div className="flex-1 text-center">
+                <span className="rounded border border-white/10 bg-white/5 px-4 py-1 font-mono text-[11px] text-white/30">
+                  applypilot.app/dashboard
                 </span>
               </div>
-              <div className="space-y-3">
-                {[
-                  { role: "Senior Product Designer", co: "Figma · Remote", score: 91, tag: "Strong match" },
-                  { role: "Design Systems Lead", co: "Notion · Hybrid", score: 84, tag: "Good match" },
-                  { role: "Head of Product Design", co: "Linear · Remote", score: 77, tag: "Match" },
-                ].map((job) => (
-                  <div
-                    key={job.role}
-                    className="flex items-center justify-between rounded-xl border border-lp-border px-4 py-3"
-                  >
-                    <div>
-                      <p className="font-ui text-sm font-medium text-lp-ink">{job.role}</p>
-                      <p className="font-ui text-xs text-lp-muted">{job.co}</p>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-xs font-semibold text-lp-accent">
-                        {job.score}%
-                      </span>
-                      <span className="rounded-md bg-lp-accent-soft px-2 py-0.5 font-ui text-[10px] font-medium text-lp-accent">
-                        {job.tag}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            {/* AI insight col */}
-            <div className="bg-white p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-lp-accent" aria-hidden="true" />
-                <span className="font-ui text-sm font-semibold text-lp-ink">Next actions</span>
-              </div>
-              <div className="space-y-2.5">
+            {/* Dashboard content */}
+            <div className="bg-[#0d1f20] p-5 sm:p-7">
+              {/* Stats row */}
+              <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                  "Tailor resume for Figma role",
-                  "Follow up on Notion application",
-                  "Complete portfolio section",
-                ].map((action) => (
-                  <div
-                    key={action}
-                    className="flex items-start gap-2.5 rounded-lg border border-lp-border p-3"
-                  >
-                    <span className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-2 border-lp-border" aria-hidden="true" />
-                    <p className="font-ui text-xs text-lp-body">{action}</p>
+                  { label: "Matched roles", value: "24", delta: "+6 today", up: true },
+                  { label: "Active pipeline", value: "7", delta: "3 interviewing", up: true },
+                  { label: "Response rate", value: "34%", delta: "above avg", up: true },
+                  { label: "Profile score", value: "91%", delta: "near complete", up: false },
+                ].map((s) => (
+                  <div key={s.label} className="rounded-xl border border-white/5 bg-white/[0.03] px-4 py-4">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-white/30">{s.label}</p>
+                    <p className="mt-1.5 font-ui text-2xl font-semibold text-white">{s.value}</p>
+                    <p className={`mt-0.5 font-ui text-[11px] ${s.up ? "text-emerald-400/70" : "text-lp-accent/70"}`}>{s.delta}</p>
                   </div>
                 ))}
+              </div>
+
+              {/* Two columns */}
+              <div className="grid gap-3 lg:grid-cols-[1fr_320px]">
+                {/* Job list */}
+                <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="font-ui text-[13px] font-semibold text-white/80">Top matches for you</span>
+                    <span className="rounded-md bg-lp-accent/20 px-2 py-0.5 font-mono text-[10px] text-lp-accent">AI ranked</span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { role: "Senior Product Designer", co: "Figma", loc: "Remote", score: 91, color: "text-emerald-400" },
+                      { role: "Design Systems Lead", co: "Notion", loc: "SF / Hybrid", score: 84, color: "text-emerald-400/80" },
+                      { role: "Head of Product Design", co: "Linear", loc: "Remote", score: 77, color: "text-amber-400/80" },
+                      { role: "Staff Product Designer", co: "Vercel", loc: "Remote", score: 73, color: "text-amber-400/70" },
+                    ].map((j) => (
+                      <div key={j.role} className="flex items-center justify-between rounded-lg border border-white/5 px-3.5 py-3 hover:bg-white/5">
+                        <div>
+                          <p className="font-ui text-[13px] font-medium text-white/80">{j.role}</p>
+                          <p className="font-ui text-[11px] text-white/30">{j.co} · {j.loc}</p>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <span className={`font-mono text-sm font-semibold ${j.color}`}>{j.score}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right panel */}
+                <div className="flex flex-col gap-3">
+                  <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-lp-accent" />
+                      <span className="font-ui text-[13px] font-semibold text-white/80">Next actions</span>
+                    </div>
+                    <div className="space-y-2">
+                      {["Tailor resume for Figma role", "Follow up — Notion (8d)", "Complete skills section"].map((a) => (
+                        <div key={a} className="flex items-start gap-2.5 rounded-lg border border-white/5 px-3 py-2.5">
+                          <span className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 rounded border border-white/20" />
+                          <p className="font-ui text-[12px] leading-snug text-white/50">{a}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <TrendingUp className="h-3.5 w-3.5 text-emerald-400/70" />
+                      <span className="font-ui text-[13px] font-semibold text-white/80">Pipeline</span>
+                    </div>
+                    <div className="mt-2 flex gap-1">
+                      {[
+                        { label: "Saved", w: "w-[20%]", color: "bg-white/10" },
+                        { label: "Applied", w: "w-[35%]", color: "bg-lp-accent/40" },
+                        { label: "Interview", w: "w-[30%]", color: "bg-lp-accent/70" },
+                        { label: "Offer", w: "w-[15%]", color: "bg-emerald-500/60" },
+                      ].map((b) => (
+                        <div key={b.label} className={`${b.w} h-2 rounded-full ${b.color}`} title={b.label} />
+                      ))}
+                    </div>
+                    <div className="mt-2 flex gap-3">
+                      {[{ n: "12", l: "Saved" }, { n: "7", l: "Applied" }, { n: "3", l: "Interview" }, { n: "1", l: "Offer" }].map((s) => (
+                        <div key={s.l}>
+                          <p className="font-ui text-sm font-semibold text-white/70">{s.n}</p>
+                          <p className="font-mono text-[10px] text-white/25">{s.l}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </motion.div>
-
-        {/* Feature pills below window */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-2.5"
-        >
-          {FEATURE_PILLS.map((pill) => (
-            <span
-              key={pill.label}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-ui text-[12px] font-medium ${pill.color}`}
-            >
-              {pill.label}
-            </span>
-          ))}
         </motion.div>
       </div>
     </section>
