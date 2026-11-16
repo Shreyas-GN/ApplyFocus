@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '@/lib/db';
@@ -18,6 +17,7 @@ import {
   computeJobMatch,
 } from './job-matching';
 import { buildCandidateContext, cleanJsonFence, type ClaudeMessagesClient } from './tailoring';
+import { resolveAiClient } from './ai-provider';
 import { getProfile } from './profile';
 import { recordAudit } from './audit';
 
@@ -251,17 +251,8 @@ function resolveClaudeClient(client?: ClaudeMessagesClient): {
   claude: ClaudeMessagesClient;
   model: string;
 } {
-  if (client) {
-    return { claude: client, model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022' };
-  }
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not configured. Add it to your environment.');
-  }
-  return {
-    claude: new Anthropic({ apiKey }) as unknown as ClaudeMessagesClient,
-    model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
-  };
+  const { client: resolved, model } = resolveAiClient(client);
+  return { claude: resolved, model };
 }
 
 async function generateStrategyWithAI(
