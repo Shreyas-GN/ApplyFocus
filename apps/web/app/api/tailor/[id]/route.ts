@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/server';
 import {
   deleteTailoredDocument,
   updateTailoredDocument,

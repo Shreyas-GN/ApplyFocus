@@ -1,7 +1,6 @@
 
 import { db } from '@/lib/db';
-import { resumeParsedData, resumes } from '@/lib/db/schema';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { resumeFiles, resumeParsedData, resumes } from '@/lib/db/schema';
 import { resolveAiClient } from './ai-provider';
 import {
   resumeParsedDataSchema,
@@ -120,19 +119,17 @@ export async function processResumeBackground(
       })
       .where(eq(resumes.id, resumeId));
 
-    const supabase = createAdminClient();
-    const { data: fileBlob, error: downloadError } = await supabase.storage
-      .from('resumes')
-      .download(resume.storageKey);
+    const [fileRow] = await db
+      .select({ fileData: resumeFiles.fileData })
+      .from(resumeFiles)
+      .where(eq(resumeFiles.resumeId, resumeId))
+      .limit(1);
 
-    if (downloadError || !fileBlob) {
-      throw new Error(
-        `Failed to download resume from storage: ${downloadError?.message ?? 'Unknown'}`
-      );
+    if (!fileRow) {
+      throw new Error('Resume file not found in storage.');
     }
 
-    const arrayBuffer = await fileBlob.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = fileRow.fileData;
     const extractedText = await extractTextFromBuffer(buffer, resume.mimeType);
 
     // Step 2: Parsing with Claude

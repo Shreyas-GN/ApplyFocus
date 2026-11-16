@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { forgotPasswordSchema } from "@applypilot/validators";
-import { createClient } from "@/lib/supabase/client";
+import { useStackApp } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 
 export default function ForgotPasswordPage() {
+  const app = useStackApp();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -25,10 +26,7 @@ export default function ForgotPasswordPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const supabase = createClient();
-      await supabase.auth.resetPasswordForEmail(result.data.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      await app.sendForgotPasswordEmail(result.data.email);
       setSent(true);
     } catch {
       // Same response either way — no account-existence signal leaks here.

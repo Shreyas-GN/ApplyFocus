@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { registerSchema } from "@applypilot/validators";
 import { useAuth } from "@/lib/auth-context";
+import { useStackApp } from "@stackframe/stack";
 import { ApiError } from "@/lib/api-client";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 
 export default function SignupPage() {
   const { register } = useAuth();
+  const app = useStackApp();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,15 +59,7 @@ export default function SignupPage() {
     setResending(true);
     setResendMessage(null);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: email.trim(),
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm?next=/onboarding`,
-        },
-      });
-      if (error) throw error;
+      await app.sendForgotPasswordEmail(email.trim());
       setResendMessage("Confirmation link resent. Check your inbox and spam folder.");
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Could not resend confirmation email.");

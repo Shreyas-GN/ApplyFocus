@@ -1,11 +1,9 @@
-import { type NextRequest } from 'next/server';
-import { updateSession } from './lib/supabase/middleware';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+export function middleware(_request: NextRequest) {
+  return NextResponse.next();
 }
-
-export const middleware = proxy;
 
 export const config = {
   matcher: [

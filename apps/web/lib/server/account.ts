@@ -1,7 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { auditLogs, resumes } from '@/lib/db/schema';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { auditLogs, resumes, users } from '@/lib/db/schema';
+import { stackServerApp } from '@/lib/auth/stack-server';
 import type { AuditLogDto } from '@/lib/types';
 import { listApplications } from './applications';
 import { recordAudit } from './audit';
@@ -55,33 +55,24 @@ export async function exportUserData(userId: string) {
 }
 
 export async function deleteUserAccount(userId: string): Promise<void> {
-  // 1. Collect all storage keys before deleting the user so files do not orphan
-  const userResumes = await db
-    .select({ storageKey: resumes.storageKey })
-    .from(resumes)
-    .where(eq(resumes.userId, userId));
+  // 1. Look up the Stack Auth ID for this user
+  const [appUser] = await db
+    .select({ stackAuthId: users.stackAuthId })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
 
-  const storageKeys = userResumes
-    .map((r) => r.storageKey)
-    .filter((k): k is string => Boolean(k));
-
-  const supabase = createAdminClient();
-
-  if (storageKeys.length > 0) {
-    const { error: storageError } = await supabase.storage
-      .from('resumes')
-      .remove(storageKeys);
-    if (storageError) {
-      throw new Error(
-        `Failed to delete stored resume files: ${storageError.message}`
-      );
-    }
+  if (!appUser) {
+    throw new Error('User not found.');
   }
 
-  // 2. Delete auth user via Supabase Admin API — cascades across all user tables
-  const { error: deleteUserError } = await supabase.auth.admin.deleteUser(userId);
-  if (deleteUserError) {
-    throw new Error(`Failed to delete account: ${deleteUserError.message}`);
+  // 2. Delete the Stack Auth user (this deletes the auth record)
+  const stackUser = await stackServerApp.getUser(appUser.stackAuthId);
+  if (stackUser) {
+    await stackUser.delete();
   }
+
+  // 3. Delete the local user record — cascades to all user tables and resume_files
+  await db.delete(users).where(eq(users.id, userId));
 }
 

@@ -18,7 +18,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tabs";
 import { ExtensionPairingCard } from "@/components/copilot/extension-pairing-card";
 import { useAuth } from "@/lib/auth-context";
-import { createClient } from "@/lib/supabase/client";
+import { useStackApp, useUser } from "@stackframe/stack";
 import { api, ApiError } from "@/lib/api-client";
 import { useApi } from "@/lib/use-api";
 
@@ -113,6 +113,8 @@ function SettingsContent() {
   const searchParams = useSearchParams();
   const activeTab = parseSettingsTab(searchParams.get("tab"));
   const { user, logout } = useAuth();
+  const app = useStackApp();
+  const stackUser = useUser();
 
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [resetState, setResetState] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -149,18 +151,10 @@ function SettingsContent() {
   }
 
   async function handleResendVerification() {
-    if (!user) return;
+    if (!stackUser) return;
     setResendState("sending");
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: user.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-        },
-      });
-      if (error) throw error;
+      await stackUser.sendVerificationEmail();
       setResendState("sent");
     } catch {
       setResendState("error");
@@ -171,11 +165,7 @@ function SettingsContent() {
     if (!user) return;
     setResetState("sending");
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
+      await app.sendForgotPasswordEmail(user.email);
       setResetState("sent");
     } catch {
       setResetState("error");

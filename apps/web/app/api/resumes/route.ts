@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/server';
 import { listResumes } from '@/lib/server/resumes';
 
 export async function GET() {

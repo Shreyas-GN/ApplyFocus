@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/server';
 import { db, applications } from '@/lib/db';
 
 export async function GET() {

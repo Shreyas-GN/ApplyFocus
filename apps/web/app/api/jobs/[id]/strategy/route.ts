@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/server';
 import {
   approveStrategy,
   applicationStrategyContentSchema,

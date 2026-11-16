@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { eq } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
 import { extCorsHeaders, extOptionsResponse } from '@/lib/server/ext-cors';
 import {
   getExtensionAutofillPayload,
@@ -23,11 +25,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const admin = createAdminClient();
-    const { data } = await admin.auth.admin.getUserById(auth.userId);
+    const [appUser] = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(eq(users.id, auth.userId))
+      .limit(1);
     const payload = await getExtensionAutofillPayload(
       auth.userId,
-      data.user?.email ?? null
+      appUser?.email ?? null
     );
     return NextResponse.json(payload, { headers });
   } catch (error) {

@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { eq, desc } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { resumes, resumeParsedData } from '@/lib/db/schema';
+import { resumes, resumeParsedData, resumeFiles } from '@/lib/db/schema';
 import type { ResumeDto, ResumeParsedDataDto } from '@/lib/types';
 import {
   hasAllowedResumeExtension,
@@ -10,13 +10,10 @@ import {
   resumeParsedDataSchema,
   type ResumeParsedData,
 } from '@applypilot/validators';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { sniffFileType, mimeTypeMatchesSniffedType } from './file-signature';
 import { recordAudit } from './audit';
 import { applyParsedResumeData } from './profile';
 import { processResumeBackground } from './resume-parsing';
-
-const DOWNLOAD_URL_TTL_SECONDS = 300;
 
 export interface UploadFileInput {
   filename: string;
@@ -72,18 +69,6 @@ export async function uploadResume(
   const ext = file.filename.toLowerCase().endsWith('.docx') ? 'docx' : 'pdf';
   const storageKey = `${userId}/${resumeId}.${ext}`;
 
-  const supabase = createAdminClient();
-  const { error: uploadError } = await supabase.storage
-    .from('resumes')
-    .upload(storageKey, file.buffer, {
-      contentType: file.mimeType,
-      upsert: true,
-    });
-
-  if (uploadError) {
-    throw new Error(`Failed to store resume file: ${uploadError.message}`);
-  }
-
   const existingResumes = await db
     .select({ id: resumes.id })
     .from(resumes)
@@ -91,8 +76,8 @@ export async function uploadResume(
 
   const isPrimary = existingResumes.length === 0;
 
-  try {
-    const [inserted] = await db
+  const [inserted] = await db.transaction(async (tx) => {
+    const rows = await tx
       .insert(resumes)
       .values({
         id: resumeId,
@@ -108,18 +93,21 @@ export async function uploadResume(
       })
       .returning();
 
-    if (!inserted) {
-      throw new Error('Failed to insert resume record.');
-    }
+    await tx.insert(resumeFiles).values({
+      resumeId,
+      fileData: file.buffer,
+    });
 
-    await recordAudit(userId, 'resume_uploaded', { resumeId });
+    return rows;
+  });
 
-    return toResumeDto(inserted, null);
-  } catch (dbError) {
-    // Compensation: delete file from storage if DB insert fails
-    await supabase.storage.from('resumes').remove([storageKey]);
-    throw dbError;
+  if (!inserted) {
+    throw new Error('Failed to insert resume record.');
   }
+
+  await recordAudit(userId, 'resume_uploaded', { resumeId });
+
+  return toResumeDto(inserted, null);
 }
 
 export async function deleteResume(
@@ -128,10 +116,8 @@ export async function deleteResume(
 ): Promise<void> {
   const resume = await getResume(userId, resumeId);
 
+  // resume_files row deleted by CASCADE
   await db.delete(resumes).where(eq(resumes.id, resumeId));
-
-  const supabase = createAdminClient();
-  await supabase.storage.from('resumes').remove([resume.id]);
 
   if (resume.isPrimary) {
     const [nextPrimary] = await db
@@ -186,16 +172,7 @@ export async function getDownloadUrl(
     throw new Error('Resume not found.');
   }
 
-  const supabase = createAdminClient();
-  const { data, error } = await supabase.storage
-    .from('resumes')
-    .createSignedUrl(resume.storageKey, DOWNLOAD_URL_TTL_SECONDS);
-
-  if (error || !data) {
-    throw new Error(`Failed to generate download URL: ${error?.message}`);
-  }
-
-  return { url: data.signedUrl, expiresInSeconds: DOWNLOAD_URL_TTL_SECONDS };
+  return { url: `/api/resumes/${resumeId}/file`, expiresInSeconds: 0 };
 }
 
 export async function getParsedData(

@@ -1,80 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Suspense, useState, type FormEvent } from "react";
-import { passwordSchema } from "@applypilot/validators";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/ui/field";
-import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 
-function ResetPasswordForm() {
+function ResetPasswordRedirect() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  const code = searchParams.get("code");
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    const result = passwordSchema.safeParse(password);
-    if (!result.success) {
-      setError(result.error.issues[0]?.message ?? "Invalid password.");
-      return;
+  useEffect(() => {
+    // Stack Auth handles password reset via /handler/[...stack]
+    if (code) {
+      router.replace(`/handler/password-reset?code=${code}`);
+    } else {
+      router.replace("/forgot-password");
     }
-    setError(null);
-    setSubmitting(true);
-    try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: result.data,
-      });
-      if (updateError) {
-        throw updateError;
-      }
-      setDone(true);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "This link may have expired. Request a new one."
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  }, [code, router]);
 
-  if (done) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Alert tone="success">
-          Your password has been reset. You can log in now.
-        </Alert>
-        <Button onClick={() => router.push("/login")}>Go to login</Button>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {error && <Alert tone="error">{error}</Alert>}
-      <TextField
-        label="New password"
-        type="password"
-        name="password"
-        autoComplete="new-password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        hint="At least 10 characters."
-        required
-      />
-      <Button type="submit" loading={submitting} className="w-full">
-        Reset password
-      </Button>
-    </form>
-  );
+  return <p className="text-sm text-ui-muted">Redirecting…</p>;
 }
 
 export default function ResetPasswordPage() {
@@ -92,7 +38,7 @@ export default function ResetPasswordPage() {
             Choose a new password
           </h1>
           <Suspense fallback={null}>
-            <ResetPasswordForm />
+            <ResetPasswordRedirect />
           </Suspense>
         </Card>
       </div>

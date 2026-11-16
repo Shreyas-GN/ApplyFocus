@@ -1,18 +1,15 @@
 "use client";
 
 import type { AuthUserDto } from "@/lib/types";
-import type { User } from "@supabase/supabase-js";
 import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
+import { useStackApp, useUser } from "@stackframe/stack";
 import { ApiError } from "./api-client";
-import { createClient } from "./supabase/client";
 
 export interface RegisterResult {
   requiresEmailConfirmation: boolean;
@@ -29,124 +26,80 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function toAuthUserDto(user: User): AuthUserDto {
-  return {
-    id: user.id,
-    email: user.email ?? "",
-    emailVerified: Boolean(user.email_confirmed_at),
-    createdAt: user.created_at,
-  };
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUserDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = useMemo(() => createClient(), []);
+  const stackUser = useUser({ or: "return-null" });
+  const app = useStackApp();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function initUser() {
-      try {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        if (!cancelled && currentUser) {
-          setUser(toAuthUserDto(currentUser));
-        }
-      } catch {
-        // No valid session
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    void initUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(toAuthUserDto(session.user));
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
+  const user: AuthUserDto | null = useMemo(() => {
+    if (!stackUser) return null;
+    return {
+      id: stackUser.id,
+      email: stackUser.primaryEmail ?? "",
+      emailVerified: stackUser.primaryEmailVerified ?? false,
+      createdAt: stackUser.signedUpAt.toISOString(),
     };
-  }, [supabase]);
+  }, [stackUser]);
+
+  const loading = stackUser === undefined;
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const result = await app.signInWithCredential({
         email,
         password,
+        noRedirect: true,
       });
-      if (error) {
-        throw new ApiError(error.status ?? 401, error.message);
-      }
-      if (data.user) {
-        setUser(toAuthUserDto(data.user));
+      if (result.status === "error") {
+        const err = result.error;
+        const message =
+          err && typeof err === "object" && "message" in err
+            ? String((err as { message: string }).message)
+            : "Invalid login credentials.";
+        throw new ApiError(401, message);
       }
     },
-    [supabase]
+    [app]
   );
 
   const register = useCallback(
     async (email: string, password: string): Promise<RegisterResult> => {
-      const { data, error } = await supabase.auth.signUp({
+      const result = await app.signUpWithCredential({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm?next=/onboarding`,
-        },
+        noRedirect: true,
+        verificationCallbackUrl: `${window.location.origin}/auth/confirm?next=/onboarding`,
       });
-      if (error) {
-        throw new ApiError(error.status ?? 400, error.message);
+      if (result.status === "error") {
+        const err = result.error;
+        if (
+          err &&
+          typeof err === "object" &&
+          "errorCode" in err &&
+          (err as { errorCode: string }).errorCode === "USER_WITH_EMAIL_ALREADY_EXISTS"
+        ) {
+          throw new ApiError(
+            409,
+            "An account with this email already exists. Try logging in."
+          );
+        }
+        const message =
+          err && typeof err === "object" && "message" in err
+            ? String((err as { message: string }).message)
+            : "Registration failed. Please try again.";
+        throw new ApiError(400, message);
       }
-
-      // Supabase returns an empty identities array when email confirmation is on
-      // and an account already exists for the given email.
-      if (
-        data.user &&
-        Array.isArray(data.user.identities) &&
-        data.user.identities.length === 0
-      ) {
-        throw new ApiError(
-          409,
-          "An account with this email already exists. Try logging in."
-        );
-      }
-
-      if (data.session && data.user) {
-        setUser(toAuthUserDto(data.user));
-        return { requiresEmailConfirmation: false };
-      }
-
       return { requiresEmailConfirmation: true };
     },
-    [supabase]
+    [app]
   );
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  }, [supabase]);
+    await stackUser?.signOut();
+  }, [stackUser]);
 
   const refreshUser = useCallback(async () => {
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
-    if (currentUser) {
-      setUser(toAuthUserDto(currentUser));
-    } else {
-      setUser(null);
-    }
-  }, [supabase]);
+    // useUser() is reactive and updates automatically; no-op needed
+  }, []);
 
   return (
     <AuthContext.Provider

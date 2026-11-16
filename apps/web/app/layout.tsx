@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { DM_Serif_Display, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "@/lib/auth/stack-server";
 import { Toaster } from "sonner";
 
 const inter = Inter({
@@ -68,7 +70,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${dmSerifDisplay.variable} ${ibmPlexMono.variable}`}>
       <body className="antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            <AuthProvider>{children}</AuthProvider>
+          </StackTheme>
+        </StackProvider>
         <Toaster position="bottom-right" theme="light" />
       </body>
     </html>

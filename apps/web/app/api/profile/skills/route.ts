@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/server';
 import { replaceSkills } from '@/lib/server/profile';
 import { replaceSkillsSchema } from '@applypilot/validators';
 

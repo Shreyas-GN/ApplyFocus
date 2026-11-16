@@ -7,7 +7,6 @@ import {
   extensionSessions,
   resumes,
 } from '@/lib/db/schema';
-import { createAdminClient } from '@/lib/supabase/admin';
 import type {
   ApplicationDto,
   ApplicationStatus,
@@ -179,18 +178,8 @@ export async function getExtensionAutofillPayload(
     .where(and(eq(resumes.userId, userId), eq(resumes.isPrimary, true)))
     .limit(1);
 
-  let downloadUrl: string | null = null;
-  if (primary?.storageKey) {
-    try {
-      const supabase = createAdminClient();
-      const { data } = await supabase.storage
-        .from('resumes')
-        .createSignedUrl(primary.storageKey, 300);
-      downloadUrl = data?.signedUrl ?? null;
-    } catch {
-      downloadUrl = null;
-    }
-  }
+  // Resume download served from DB via authenticated API route
+  const downloadUrl: string | null = primary ? `/api/resumes/${primary.id}/file` : null;
 
   return {
     profile: {

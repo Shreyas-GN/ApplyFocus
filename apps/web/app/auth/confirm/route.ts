@@ -1,8 +1,7 @@
-import { type EmailOtpType } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { profiles } from '@/lib/db/schema';
-import { createClient } from '../../../lib/supabase/server';
+import { stackServerApp } from '@/lib/auth/stack-server';
 
 function sanitizeNextPath(raw: string | null): string {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//')) {
@@ -22,27 +21,12 @@ async function ensureProfileRow(userId: string) {
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get('code');
-  const tokenHash = searchParams.get('token_hash');
-  const type = searchParams.get('type') as EmailOtpType | null;
   const next = sanitizeNextPath(searchParams.get('next'));
 
-  const supabase = await createClient();
-
   if (code) {
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error && data.user) {
-      await ensureProfileRow(data.user.id);
-      return NextResponse.redirect(new URL(next, request.nextUrl.origin));
-    }
-  }
-
-  if (tokenHash && type) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      type,
-      token_hash: tokenHash,
-    });
-    if (!error && data.user) {
-      await ensureProfileRow(data.user.id);
+    const user = await stackServerApp.getUser({ or: 'return-null' });
+    if (user) {
+      await ensureProfileRow(user.id);
       return NextResponse.redirect(new URL(next, request.nextUrl.origin));
     }
   }
