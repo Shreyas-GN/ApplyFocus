@@ -34,21 +34,23 @@
   --font-ui: var(--font-instrument-sans), "DM Sans", system-ui, sans-serif;
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 
-  /* Landing page design system tokens — ApplyPilot Executive Modernist */
+  /* Landing page design system tokens */
   --color-lp-ink: #181716;
   --color-lp-body: #4a4744;
   --color-lp-muted: #827e78;
-  --color-lp-bg: #f8f7f4;
-  --color-lp-surface: #efece6;
+  --color-lp-bg: #ffffff;
+  --color-lp-surface: #f4f6f5;
   --color-lp-surface-subtle: #ffffff;
-  --color-lp-border: #e2dfd7;
-  --color-lp-accent: #5e48b8;
-  --color-lp-accent-hover: #4c399b;
-  --color-lp-accent-soft: #f0ecfc;
-  --color-lp-wine: #3d1a24;
-  --color-lp-wine-hover: #2d1219;
-  --color-lp-lagoon: #162a2b;
-  --color-lp-sand: #f3f1ec;
+  --color-lp-border: #e4e8e6;
+  --color-lp-accent: #155e63;
+  --color-lp-accent-hover: #0f474b;
+  --color-lp-accent-soft: #e8f4f4;
+  --color-lp-wine: #155e63;
+  --color-lp-wine-hover: #0f474b;
+  --color-lp-copper: #b86f4b;
+  --color-lp-copper-soft: #f5ede6;
+  --color-lp-lagoon: #0c2a2b;
+  --color-lp-sand: #f8f7f4;
   --color-lp-emerald: #0d825c;
 
   /* Authenticated App Design System — "Warm Editorial Workspace" */

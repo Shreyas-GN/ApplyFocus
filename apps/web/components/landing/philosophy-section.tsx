@@ -20,7 +20,7 @@ export function PhilosophySection() {
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
         <div className="rounded-[32px] border border-white/10 bg-[#141413] p-8 text-white shadow-[0_20px_60px_rgba(20,20,19,0.18)] sm:p-14">
           <div className="max-w-[740px]">
-            <p className="inline-flex rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-medium tracking-wider text-[#d8cefe]">
+            <p className="inline-flex rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-medium tracking-wider text-[#9adede]">
               THE APPLYPILOT PHILOSOPHY
             </p>
             <h2 className="mt-4 font-ui text-[32px] font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-[42px]">
@@ -52,14 +52,14 @@ export function PhilosophySection() {
             </div>
 
             {/* ApplyPilot Approach */}
-            <div className="rounded-2xl border border-[#7c66dc]/40 bg-white/[0.08] p-6 sm:p-8">
-              <p className="font-mono text-xs uppercase tracking-wider text-[#d8cefe]">
+            <div className="rounded-2xl border border-[#155e63]/60 bg-white/[0.08] p-6 sm:p-8">
+              <p className="font-mono text-xs uppercase tracking-wider text-[#9adede]">
                 The ApplyPilot approach
               </p>
               <ul className="mt-5 space-y-3.5">
                 {APPLYPILOT_WAY.map((item) => (
                   <li key={item} className="flex items-center gap-3 font-ui text-[15px] font-medium text-white">
-                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#5e48b8] text-white">
+                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#155e63] text-white">
                       <Check className="h-3.5 w-3.5" aria-hidden="true" />
                     </span>
                     <span>{item}</span>

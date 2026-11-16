@@ -4,10 +4,10 @@ const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string
   {
     title: "Product",
     links: [
-      { href: "#opportunities", label: "Opportunities" },
+      { href: "#how-it-works", label: "How it works" },
       { href: "#adaptive-resume", label: "Resume Intelligence" },
       { href: "#tracking", label: "Application Tracking" },
-      { href: "#how-it-works", label: "How it works" },
+      { href: "#opportunities", label: "Opportunities" },
     ],
   },
   {
@@ -31,12 +31,12 @@ const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string
 
 export function Footer() {
   return (
-    <footer className="border-t border-lp-border bg-lp-bg text-lp-ink">
+    <footer className="border-t border-lp-border bg-lp-bg">
       <div className="mx-auto max-w-[1200px] px-5 py-14 sm:px-8 sm:py-16">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-5">
           <div className="col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lp-wine font-ui text-xs font-semibold tracking-tight text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lp-accent font-ui text-xs font-semibold tracking-tight text-white">
                 AP
               </span>
               <span className="font-ui text-[17px] font-semibold tracking-tight text-lp-ink">
@@ -58,7 +58,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="font-ui text-sm text-lp-body transition-colors duration-150 hover:text-lp-ink"
+                      className="font-ui text-sm text-lp-body transition-colors hover:text-lp-ink"
                     >
                       {link.label}
                     </Link>
