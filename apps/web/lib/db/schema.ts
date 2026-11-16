@@ -569,7 +569,52 @@ export const extensionSessions = pgTable(
   ]
 );
 
-// 15. Job States (Saved bookmarks & dismissed jobs per user)
+// 15a. Candidate Capability Processing Trigger enum
+export const capabilityProcessingTriggerEnum = pgEnum(
+  'capability_processing_trigger',
+  ['resume_confirmed', 'profile_updated', 'manual']
+);
+
+// 15b. Candidate Capability Profiles (versioned evidence-backed capability assessments)
+export const candidateCapabilityProfiles = pgTable(
+  'candidate_capability_profiles',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    assessmentVersion: text('assessment_version').notNull(),
+    processingTrigger: capabilityProcessingTriggerEnum('processing_trigger').notNull(),
+    sourceResumeId: uuid('source_resume_id').references(() => resumes.id, {
+      onDelete: 'set null',
+    }),
+    capabilityCount: integer('capability_count').notNull().default(0),
+    directlyDemonstratedCount: integer('directly_demonstrated_count').notNull().default(0),
+    evidenceCoveragePercent: numeric('evidence_coverage_percent', {
+      precision: 5,
+      scale: 2,
+    }),
+    gapCount: integer('gap_count').notNull().default(0),
+    contradictionCount: integer('contradiction_count').notNull().default(0),
+    // Full profile stored as JSONB for reproducibility; never query sub-fields
+    capabilities: jsonb('capabilities').notNull(),
+    processingDurationMs: integer('processing_duration_ms'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('cap_profiles_user_id_created_at_idx').on(table.userId, table.createdAt),
+    pgPolicy('cap_profiles_owner_policy', {
+      for: 'all',
+      to: authenticatedRole,
+      using: sql`user_id = ${authUid}`,
+      withCheck: sql`user_id = ${authUid}`,
+    }),
+  ]
+);
+
+// 16. Job States (Saved bookmarks & dismissed jobs per user)
 export const jobStates = pgTable(
   'job_states',
   {

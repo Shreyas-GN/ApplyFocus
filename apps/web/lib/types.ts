@@ -428,3 +428,113 @@ export interface AuditLogDto {
   createdAt: string;
 }
 
+// ─── Candidate Understanding Engine types ────────────────────────────────────
+
+export type CapabilityProcessingTrigger =
+  | 'resume_confirmed'
+  | 'profile_updated'
+  | 'manual';
+
+export type CapabilityEvidenceType =
+  | 'work_technology'
+  | 'work_achievement'
+  | 'project_technology'
+  | 'skill_self_report'
+  | 'resume_extraction';
+
+export type CapabilityEvidenceClass =
+  | 'directly_demonstrated'
+  | 'achievement_backed'
+  | 'self_reported'
+  | 'ai_extracted';
+
+export type CapabilityGapType =
+  | 'work_technology_undeclared'
+  | 'project_technology_undeclared';
+
+export type ContradictionType =
+  | 'ai_low_confidence_no_corroboration'
+  | 'experience_duration_exceeds_career';
+
+export type MissingInfoType =
+  | 'work_experience_no_technologies'
+  | 'project_no_technologies'
+  | 'skill_no_proficiency_or_evidence';
+
+export interface CapabilityEvidenceDto {
+  type: CapabilityEvidenceType;
+  sourceId: string;
+  sourceLabel: string;
+  excerpt: string | null;
+}
+
+export interface CandidateCapabilityDto {
+  name: string;
+  normalizedName: string;
+  category: string | null;
+  evidenceClass: CapabilityEvidenceClass;
+  /** 0-1 deterministic score. Never an ML probability estimate. */
+  evidenceStrength: number;
+  evidence: CapabilityEvidenceDto[];
+  proficiency: string | null;
+  yearsOfExperience: number | null;
+  sourceSkillId: string | null;
+  confirmedByUser: boolean;
+}
+
+export interface CapabilityGapDto {
+  type: CapabilityGapType;
+  description: string;
+  sourceId: string;
+  sourceLabel: string;
+  technologyName: string;
+}
+
+export interface CapabilityContradictionDto {
+  type: ContradictionType;
+  description: string;
+  capabilityName: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+export interface MissingInformationDto {
+  type: MissingInfoType;
+  description: string;
+  sourceId: string;
+  sourceLabel: string;
+  affectedCount: number;
+}
+
+export interface CandidateCapabilityProfileDto {
+  assessmentVersion: string;
+  computedAt: string;
+  processingTrigger: CapabilityProcessingTrigger;
+  sourceResumeId: string | null;
+  totalCapabilities: number;
+  directlyDemonstratedCount: number;
+  achievementBackedCount: number;
+  selfReportedOnlyCount: number;
+  aiExtractedUnverifiedCount: number;
+  /** Percentage of capabilities with direct work/project evidence (0-100). */
+  evidenceCoveragePercent: number;
+  capabilities: CandidateCapabilityDto[];
+  gaps: CapabilityGapDto[];
+  contradictions: CapabilityContradictionDto[];
+  missingInformation: MissingInformationDto[];
+}
+
+export interface CandidateCapabilityProfileRecord {
+  id: string;
+  assessmentVersion: string;
+  processingTrigger: CapabilityProcessingTrigger;
+  sourceResumeId: string | null;
+  capabilityCount: number;
+  directlyDemonstratedCount: number;
+  evidenceCoveragePercent: number | null;
+  gapCount: number;
+  contradictionCount: number;
+  processingDurationMs: number | null;
+  createdAt: string;
+  profile: CandidateCapabilityProfileDto;
+}
+
