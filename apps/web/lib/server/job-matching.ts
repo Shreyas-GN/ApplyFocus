@@ -1,7 +1,11 @@
 import type {
+  CapabilityStrength,
   JobIntelligenceBreakdown,
   JobMatchBreakdown,
+  OpportunityConstraintCheck,
+  OpportunityEvaluation,
   ProfileDto,
+  RequirementEvaluation,
   TransferableSkillMatch,
 } from '@/lib/types';
 
@@ -462,6 +466,347 @@ export function computeJobMatch(
     reasons,
     isAdjacentRole,
     adjacencyReason,
+  };
+}
+
+function deterministicHash(input: string): string {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) {
+    h = Math.imul(31, h) + input.charCodeAt(i);
+  }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+export function computeOpportunityEvaluation(
+  profile: ProfileDto | null,
+  job: {
+    title: string;
+    company: string;
+    location: string | null;
+    workMode: string | null;
+    employmentType: string | null;
+    description: string;
+    skills: string[];
+  },
+  match: JobMatchBreakdown,
+  intelligence: JobIntelligenceBreakdown
+): OpportunityEvaluation {
+  if (!profile) {
+    return {
+      eligibilityAssessment:
+        'Sign in and complete your profile to unlock evidence-based opportunity evaluation.',
+      competitivenessAssessment:
+        'Complete your profile to get a personalized competitiveness read.',
+      recommendedAction: 'improve',
+      actionRationale: 'Profile information is needed to evaluate this opportunity.',
+      requirementEvaluations: [],
+      strengths: [],
+      missingEvidence: intelligence.requiredSkills.slice(0, 5),
+      transferableCapabilities: [],
+      constraintChecks: [],
+      hardConstraintBlocked: false,
+      confidenceLevel: 'low',
+      uncertaintyReasons: ['No profile data available.'],
+      evaluationVersion: 'v1:no-profile',
+    };
+  }
+
+  const confirmedSkills = profile.skills.filter((s) => s.source !== 'ai');
+  const userSkillMap = new Map(confirmedSkills.map((s) => [s.name.toLowerCase(), s]));
+
+  const transferableByTarget = new Map<string, TransferableSkillMatch>();
+  for (const t of match.transferableSkills) {
+    transferableByTarget.set(t.targetSkill.toLowerCase(), t);
+  }
+
+  // Build per-requirement evaluations
+  const requirementEvaluations: RequirementEvaluation[] = [];
+  const allRequirements = [
+    ...intelligence.requiredSkills.map((r) => ({ req: r, kind: 'required' as const })),
+    ...intelligence.preferredSkills.map((r) => ({ req: r, kind: 'preferred' as const })),
+  ];
+
+  for (const { req, kind } of allRequirements) {
+    const reqLower = req.toLowerCase();
+    const skillEntry = userSkillMap.get(reqLower);
+
+    if (skillEntry) {
+      const yoe = skillEntry.yearsOfExperience ? Number(skillEntry.yearsOfExperience) : 0;
+      const hasEvidence = Boolean(
+        skillEntry.evidence?.trim() || yoe > 0 || skillEntry.proficiency?.trim()
+      );
+      const strength: CapabilityStrength = hasEvidence ? 'demonstrated' : 'confirmed';
+      let evidence: string | null = null;
+      if (skillEntry.evidence?.trim()) {
+        evidence = skillEntry.evidence.trim();
+      } else if (yoe > 0) {
+        evidence = `${yoe} year${yoe === 1 ? '' : 's'} of experience`;
+      } else if (skillEntry.proficiency?.trim()) {
+        evidence = `${skillEntry.proficiency} proficiency`;
+      }
+      requirementEvaluations.push({
+        requirement: req,
+        kind,
+        strength,
+        evidence,
+        candidateSkill: skillEntry.name,
+        transferableFrom: null,
+        note: hasEvidence
+          ? 'Confirmed in your profile with supporting evidence.'
+          : 'Listed in your profile; adding evidence would strengthen this claim.',
+      });
+      continue;
+    }
+
+    // Check experience technologies (direct tech usage at a job)
+    const confirmedExp = profile.experience.filter((e) => e.source !== 'ai');
+    const expTechMatch = confirmedExp.find((e) =>
+      (e.technologies ?? []).some((t) => t.toLowerCase() === reqLower)
+    );
+    if (expTechMatch) {
+      requirementEvaluations.push({
+        requirement: req,
+        kind,
+        strength: 'inferred',
+        evidence: `Used at ${expTechMatch.company}`,
+        candidateSkill: null,
+        transferableFrom: null,
+        note: 'Found in your work experience technologies. Consider adding it as a formal skill.',
+      });
+      continue;
+    }
+
+    // Check transferable skills from match
+    const transferable = transferableByTarget.get(reqLower);
+    if (transferable) {
+      requirementEvaluations.push({
+        requirement: req,
+        kind,
+        strength: 'inferred',
+        evidence: null,
+        candidateSkill: null,
+        transferableFrom: transferable.candidateSkill,
+        note: transferable.reason,
+      });
+      continue;
+    }
+
+    // Check experience descriptions and project technologies
+    const inExpDesc = confirmedExp.some((e) => {
+      const hay = `${e.description ?? ''} ${(e.achievements ?? []).join(' ')}`.toLowerCase();
+      return hay.includes(reqLower);
+    });
+    const confirmedProjects = profile.projects.filter((p) => p.source !== 'ai');
+    const inProjectTech = confirmedProjects.some((p) =>
+      (p.technologies ?? []).some((t) => t.toLowerCase() === reqLower)
+    );
+    const inProjectDesc = confirmedProjects.some((p) =>
+      (p.description ?? '').toLowerCase().includes(reqLower)
+    );
+
+    if (inExpDesc || inProjectTech || inProjectDesc) {
+      requirementEvaluations.push({
+        requirement: req,
+        kind,
+        strength: 'inferred',
+        evidence: inProjectTech || inProjectDesc ? 'Referenced in project work' : 'Referenced in work experience',
+        candidateSkill: null,
+        transferableFrom: null,
+        note: 'Mentioned in your experience or projects but not listed as a formal skill.',
+      });
+      continue;
+    }
+
+    requirementEvaluations.push({
+      requirement: req,
+      kind,
+      strength: 'unsupported',
+      evidence: null,
+      candidateSkill: null,
+      transferableFrom: null,
+      note: 'Not documented in your profile. If you have this capability, consider adding it.',
+    });
+  }
+
+  // Constraint checks
+  const constraintChecks: OpportunityConstraintCheck[] = [];
+  let hardConstraintBlocked = false;
+
+  const jobCompanyLower = job.company.trim().toLowerCase();
+  const isExcludedCompany = (profile.excludedCompanies ?? []).some((c) => {
+    const token = c.trim().toLowerCase();
+    return token.length > 0 && (jobCompanyLower === token || jobCompanyLower.includes(token));
+  });
+  if (isExcludedCompany) {
+    hardConstraintBlocked = true;
+    constraintChecks.push({
+      kind: 'excluded_company',
+      satisfied: false,
+      detail: `${job.company} is in your excluded companies list.`,
+    });
+  }
+
+  const jobTitleLower = job.title.toLowerCase();
+  const isExcludedRole = (profile.excludedRoles ?? []).some((r) => {
+    const token = r.trim().toLowerCase();
+    return token.length > 0 && jobTitleLower.includes(token);
+  });
+  if (isExcludedRole) {
+    hardConstraintBlocked = true;
+    constraintChecks.push({
+      kind: 'excluded_role',
+      satisfied: false,
+      detail: 'This role title matches an excluded role in your Career Interests.',
+    });
+  }
+
+  if (profile.workMode && job.workMode) {
+    const workModeMatch = profile.workMode === job.workMode;
+    constraintChecks.push({
+      kind: 'work_mode',
+      satisfied: workModeMatch,
+      detail: workModeMatch
+        ? `Work mode matches your preference (${profile.workMode}).`
+        : `Role is ${job.workMode}; you prefer ${profile.workMode}.`,
+    });
+  }
+
+  if (profile.preferredLocations.length > 0 && job.location && job.workMode !== 'remote') {
+    const locationMatch = profile.preferredLocations.some((loc) =>
+      job.location!.toLowerCase().includes(loc.toLowerCase())
+    );
+    if (!locationMatch) {
+      constraintChecks.push({
+        kind: 'location',
+        satisfied: false,
+        detail: `Role is in ${job.location}, outside your preferred locations.`,
+      });
+    }
+  }
+
+  if (profile.employmentTypes.length > 0 && job.employmentType) {
+    const normalize = (t: string) => t.toLowerCase().replace(/[_\s]/g, '');
+    const typeMatch = profile.employmentTypes.some(
+      (pt) => normalize(pt) === normalize(job.employmentType!)
+    );
+    if (!typeMatch) {
+      constraintChecks.push({
+        kind: 'employment_type',
+        satisfied: false,
+        detail: `Role is ${job.employmentType.replace(/_/g, ' ')}; you prefer ${profile.employmentTypes[0]?.replace(/_/g, ' ') ?? 'other'}.`,
+      });
+    }
+  }
+
+  // Coverage metrics
+  const coverable: CapabilityStrength[] = ['demonstrated', 'confirmed', 'inferred'];
+  const requiredEvals = requirementEvaluations.filter((r) => r.kind === 'required');
+  const coveredRequired = requiredEvals.filter((r) => coverable.includes(r.strength)).length;
+  const totalRequired = requiredEvals.length;
+  const coverageRatio = totalRequired > 0 ? coveredRequired / totalRequired : 1;
+
+  const missingEvidence = requiredEvals
+    .filter((r) => r.strength === 'unsupported')
+    .map((r) => r.requirement);
+
+  // Confidence assessment
+  const uncertaintyReasons: string[] = [];
+  let confidenceLevel: 'high' | 'medium' | 'low' = 'high';
+
+  if (confirmedSkills.length === 0) {
+    uncertaintyReasons.push('No confirmed skills — only AI-extracted entries pending your verification.');
+    confidenceLevel = 'low';
+  } else if (confirmedSkills.length < 3) {
+    uncertaintyReasons.push('Few confirmed skills — add more for a sharper evaluation.');
+    if (confidenceLevel === 'high') confidenceLevel = 'medium';
+  }
+
+  if (profile.experience.filter((e) => e.source !== 'ai').length === 0) {
+    uncertaintyReasons.push('No confirmed work experience — seniority and depth assessment is limited.');
+    if (confidenceLevel === 'high') confidenceLevel = 'medium';
+  }
+
+  if (totalRequired === 0) {
+    uncertaintyReasons.push('No specific skill requirements identified in this posting.');
+    if (confidenceLevel === 'high') confidenceLevel = 'medium';
+  }
+
+  if ((profile.completionPercent ?? 0) < 40) {
+    uncertaintyReasons.push('Profile is incomplete — evaluation may not reflect your full capabilities.');
+    if (confidenceLevel !== 'low') confidenceLevel = 'medium';
+  }
+
+  // Recommended action
+  let recommendedAction: 'pursue' | 'improve' | 'deprioritize';
+  let actionRationale: string;
+  let eligibilityAssessment: string;
+  let competitivenessAssessment: string;
+
+  if (hardConstraintBlocked) {
+    recommendedAction = 'deprioritize';
+    const blockedDetail = constraintChecks
+      .filter((c) => !c.satisfied && (c.kind === 'excluded_company' || c.kind === 'excluded_role'))
+      .map((c) => c.detail)
+      .join(' ');
+    actionRationale = blockedDetail || 'A hard career preference constraint is violated.';
+    eligibilityAssessment = `This opportunity is excluded by your preferences. ${actionRationale}`;
+    competitivenessAssessment = 'Evaluation skipped — this role conflicts with your stated exclusions.';
+  } else if (coverageRatio >= 0.6) {
+    recommendedAction = 'pursue';
+    actionRationale = `You can account for ${coveredRequired} of ${totalRequired} required skill${totalRequired !== 1 ? 's' : ''}${
+      match.transferableSkills.length > 0 ? ', including transferable capabilities' : ''
+    }. Your background aligns with the core requirements.`;
+    eligibilityAssessment = `You meet the essential requirements with ${Math.round(coverageRatio * 100)}% documented required skill coverage.`;
+    competitivenessAssessment =
+      match.experienceScore >= 60
+        ? `Strong alignment across required skills and seniority level.${
+            missingEvidence.length > 0
+              ? ` Documenting ${missingEvidence.slice(0, 2).join(' and ')} would sharpen your profile.`
+              : ' Your profile supports a confident application.'
+          }`
+        : 'Skill coverage is solid but the seniority expectation is mixed — frame your experience level clearly in the application.';
+  } else if (coverageRatio >= 0.25) {
+    recommendedAction = 'improve';
+    actionRationale = `You cover ${coveredRequired} of ${totalRequired} required skill${totalRequired !== 1 ? 's' : ''}. Adding evidence for undocumented capabilities would improve your position.`;
+    eligibilityAssessment = `Partial match — ${Math.round(coverageRatio * 100)}% of required skills are documented in your profile.`;
+    competitivenessAssessment =
+      missingEvidence.length > 0
+        ? `Moderate competitiveness. Requirements without documentation: ${missingEvidence.slice(0, 3).join(', ')}.`
+        : 'Moderate competitiveness. Consider enriching your profile evidence for stronger positioning.';
+  } else {
+    recommendedAction = 'deprioritize';
+    actionRationale = `Only ${coveredRequired} of ${totalRequired} required skill${totalRequired !== 1 ? 's' : ''} are accounted for in your profile. This role requires significant upskilling or a different background.`;
+    eligibilityAssessment = `Low documented skill alignment — your profile covers ${Math.round(coverageRatio * 100)}% of listed requirements.`;
+    competitivenessAssessment =
+      missingEvidence.length > 0
+        ? `Limited competitiveness based on current profile. Key undocumented requirements: ${missingEvidence.slice(0, 4).join(', ')}.`
+        : 'Limited competitiveness based on current profile.';
+  }
+
+  // Deterministic version hash based on key inputs
+  const versionInput = [
+    'v1',
+    confirmedSkills.map((s) => s.name.toLowerCase()).sort().join(','),
+    intelligence.requiredSkills.slice().sort().join(','),
+    profile.workMode ?? '',
+    (profile.excludedCompanies ?? []).slice().sort().join(','),
+  ].join('|');
+  const evaluationVersion = `v1:${deterministicHash(versionInput)}`;
+
+  return {
+    eligibilityAssessment,
+    competitivenessAssessment,
+    recommendedAction,
+    actionRationale,
+    requirementEvaluations,
+    strengths: match.strengths,
+    missingEvidence,
+    transferableCapabilities: match.transferableSkills,
+    constraintChecks,
+    hardConstraintBlocked,
+    confidenceLevel,
+    uncertaintyReasons,
+    evaluationVersion,
   };
 }
 

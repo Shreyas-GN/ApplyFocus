@@ -4,16 +4,21 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Bookmark,
   Briefcase,
   CheckCircle2,
+  CircleDot,
   Compass,
   ExternalLink,
   EyeOff,
   FileText,
+  Minus,
   Sparkles,
+  TrendingUp,
+  XCircle,
 } from "lucide-react";
 import type { JobDetailDto } from "@/lib/types";
 import { ProtectedRoute } from "@/components/layout/protected-route";
@@ -407,6 +412,8 @@ function JobDetailContent() {
             </div>
           </Card>
 
+          <OpportunityEvaluationCard job={job} />
+
           <Card>
             <CardHeader
               title="Transferable Skills"
@@ -559,6 +566,205 @@ function JobDetailContent() {
         </div>
       </div>
     </div>
+  );
+}
+
+function actionStyle(action: "pursue" | "improve" | "deprioritize") {
+  if (action === "pursue")
+    return {
+      badge: "bg-emerald-100 text-emerald-800",
+      icon: <TrendingUp className="h-3.5 w-3.5" />,
+      label: "Pursue",
+    };
+  if (action === "improve")
+    return {
+      badge: "bg-amber-100 text-amber-800",
+      icon: <Sparkles className="h-3.5 w-3.5" />,
+      label: "Improve Profile",
+    };
+  return {
+    badge: "bg-slate-100 text-slate-600",
+    icon: <Minus className="h-3.5 w-3.5" />,
+    label: "Deprioritize",
+  };
+}
+
+function strengthIcon(strength: "demonstrated" | "confirmed" | "inferred" | "unsupported") {
+  if (strength === "demonstrated")
+    return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />;
+  if (strength === "confirmed")
+    return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />;
+  if (strength === "inferred")
+    return <CircleDot className="h-3.5 w-3.5 shrink-0 text-sky-500" />;
+  return <Minus className="h-3.5 w-3.5 shrink-0 text-slate-400" />;
+}
+
+function strengthLabel(strength: "demonstrated" | "confirmed" | "inferred" | "unsupported") {
+  if (strength === "demonstrated") return "demonstrated";
+  if (strength === "confirmed") return "confirmed";
+  if (strength === "inferred") return "inferred";
+  return "not documented";
+}
+
+function OpportunityEvaluationCard({ job }: { job: JobDetailDto }) {
+  const { evaluation } = job;
+  const action = actionStyle(evaluation.recommendedAction);
+  const requiredEvals = evaluation.requirementEvaluations.filter((r) => r.kind === "required");
+  const preferredEvals = evaluation.requirementEvaluations.filter((r) => r.kind === "preferred");
+  const constraintFailures = evaluation.constraintChecks.filter((c) => !c.satisfied);
+
+  return (
+    <Card>
+      <CardHeader
+        title="Opportunity Evaluation"
+        description="Evidence-based eligibility and competitiveness assessment."
+      />
+
+      <div className="flex flex-col gap-4">
+        {/* Recommended action */}
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${action.badge}`}
+          >
+            {action.icon}
+            <span>{action.label}</span>
+          </span>
+          <span className="text-xs text-ui-muted">Recommended action</span>
+        </div>
+
+        {/* Assessment text */}
+        <div className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-ui-canvas p-3 text-xs leading-relaxed">
+          <p className="text-ui-ink">
+            <span className="font-semibold">Eligibility: </span>
+            {evaluation.eligibilityAssessment}
+          </p>
+          <p className="text-ui-body">
+            <span className="font-semibold">Competitiveness: </span>
+            {evaluation.competitivenessAssessment}
+          </p>
+        </div>
+
+        {/* Constraint failures */}
+        {constraintFailures.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            {constraintFailures.map((c) => (
+              <div
+                key={c.kind}
+                className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs ${
+                  c.kind === "excluded_company" || c.kind === "excluded_role"
+                    ? "border border-red-100 bg-red-50 text-red-800"
+                    : "border border-amber-100 bg-amber-50 text-amber-800"
+                }`}
+              >
+                {c.kind === "excluded_company" || c.kind === "excluded_role" ? (
+                  <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                ) : (
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                )}
+                <span>{c.detail}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Required skill evaluations */}
+        {requiredEvals.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+              Required Skills ({requiredEvals.filter((r) => r.strength !== "unsupported").length}/
+              {requiredEvals.length} covered)
+            </p>
+            <ul className="flex flex-col gap-1.5">
+              {requiredEvals.map((r) => (
+                <li key={r.requirement} className="flex items-start gap-2">
+                  {strengthIcon(r.strength)}
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs font-medium text-ui-ink">{r.requirement}</span>
+                    <span className="ml-1.5 text-xs text-ui-muted">
+                      ·{" "}
+                      {r.transferableFrom
+                        ? `inferred from ${r.transferableFrom}`
+                        : strengthLabel(r.strength)}
+                    </span>
+                    {r.evidence && (
+                      <p className="mt-0.5 text-xs text-ui-body leading-relaxed">{r.evidence}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Preferred skill evaluations (collapsed to just the covered ones) */}
+        {preferredEvals.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+              Preferred Skills ({preferredEvals.filter((r) => r.strength !== "unsupported").length}/
+              {preferredEvals.length} covered)
+            </p>
+            <ul className="flex flex-col gap-1.5">
+              {preferredEvals.map((r) => (
+                <li key={r.requirement} className="flex items-start gap-2">
+                  {strengthIcon(r.strength)}
+                  <span className="text-xs text-ui-ink">
+                    {r.requirement}
+                    {r.transferableFrom && (
+                      <span className="ml-1.5 text-ui-muted">
+                        · inferred from {r.transferableFrom}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Missing evidence section */}
+        {evaluation.missingEvidence.length > 0 && (
+          <div className="rounded-lg border border-slate-100 bg-ui-canvas p-3">
+            <p className="mb-1.5 text-xs font-semibold text-ui-muted">Not yet documented</p>
+            <p className="mb-2 text-xs text-ui-body">
+              These requirements appear in the posting but aren&apos;t in your profile. If you have
+              these capabilities, adding them would improve your evaluation.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {evaluation.missingEvidence.map((req) => (
+                <span
+                  key={req}
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs font-medium text-ui-ink"
+                >
+                  {req}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Confidence indicator */}
+        <div className="flex items-center gap-2 border-t border-slate-100 pt-3">
+          <span
+            className={`text-xs font-semibold ${
+              evaluation.confidenceLevel === "high"
+                ? "text-emerald-700"
+                : evaluation.confidenceLevel === "medium"
+                  ? "text-amber-700"
+                  : "text-slate-500"
+            }`}
+          >
+            {evaluation.confidenceLevel.charAt(0).toUpperCase() +
+              evaluation.confidenceLevel.slice(1)}{" "}
+            confidence
+          </span>
+          {evaluation.uncertaintyReasons.length > 0 && (
+            <span className="text-xs text-ui-muted">
+              · {evaluation.uncertaintyReasons[0]}
+            </span>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }
 

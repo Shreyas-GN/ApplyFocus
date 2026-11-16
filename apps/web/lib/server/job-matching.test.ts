@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   analyzeJobIntelligence,
   computeJobMatch,
+  computeOpportunityEvaluation,
   extractJobSkills,
   inferWorkMode,
   stripHtml,
@@ -166,5 +167,145 @@ describe('job-matching utilities', () => {
 
     expect(match.matchedSkills).toEqual([]);
     expect(match.missingSkills).toEqual(['TypeScript', 'React']);
+  });
+});
+
+describe('computeOpportunityEvaluation', () => {
+  const baseJob = {
+    title: 'Senior Frontend Engineer',
+    company: 'Acme Corp',
+    location: 'Remote',
+    workMode: 'remote' as const,
+    employmentType: 'full_time',
+    description: 'Build UIs with TypeScript, React, Next.js. Nice to have: Kubernetes.',
+    skills: ['TypeScript', 'React', 'Next.js', 'Kubernetes'],
+  };
+
+  function evaluate(profileOverrides: Partial<ProfileDto> = {}) {
+    const profile = makeProfile(profileOverrides);
+    const match = computeJobMatch(profile, baseJob);
+    const intelligence = analyzeJobIntelligence({ ...baseJob, source: 'greenhouse' });
+    return computeOpportunityEvaluation(profile, baseJob, match, intelligence);
+  }
+
+  it('recommends pursue when candidate covers most required skills', () => {
+    const result = evaluate();
+    expect(result.recommendedAction).toBe('pursue');
+    expect(result.hardConstraintBlocked).toBe(false);
+    expect(result.eligibilityAssessment).toContain('%');
+  });
+
+  it('recommends deprioritize when excluded company is matched', () => {
+    const result = evaluate({ excludedCompanies: ['Acme Corp'] });
+    expect(result.recommendedAction).toBe('deprioritize');
+    expect(result.hardConstraintBlocked).toBe(true);
+    expect(result.constraintChecks.some((c) => c.kind === 'excluded_company' && !c.satisfied)).toBe(true);
+  });
+
+  it('recommends deprioritize when excluded role matches job title', () => {
+    const result = evaluate({ excludedRoles: ['Frontend'] });
+    expect(result.recommendedAction).toBe('deprioritize');
+    expect(result.hardConstraintBlocked).toBe(true);
+    expect(result.constraintChecks.some((c) => c.kind === 'excluded_role' && !c.satisfied)).toBe(true);
+  });
+
+  it('marks skills as demonstrated when proficiency evidence is present', () => {
+    const result = evaluate({
+      skills: [
+        {
+          id: '1',
+          name: 'TypeScript',
+          category: null,
+          source: 'user',
+          confidence: null,
+          proficiency: 'Expert',
+        },
+        { id: '2', name: 'React', category: null, source: 'user', confidence: null },
+        { id: '3', name: 'Next.js', category: null, source: 'user', confidence: null },
+      ],
+    });
+    const tsEval = result.requirementEvaluations.find((r) => r.requirement === 'TypeScript');
+    expect(tsEval?.strength).toBe('demonstrated');
+    expect(tsEval?.evidence).toContain('Expert');
+    const reactEval = result.requirementEvaluations.find((r) => r.requirement === 'React');
+    expect(reactEval?.strength).toBe('confirmed');
+  });
+
+  it('marks skills as inferred when found in experience technologies', () => {
+    const result = evaluate({
+      skills: [
+        { id: '1', name: 'React', category: null, source: 'user', confidence: null },
+        { id: '2', name: 'Next.js', category: null, source: 'user', confidence: null },
+      ],
+      experience: [
+        {
+          id: 'e1',
+          company: 'StartupXYZ',
+          title: 'Frontend Dev',
+          location: null,
+          startDate: '2021-01-01',
+          endDate: null,
+          isCurrent: true,
+          description: 'Built products.',
+          technologies: ['TypeScript'],
+          achievements: [],
+          source: 'user',
+          confidence: null,
+        },
+      ],
+    });
+    const tsEval = result.requirementEvaluations.find((r) => r.requirement === 'TypeScript');
+    expect(tsEval?.strength).toBe('inferred');
+    expect(tsEval?.evidence).toContain('StartupXYZ');
+  });
+
+  it('marks skills as unsupported when not in profile and no transferable path exists', () => {
+    // Profile only has React. TypeScript is transferable from React (via rule).
+    // Next.js is NOT transferable from React alone — no rule maps React → Next.js.
+    const result = evaluate({
+      skills: [
+        { id: '1', name: 'React', category: null, source: 'user', confidence: null },
+      ],
+      experience: [],
+      projects: [],
+    });
+    const nextEval = result.requirementEvaluations.find((r) => r.requirement === 'Next.js');
+    expect(nextEval?.strength).toBe('unsupported');
+    expect(result.missingEvidence).toContain('Next.js');
+  });
+
+  it('never treats AI-extracted skills as confirmed evidence', () => {
+    const result = evaluate({
+      skills: [
+        { id: '1', name: 'TypeScript', category: null, source: 'ai', confidence: 0.9 },
+        { id: '2', name: 'React', category: null, source: 'ai', confidence: 0.9 },
+        { id: '3', name: 'Next.js', category: null, source: 'ai', confidence: 0.9 },
+      ],
+    });
+    const tsEval = result.requirementEvaluations.find((r) => r.requirement === 'TypeScript');
+    expect(tsEval?.strength).toBe('unsupported');
+  });
+
+  it('produces a stable evaluationVersion for identical inputs', () => {
+    const r1 = evaluate();
+    const r2 = evaluate();
+    expect(r1.evaluationVersion).toBe(r2.evaluationVersion);
+    expect(r1.evaluationVersion).toMatch(/^v1:[0-9a-f]{8}$/);
+  });
+
+  it('reports low confidence when profile has no confirmed skills', () => {
+    const result = evaluate({ skills: [], completionPercent: 10 });
+    expect(result.confidenceLevel).toBe('low');
+    expect(result.uncertaintyReasons.length).toBeGreaterThan(0);
+  });
+
+  it('returns a sensible result for null profile', () => {
+    const job = baseJob;
+    const match = computeJobMatch(null, job);
+    const intelligence = analyzeJobIntelligence({ ...job, source: 'greenhouse' });
+    const result = computeOpportunityEvaluation(null, job, match, intelligence);
+    expect(result.recommendedAction).toBe('improve');
+    expect(result.confidenceLevel).toBe('low');
+    expect(result.evaluationVersion).toBe('v1:no-profile');
   });
 });

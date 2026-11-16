@@ -316,8 +316,49 @@ export interface JobDto {
   applicationStatus: ApplicationStatus | null;
 }
 
+export type CapabilityStrength =
+  | 'demonstrated' // Confirmed skill with evidence (proficiency / years / evidence field)
+  | 'confirmed'    // Confirmed skill, no additional evidence on file
+  | 'inferred'     // Transferable from another confirmed skill, or found in experience/project data
+  | 'unsupported'; // Not found in profile — candidate may still have it undocumented
+
+export interface RequirementEvaluation {
+  requirement: string;
+  kind: 'required' | 'preferred';
+  strength: CapabilityStrength;
+  evidence: string | null;
+  candidateSkill: string | null;
+  transferableFrom: string | null;
+  note: string | null;
+}
+
+export type OpportunityAction = 'pursue' | 'improve' | 'deprioritize';
+
+export interface OpportunityConstraintCheck {
+  kind: 'work_mode' | 'location' | 'excluded_company' | 'excluded_role' | 'employment_type';
+  satisfied: boolean;
+  detail: string;
+}
+
+export interface OpportunityEvaluation {
+  eligibilityAssessment: string;
+  competitivenessAssessment: string;
+  recommendedAction: OpportunityAction;
+  actionRationale: string;
+  requirementEvaluations: RequirementEvaluation[];
+  strengths: string[];
+  missingEvidence: string[];
+  transferableCapabilities: TransferableSkillMatch[];
+  constraintChecks: OpportunityConstraintCheck[];
+  hardConstraintBlocked: boolean;
+  confidenceLevel: 'high' | 'medium' | 'low';
+  uncertaintyReasons: string[];
+  evaluationVersion: string;
+}
+
 export interface JobDetailDto extends JobDto {
   intelligence: JobIntelligenceBreakdown;
+  evaluation: OpportunityEvaluation;
   tailoredDocumentsCount: number;
 }
 
