@@ -428,3 +428,53 @@ export interface AuditLogDto {
   createdAt: string;
 }
 
+// Application Strategy Intelligence
+
+export type StrategyRecommendation =
+  | "strong_opportunity"
+  | "worth_pursuing"
+  | "lower_priority";
+
+export type EvidenceStrength = "direct" | "transferable" | "weak" | "none";
+
+export interface StrategyEvidenceItem {
+  id: string;
+  type: "experience" | "project";
+  name: string;
+  relevanceReason: string;
+}
+
+export interface StrategyGapItem {
+  requirement: string;
+  evidenceStrength: EvidenceStrength;
+  note: string;
+}
+
+export interface ApplicationStrategyContent {
+  recommendation: StrategyRecommendation;
+  recommendationReason: string;
+  positioning: string;
+  whyPursue: string[];
+  strongestExperiences: StrategyEvidenceItem[];
+  bestProjects: StrategyEvidenceItem[];
+  topAchievements: string[];
+  skillsToEmphasize: string[];
+  evidenceGaps: StrategyGapItem[];
+  resumeImprovements: string[];
+  screeningPrep: string[];
+  potentialConcerns: string[];
+  nextAction: string;
+}
+
+export type StrategyStatus = "ready" | "approved" | "failed";
+
+export interface ApplicationStrategyDto {
+  id: string;
+  jobId: string;
+  status: StrategyStatus;
+  content: ApplicationStrategyContent;
+  approvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
