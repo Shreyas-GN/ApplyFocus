@@ -4,8 +4,9 @@ const COLS = [
   {
     title: "Product",
     links: [
-      { href: "#how-it-works", label: "Features" },
-      { href: "#how-it-works", label: "How it works" },
+      { href: "#features", label: "Features" },
+      { href: "#resume", label: "Resume Engine" },
+      { href: "#tracking", label: "Tracking" },
       { href: "#faq", label: "FAQ" },
     ],
   },
@@ -23,6 +24,7 @@ const COLS = [
     links: [
       { href: "/login", label: "Sign in" },
       { href: "/signup", label: "Create account" },
+      { href: "/sitemap", label: "Sitemap" },
     ],
   },
 ];
