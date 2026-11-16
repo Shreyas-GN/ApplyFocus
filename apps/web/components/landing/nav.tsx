@@ -43,10 +43,10 @@ export function LandingNav() {
         {/* Floating Navbar Pill */}
         <div
           className={cn(
-            "flex h-16 w-full max-w-5xl items-center justify-between gap-2 rounded-full border px-4 shadow-sm backdrop-blur-md transition-all duration-300 md:px-6",
+            "flex h-16 w-full max-w-5xl items-center justify-between gap-2 rounded-full border px-4 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 md:px-6",
             scrolled
-              ? "border-lp-border bg-white/95 dark:border-neutral-800 dark:bg-neutral-950/95"
-              : "border-white/15 bg-white/10 dark:border-neutral-800/80 dark:bg-neutral-950/80"
+              ? "border-white/30 bg-white/65 shadow-lg shadow-black/5 dark:border-neutral-700/50 dark:bg-neutral-950/70"
+              : "border-white/15 bg-white/[0.08] dark:border-neutral-800/80 dark:bg-neutral-950/80"
           )}
         >
           {/* Logo Section */}
@@ -297,7 +297,8 @@ export function LandingNav() {
               href="/signup"
               className="group inline-flex items-center justify-center gap-1.5 rounded-full bg-ui-teal px-4 py-2 font-ui text-sm font-medium text-white shadow-xs transition-all duration-150 hover:bg-ui-teal-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-teal"
             >
-              Get started — it&apos;s free
+              <span className="sm:hidden">Get started</span>
+              <span className="hidden sm:inline">Get started — it&apos;s free</span>
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden="true" />
             </Link>
 
