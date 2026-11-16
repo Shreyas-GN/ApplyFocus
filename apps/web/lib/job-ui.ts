@@ -1,13 +1,13 @@
 export function scoreTone(score: number): string {
-  if (score >= 75) return "bg-emerald-100 text-emerald-800";
+  if (score >= 75) return "bg-ui-teal-soft text-ui-teal";
   if (score >= 50) return "bg-amber-100 text-amber-800";
-  return "bg-slate-100 text-slate-700";
+  return "bg-ui-linen text-ui-muted";
 }
 
 export function barTone(score: number): string {
-  if (score >= 75) return "bg-emerald-500";
+  if (score >= 75) return "bg-ui-teal";
   if (score >= 50) return "bg-amber-500";
-  return "bg-slate-400";
+  return "bg-ui-muted";
 }
 
 export function formatFreshness(
