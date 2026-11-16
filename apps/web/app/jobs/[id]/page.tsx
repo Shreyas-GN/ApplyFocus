@@ -22,6 +22,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge, StatusBadge } from "@/components/ui/badge";
+import { StrategyPanel } from "@/components/jobs/strategy-panel";
 import { api, ApiError } from "@/lib/api-client";
 import { barTone, formatFreshness, scoreTone } from "@/lib/job-ui";
 
@@ -296,6 +297,9 @@ function JobDetailContent() {
           </div>
         </div>
       </Card>
+
+      {/* Application Strategy */}
+      <StrategyPanel jobId={jobId} />
 
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Left column: Intelligent Match Analysis */}

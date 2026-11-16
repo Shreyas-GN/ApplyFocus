@@ -45,6 +45,12 @@ export const applicationStatusEnum = pgEnum('application_status', [
 
 export const jobStateEnum = pgEnum('job_state', ['saved', 'dismissed']);
 
+export const strategyStatusEnum = pgEnum('strategy_status', [
+  'ready',
+  'approved',
+  'failed',
+]);
+
 // 1. Profiles
 export const profiles = pgTable(
   'profiles',
@@ -564,6 +570,39 @@ export const extensionSessions = pgTable(
     index('extension_sessions_user_id_idx').on(table.userId),
     uniqueIndex('extension_sessions_token_hash_idx').on(table.tokenHash),
     pgPolicy('extension_sessions_owner_policy', {
+      for: 'all',
+      to: authenticatedRole,
+      using: sql`user_id = ${authUid}`,
+      withCheck: sql`user_id = ${authUid}`,
+    }),
+  ]
+);
+
+// 15b. Application Strategies (per user+job, persisted strategy analysis)
+export const applicationStrategies = pgTable(
+  'application_strategies',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    jobId: uuid('job_id')
+      .notNull()
+      .references(() => jobs.id, { onDelete: 'cascade' }),
+    status: strategyStatusEnum('status').default('ready').notNull(),
+    content: jsonb('content').notNull(),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('application_strategies_user_job_idx').on(table.userId, table.jobId),
+    index('application_strategies_user_id_idx').on(table.userId),
+    pgPolicy('application_strategies_owner_policy', {
       for: 'all',
       to: authenticatedRole,
       using: sql`user_id = ${authUid}`,
