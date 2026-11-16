@@ -15,14 +15,18 @@ import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { ApplicationDetailPanel } from "@/components/applications/application-detail-panel";
+import { OutcomeIntelligencePanel } from "@/components/applications/outcome-intelligence";
 import { api, ApiError } from "@/lib/api-client";
 
 const STATUSES: ApplicationStatus[] = [
   "saved",
   "applied",
+  "under_review",
+  "assessment",
   "interviewing",
   "offer",
   "rejected",
+  "withdrawn",
 ];
 
 function isFollowUpDueSoon(iso: string | null): boolean {
@@ -242,6 +246,8 @@ function ApplicationsContent() {
           </button>
         </div>
       )}
+
+      <OutcomeIntelligencePanel />
 
       {error && <Alert tone="error">{error}</Alert>}
 

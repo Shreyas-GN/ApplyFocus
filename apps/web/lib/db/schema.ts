@@ -35,9 +35,12 @@ export const itemSourceEnum = pgEnum('item_source', ['user', 'ai']);
 export const applicationStatusEnum = pgEnum('application_status', [
   'saved',
   'applied',
+  'under_review',
+  'assessment',
   'interviewing',
   'offer',
   'rejected',
+  'withdrawn',
 ]);
 
 export const jobStateEnum = pgEnum('job_state', ['saved', 'dismissed']);
@@ -631,6 +634,45 @@ export const jobStates = pgTable(
     uniqueIndex('job_states_user_job_idx').on(table.userId, table.jobId),
     index('job_states_user_state_idx').on(table.userId, table.state),
     pgPolicy('job_states_owner_policy', {
+      for: 'all',
+      to: authenticatedRole,
+      using: sql`user_id = ${authUid}`,
+      withCheck: sql`user_id = ${authUid}`,
+    }),
+  ]
+);
+
+// 16. Screening Answers (Persisted AI-generated screening answers)
+export const screeningAnswers = pgTable(
+  'screening_answers',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
+    applicationId: uuid('application_id').references(() => applications.id, {
+      onDelete: 'set null',
+    }),
+    question: text('question').notNull(),
+    answer: text('answer').notNull(),
+    groundedFacts: text('grounded_facts')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    source: text('source').notNull().default('claude'),
+    approved: boolean('approved').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('screening_answers_user_id_idx').on(table.userId),
+    index('screening_answers_user_job_idx').on(table.userId, table.jobId),
+    pgPolicy('screening_answers_owner_policy', {
       for: 'all',
       to: authenticatedRole,
       using: sql`user_id = ${authUid}`,

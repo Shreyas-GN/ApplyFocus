@@ -64,9 +64,12 @@ export function summarizeApplicationProgress(
   const counts: Record<ApplicationStatus, number> = {
     saved: 0,
     applied: 0,
+    under_review: 0,
+    assessment: 0,
     interviewing: 0,
     offer: 0,
     rejected: 0,
+    withdrawn: 0,
   };
 
   if (!applications || applications.length === 0) {

@@ -57,6 +57,13 @@
       "when": 1794832613574,
       "tag": "0007_complete_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794834809947,
+      "tag": "0008_useful_rocket_racer",
+      "breakpoints": true
     }
   ]
 }
