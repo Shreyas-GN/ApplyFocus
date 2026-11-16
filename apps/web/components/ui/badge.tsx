@@ -64,7 +64,7 @@ export function Badge({
         ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
         : tone === "warning"
           ? "bg-amber-50 text-amber-800 border-amber-200/80"
-          : "bg-ui-lilac-soft text-ui-violet border-ui-lilac";
+          : "bg-ui-teal-soft text-ui-teal border-ui-teal-soft";
 
   return (
     <span

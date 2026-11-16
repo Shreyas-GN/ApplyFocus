@@ -31,7 +31,7 @@ function FieldWrapper({ label, htmlFor, error, hint, children }: FieldWrapperPro
 }
 
 const BASE_INPUT_CLASSES =
-  "rounded-[10px] border bg-ui-surface px-3 py-2 text-sm text-ui-ink placeholder:text-ui-muted outline-none transition-colors focus:border-ui-violet focus:ring-2 focus:ring-ui-lilac/60";
+  "rounded-[10px] border bg-ui-surface px-3 py-2 text-sm text-ui-ink placeholder:text-ui-muted outline-none transition-colors focus:border-ui-teal focus:ring-2 focus:ring-ui-teal/20";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;

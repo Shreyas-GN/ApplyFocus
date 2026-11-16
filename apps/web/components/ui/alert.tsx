@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 const TONE_CLASSES: Record<string, string> = {
   error: "bg-red-50 text-red-800 border-red-200",
   success: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  info: "bg-ui-lilac-soft text-ui-ink border-ui-lilac",
+  info: "bg-ui-teal-soft text-ui-ink border-ui-teal-soft",
   warning: "bg-amber-50 text-amber-900 border-amber-200",
 };
 

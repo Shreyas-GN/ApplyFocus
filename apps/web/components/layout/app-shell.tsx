@@ -102,7 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link
             href="/dashboard"
             onClick={onNavigate}
-            className="flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-violet"
+            className="flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-teal"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
               AP

@@ -8,15 +8,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-ui-wine text-white hover:bg-ui-wine-hover disabled:bg-ui-wine/40 focus-visible:outline-ui-violet",
+    "bg-ui-teal text-white hover:bg-ui-teal-hover disabled:bg-ui-teal/40 focus-visible:outline-ui-teal",
   secondary:
-    "bg-ui-surface text-ui-ink border border-ui-border hover:bg-ui-linen/70 hover:border-ui-muted/50 disabled:text-ui-muted focus-visible:outline-ui-violet",
+    "bg-ui-surface text-ui-ink border border-ui-border hover:bg-ui-linen/70 hover:border-ui-muted/50 disabled:text-ui-muted focus-visible:outline-ui-teal",
   lilac:
-    "bg-ui-lilac text-ui-ink border border-ui-ink/80 hover:bg-ui-lilac/80 disabled:opacity-50 focus-visible:outline-ui-violet",
+    "bg-ui-teal-soft text-ui-teal border border-ui-teal/30 hover:bg-ui-teal-soft/80 disabled:opacity-50 focus-visible:outline-ui-teal",
   danger:
     "bg-red-700 text-white hover:bg-red-800 disabled:bg-red-300 focus-visible:outline-red-600",
   ghost:
-    "bg-transparent text-ui-body hover:bg-ui-linen hover:text-ui-ink disabled:text-ui-muted focus-visible:outline-ui-violet",
+    "bg-transparent text-ui-body hover:bg-ui-linen hover:text-ui-ink disabled:text-ui-muted focus-visible:outline-ui-teal",
 };
 
 const SIZE_CLASSES: Record<NonNullable<ButtonProps["size"]>, string> = {

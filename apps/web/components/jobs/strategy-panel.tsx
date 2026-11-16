@@ -134,7 +134,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
           <div className="flex flex-wrap items-center gap-2.5">
             <RecommendationBadge recommendation={c.recommendation} />
             {isApproved && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ui-lilac-soft px-2.5 py-0.5 text-[11px] font-medium text-ui-violet">
+              <span className="inline-flex items-center gap-1 rounded-full bg-ui-teal-soft px-2.5 py-0.5 text-[11px] font-medium text-ui-teal">
                 <CheckCircle2 className="h-3 w-3" />
                 Strategy Approved
               </span>
@@ -145,8 +145,8 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
       </div>
 
       {/* Positioning */}
-      <div className="rounded-xl border border-ui-lilac bg-ui-lilac-soft/60 p-4">
-        <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-violet">
+      <div className="rounded-xl border border-ui-teal-soft bg-ui-teal-soft/50 p-4">
+        <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-copper">
           <Target className="h-3.5 w-3.5" />
           Your Recommended Positioning
         </p>
@@ -222,7 +222,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
           <ul className="flex flex-col gap-2">
             {c.topAchievements.map((ach) => (
               <li key={ach} className="flex items-start gap-2 text-sm text-ui-ink">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ui-violet" />
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ui-teal" />
                 <span>{ach}</span>
               </li>
             ))}
@@ -298,8 +298,8 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
       )}
 
       {/* Next action */}
-      <div className="rounded-xl border border-ui-wine/20 bg-ui-wine/5 p-4">
-        <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-wine">
+      <div className="rounded-xl border border-ui-teal/20 bg-ui-teal/5 p-4">
+        <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-teal">
           <ArrowRight className="h-3.5 w-3.5" />
           Recommended Next Step
         </p>
@@ -411,7 +411,7 @@ export function StrategyPanel({ jobId }: StrategyPanelProps) {
         <div className="flex flex-col items-start gap-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <Sparkles className="h-5 w-5 text-ui-violet" />
+              <Sparkles className="h-5 w-5 text-ui-teal" />
               <h2 className="text-[17px] font-semibold tracking-[-0.014em] text-ui-ink">
                 Application Strategy
               </h2>
@@ -436,7 +436,7 @@ export function StrategyPanel({ jobId }: StrategyPanelProps) {
       <Card>
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-ui-violet border-t-transparent" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-ui-teal border-t-transparent" />
             <p className="text-sm font-medium text-ui-ink">Analyzing your profile against this job…</p>
           </div>
           <div className="flex flex-col gap-2.5">
