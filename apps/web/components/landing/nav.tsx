@@ -43,10 +43,10 @@ export function LandingNav() {
         {/* Floating Navbar Pill */}
         <div
           className={cn(
-            "flex h-16 w-full max-w-5xl items-center justify-between gap-2 rounded-full border px-4 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 md:px-6",
+            "flex h-16 w-full max-w-5xl items-center justify-between gap-2 rounded-full border px-4 backdrop-blur-2xl backdrop-saturate-200 transition-all duration-300 md:px-6",
             scrolled
-              ? "border-white/30 bg-white/65 shadow-lg shadow-black/5 dark:border-neutral-700/50 dark:bg-neutral-950/70"
-              : "border-white/15 bg-white/[0.08] dark:border-neutral-800/80 dark:bg-neutral-950/80"
+              ? "border-white/25 bg-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.4)] dark:border-neutral-700/40 dark:bg-neutral-900/30"
+              : "border-white/15 bg-white/[0.07] shadow-[0_8px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] dark:border-neutral-800/60 dark:bg-neutral-900/20"
           )}
         >
           {/* Logo Section */}
@@ -60,7 +60,7 @@ export function LandingNav() {
             <span
               className={cn(
                 "font-ui text-lg font-bold tracking-tight transition-colors",
-                scrolled ? "text-lp-ink dark:text-white" : "text-white"
+                scrolled ? "text-lp-ink dark:text-white" : "text-white drop-shadow-sm"
               )}
             >
               ApplyPilot
