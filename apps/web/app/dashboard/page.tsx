@@ -25,6 +25,15 @@ import { summarizeApplicationProgress } from "@/lib/dashboard-helpers";
 import { useAuth } from "@/lib/auth-context";
 import { useApi } from "@/lib/use-api";
 
+interface ApplicationInsightsDto {
+  total: number;
+  responseRate: number | null;
+  interviewConversionRate: number | null;
+  offerRate: number | null;
+  followUpsDue: number;
+  awaitingResponse: number;
+}
+
 export default function DashboardPage() {
   return (
     <ProtectedRoute>
@@ -63,6 +72,10 @@ function DashboardContent() {
     data: activityLogs,
     loading: activityLoading,
   } = useApi<AuditLogDto[]>("/account/activity");
+  const {
+    data: insights,
+    loading: insightsLoading,
+  } = useApi<ApplicationInsightsDto>("/applications/insights");
 
   const firstName = profile?.fullName?.trim()
     ? profile.fullName.trim().split(/\s+/)[0]
@@ -71,6 +84,10 @@ function DashboardContent() {
   const appSummary = summarizeApplicationProgress(applications);
   const adjacentCount = (jobs ?? []).filter((j) => j.match.isAdjacentRole).length;
   const targetTitles = profile?.preferredTitles ?? [];
+
+  const noJobs = !jobsLoading && (!jobs || jobs.length === 0);
+  const profileCompletion = profile?.intelligence?.confirmedPercent ?? profile?.completionPercent ?? 0;
+  const lowProfile = !profileLoading && profileCompletion < 60;
 
   function buildOverviewSummary(): string {
     if (profileLoading || jobsLoading || appsLoading) {
@@ -102,13 +119,58 @@ function DashboardContent() {
     return `${parts.join(" · ")}.`;
   }
 
+  function renderContextualCta() {
+    if (noJobs) {
+      return (
+        <Link
+          href="/jobs"
+          className="inline-flex h-9 items-center justify-center rounded-[var(--radius-button)] bg-ui-teal px-4 text-xs font-medium text-white transition-colors hover:bg-ui-teal-hover"
+        >
+          Sync Jobs →
+        </Link>
+      );
+    }
+    if (lowProfile) {
+      return (
+        <Link
+          href="/profile"
+          className="inline-flex h-9 items-center justify-center rounded-[var(--radius-button)] bg-ui-teal px-4 text-xs font-medium text-white transition-colors hover:bg-ui-teal-hover"
+        >
+          Complete Profile →
+        </Link>
+      );
+    }
+    if (jobs && jobs.length > 0) {
+      return (
+        <Link
+          href={`/jobs/${jobs[0].id}`}
+          className="inline-flex h-9 items-center justify-center rounded-[var(--radius-button)] bg-ui-teal px-4 text-xs font-medium text-white transition-colors hover:bg-ui-teal-hover"
+        >
+          View Top Match →
+        </Link>
+      );
+    }
+    return null;
+  }
+
+  function formatRate(rate: number | null, loading: boolean): string {
+    if (loading) return "—";
+    if (rate === null) return "—";
+    return `${rate}%`;
+  }
+
+  function rateHint(rate: number | null, label: string): string {
+    if (rate === null) return "No applications yet";
+    return label;
+  }
+
   return (
     <div className="space-y-6 pb-10">
       {/* 1. Welcome & Overview */}
       <header className="rounded-2xl border border-ui-border bg-ui-surface p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ui-violet">
+            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ui-copper">
               Job Search Command Center
             </span>
             <h1 className="mt-1.5 text-[28px] font-semibold leading-[1.15] tracking-[-0.022em] text-ui-ink sm:text-[32px]">
@@ -117,25 +179,8 @@ function DashboardContent() {
             <p className="mt-1.5 text-sm text-ui-body">{buildOverviewSummary()}</p>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <Link
-              href="/jobs"
-              className="inline-flex h-9 items-center justify-center rounded-[10px] bg-ui-wine px-4 text-xs font-medium text-white transition-colors hover:bg-ui-wine-hover"
-            >
-              Discover Jobs
-            </Link>
-            <Link
-              href="/profile"
-              className="inline-flex h-9 items-center justify-center rounded-[10px] border border-ui-border bg-ui-surface px-4 text-xs font-medium text-ui-ink transition-colors hover:bg-ui-linen/70"
-            >
-              Candidate Profile
-            </Link>
-            <Link
-              href="/studio"
-              className="inline-flex h-9 items-center justify-center rounded-[10px] bg-ui-lilac-soft px-4 text-xs font-medium text-ui-ink transition-colors hover:bg-ui-lilac/70"
-            >
-              Resume Studio
-            </Link>
+          <div className="shrink-0">
+            {renderContextualCta()}
           </div>
         </div>
 
@@ -153,7 +198,7 @@ function DashboardContent() {
         )}
       </header>
 
-      {/* Bevel-inspired Tabular Metric Strip */}
+      {/* Metric Strip — powered by insights API */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           label="Matched Roles"
@@ -168,15 +213,15 @@ function DashboardContent() {
           tone="neutral"
         />
         <StatCard
-          label="Profile Readiness"
-          value={profileLoading ? "—" : `${profile?.intelligence?.confirmedPercent ?? profile?.completionPercent ?? 0}%`}
-          hint="Confirmed career facts"
+          label="Response Rate"
+          value={formatRate(insights?.responseRate ?? null, insightsLoading)}
+          hint={rateHint(insights?.responseRate ?? null, "Of applied roles")}
           tone="success"
         />
         <StatCard
-          label="Resumes"
-          value={resumesLoading ? "—" : (resumes?.length ?? 0)}
-          hint="Master & tailored files"
+          label="Interview Rate"
+          value={formatRate(insights?.interviewConversionRate ?? null, insightsLoading)}
+          hint={rateHint(insights?.interviewConversionRate ?? null, "Applications → interview")}
           tone="neutral"
         />
       </div>
@@ -189,23 +234,23 @@ function DashboardContent() {
         onRetry={refetchJobs}
       />
 
-      {/* Editorial Two-Column Command Grid */}
+      {/* Two-Column Command Grid — Next Actions primary, Adjacent Roles secondary */}
       <div className="grid gap-6 lg:grid-cols-12 lg:items-start">
         <div className="min-w-0 space-y-6 lg:col-span-7">
-          {/* 3. Explore Adjacent Roles */}
-          <ExploreAdjacentRoles
-            jobs={jobs}
-            profile={profile}
-            loading={jobsLoading || profileLoading}
-          />
-
-          {/* 4. Next Actions */}
+          {/* 3. Next Actions — primary position */}
           <NextActionsPanel
             profile={profile}
             resumes={resumes}
             applications={applications}
             jobs={jobs}
             loading={profileLoading || resumesLoading || appsLoading || jobsLoading}
+          />
+
+          {/* 4. Explore Adjacent Roles — secondary position */}
+          <ExploreAdjacentRoles
+            jobs={jobs}
+            profile={profile}
+            loading={jobsLoading || profileLoading}
           />
         </div>
 
