@@ -58,7 +58,7 @@ function ApplicationsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<
-    ApplicationStatus | "all" | "followups"
+    ApplicationStatus | "all" | "active" | "rejected_withdrawn" | "followups"
   >("all");
 
   // Manual add form
@@ -159,12 +159,23 @@ function ApplicationsContent() {
     isFollowUpDueSoon(a.followUpAt)
   ).length;
 
+  const ACTIVE_STATUSES: ApplicationStatus[] = [
+    "applied",
+    "under_review",
+    "assessment",
+    "interviewing",
+  ];
+
   const filtered =
     filterStatus === "all"
       ? applications
-      : filterStatus === "followups"
-        ? applications.filter((a) => Boolean(a.followUpAt))
-        : applications.filter((a) => a.status === filterStatus);
+      : filterStatus === "active"
+        ? applications.filter((a) => ACTIVE_STATUSES.includes(a.status))
+        : filterStatus === "rejected_withdrawn"
+          ? applications.filter((a) => a.status === "rejected" || a.status === "withdrawn")
+          : filterStatus === "followups"
+            ? applications.filter((a) => Boolean(a.followUpAt))
+            : applications.filter((a) => a.status === filterStatus);
 
   const counts = STATUSES.reduce(
     (acc, st) => {
@@ -191,7 +202,7 @@ function ApplicationsContent() {
                 onClick={() => setViewMode("list")}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                   viewMode === "list"
-                    ? "bg-ui-lilac-soft text-ui-ink"
+                    ? "bg-ui-teal-soft text-ui-ink"
                     : "text-ui-body hover:text-ui-ink"
                 }`}
               >
@@ -203,7 +214,7 @@ function ApplicationsContent() {
                 onClick={() => setViewMode("kanban")}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                   viewMode === "kanban"
-                    ? "bg-ui-lilac-soft text-ui-ink"
+                    ? "bg-ui-teal-soft text-ui-ink"
                     : "text-ui-body hover:text-ui-ink"
                 }`}
               >
@@ -246,8 +257,6 @@ function ApplicationsContent() {
           </button>
         </div>
       )}
-
-      <OutcomeIntelligencePanel />
 
       {error && <Alert tone="error">{error}</Alert>}
 
@@ -292,7 +301,7 @@ function ApplicationsContent() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
-              className="w-full rounded-[10px] border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+              className="w-full rounded-[10px] border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
             >
               {STATUSES.map((st) => (
                 <option key={st} value={st} className="capitalize">
@@ -309,7 +318,7 @@ function ApplicationsContent() {
               type="date"
               value={followUpDate}
               onChange={(e) => setFollowUpDate(e.target.value)}
-              className="w-full rounded-[10px] border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-violet focus:outline-none"
+              className="w-full rounded-[10px] border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
             />
           </div>
           <div className="flex justify-end gap-2 sm:col-span-2">
@@ -325,42 +334,43 @@ function ApplicationsContent() {
 
       {viewMode === "list" && (
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setFilterStatus("all")}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              filterStatus === "all"
-                ? "bg-ui-ink text-white"
-                : "border border-ui-border bg-white text-ui-body hover:bg-ui-linen"
-            }`}
-          >
-            All ({applications.length})
-          </button>
-          {STATUSES.map((st) => (
+          {(
+            [
+              { key: "all", label: `All`, count: applications.length },
+              {
+                key: "active",
+                label: "Active",
+                count: applications.filter((a) =>
+                  (["applied", "under_review", "assessment", "interviewing"] as ApplicationStatus[]).includes(a.status)
+                ).length,
+              },
+              { key: "interviewing", label: "Interviewing", count: counts.interviewing },
+              { key: "offer", label: "Offers", count: counts.offer },
+              {
+                key: "rejected_withdrawn",
+                label: "Rejected/Withdrawn",
+                count: applications.filter((a) => a.status === "rejected" || a.status === "withdrawn").length,
+              },
+              {
+                key: "followups",
+                label: "Follow-ups",
+                count: applications.filter((a) => Boolean(a.followUpAt)).length,
+              },
+            ] as { key: typeof filterStatus; label: string; count: number }[]
+          ).map(({ key, label, count }) => (
             <button
-              key={st}
+              key={key}
               type="button"
-              onClick={() => setFilterStatus(st)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
-                filterStatus === st
+              onClick={() => setFilterStatus(key)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                filterStatus === key
                   ? "bg-ui-ink text-white"
                   : "border border-ui-border bg-white text-ui-body hover:bg-ui-linen"
               }`}
             >
-              {st} ({counts[st]})
+              {label} ({count})
             </button>
           ))}
-          <button
-            type="button"
-            onClick={() => setFilterStatus("followups")}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              filterStatus === "followups"
-                ? "bg-amber-700 text-white"
-                : "border border-ui-border bg-white text-ui-body hover:bg-ui-linen"
-            }`}
-          >
-            With reminders ({applications.filter((a) => Boolean(a.followUpAt)).length})
-          </button>
         </div>
       )}
 
@@ -382,6 +392,10 @@ function ApplicationsContent() {
           </div>
         </Card>
       ) : viewMode === "kanban" ? (
+        <>
+        <p className="block text-xs text-ui-muted sm:hidden">
+          Kanban is best on a wider screen. Switch to List view for mobile.
+        </p>
         <div className="grid gap-4 overflow-x-auto pb-2 md:grid-cols-5">
           {STATUSES.map((colStatus) => {
             const colApps = applications.filter((a) => a.status === colStatus);
@@ -416,7 +430,7 @@ function ApplicationsContent() {
                             <button
                               type="button"
                               onClick={() => setSelectedAppId(app.id)}
-                              className="text-left text-sm font-semibold text-ui-ink hover:text-ui-violet hover:underline"
+                              className="text-left text-sm font-semibold text-ui-ink hover:text-ui-teal hover:underline"
                             >
                               {app.title}
                             </button>
@@ -435,7 +449,7 @@ function ApplicationsContent() {
                                   app.readiness.completedCount ===
                                   app.readiness.totalCount
                                     ? "bg-emerald-50 text-emerald-700"
-                                    : "bg-ui-lilac-soft text-ui-violet"
+                                    : "bg-ui-teal-soft text-ui-teal"
                                 }
                               >
                                 {`${app.readiness.completedCount}/${app.readiness.totalCount} ready`}
@@ -465,7 +479,7 @@ function ApplicationsContent() {
                                   e.target.value as ApplicationStatus
                                 )
                               }
-                              className="rounded border border-ui-border bg-white px-2 py-1 text-[11px] font-medium text-ui-ink focus:border-ui-violet focus:outline-none"
+                              className="rounded border border-ui-border bg-white px-2 py-1 text-[11px] font-medium text-ui-ink focus:border-ui-teal focus:outline-none"
                             >
                               {STATUSES.map((st) => (
                                 <option key={st} value={st}>
@@ -476,7 +490,7 @@ function ApplicationsContent() {
                             <button
                               type="button"
                               onClick={() => setSelectedAppId(app.id)}
-                              className="text-xs font-medium text-ui-violet hover:underline"
+                              className="text-xs font-medium text-ui-teal hover:underline"
                             >
                               Details
                             </button>
@@ -490,6 +504,7 @@ function ApplicationsContent() {
             );
           })}
         </div>
+        </>
       ) : filtered.length === 0 ? (
         <Card>
           <div className="py-8 text-center">
@@ -510,7 +525,7 @@ function ApplicationsContent() {
                       <button
                         type="button"
                         onClick={() => setSelectedAppId(app.id)}
-                        className="text-left font-semibold text-ui-ink hover:text-ui-violet hover:underline"
+                        className="text-left font-semibold text-ui-ink hover:text-ui-teal hover:underline"
                       >
                         {app.title}
                       </button>
@@ -526,7 +541,7 @@ function ApplicationsContent() {
                             app.readiness.completedCount ===
                             app.readiness.totalCount
                               ? "bg-emerald-50 text-emerald-700"
-                              : "bg-ui-lilac-soft text-ui-violet"
+                              : "bg-ui-teal-soft text-ui-teal"
                           }
                         >
                           {`${app.readiness.completedCount}/${app.readiness.totalCount} ready`}
@@ -561,7 +576,7 @@ function ApplicationsContent() {
                       onChange={(e) =>
                         handleStatusChange(app.id, e.target.value as ApplicationStatus)
                       }
-                      className="rounded-lg border border-ui-border bg-white px-2.5 py-1.5 text-xs font-medium text-ui-ink focus:border-ui-violet focus:outline-none"
+                      className="rounded-lg border border-ui-border bg-white px-2.5 py-1.5 text-xs font-medium text-ui-ink focus:border-ui-teal focus:outline-none"
                     >
                       {STATUSES.map((st) => (
                         <option key={st} value={st}>
@@ -591,13 +606,6 @@ function ApplicationsContent() {
                     >
                       Details
                     </Button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(app.id)}
-                      className="rounded-lg px-2 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
                   </div>
                 </div>
               </Card>
@@ -605,6 +613,8 @@ function ApplicationsContent() {
           })}
         </div>
       )}
+
+      {applications.length >= 3 && <OutcomeIntelligencePanel />}
 
       {selectedApp && (
         <ApplicationDetailPanel

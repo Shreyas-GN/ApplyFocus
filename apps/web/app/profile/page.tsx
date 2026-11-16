@@ -296,13 +296,19 @@ function ProfileContent() {
           {/* 02. Professional Summary */}
           <ProfessionalSummaryForm profile={profile} onUpdated={handleUpdated} />
 
-          {/* 03. Skills & Technologies */}
+          {/* 03. Career Preferences — high AI-impact, now surfaced early */}
+          <PreferencesForm profile={profile} onUpdated={handleUpdated} />
+
+          {/* 04. Career Interests */}
+          <CareerInterestsForm profile={profile} onUpdated={handleUpdated} />
+
+          {/* 05. Skills & Technologies */}
           <SkillsEditor skills={profile.skills} onUpdated={handleUpdated} />
 
-          {/* 04. Work Experience */}
+          {/* 06. Work Experience */}
           <RepeatableSection
             id="section-experience"
-            sectionNumber="04"
+            sectionNumber="06"
             eyebrow="Career History"
             title="Work Experience"
             description="Document companies, roles, dates, responsibilities, measurable achievements, and technologies used."
@@ -361,10 +367,10 @@ function ProfileContent() {
             onSave={saveExperience}
           />
 
-          {/* 05. Education */}
+          {/* 07. Education */}
           <RepeatableSection
             id="section-education"
-            sectionNumber="05"
+            sectionNumber="07"
             eyebrow="Academic Background"
             title="Education"
             description="Record institutions, degrees, specializations, graduation years, and academic honors or grades."
@@ -402,10 +408,10 @@ function ProfileContent() {
             onSave={saveEducation}
           />
 
-          {/* 06. Projects */}
+          {/* 08. Projects */}
           <RepeatableSection
             id="section-projects"
-            sectionNumber="06"
+            sectionNumber="08"
             eyebrow="Proof of Work"
             title="Projects"
             description="Showcase shipped products, architecture, technical stack, concrete contributions, and public repositories or live demos."
@@ -442,10 +448,10 @@ function ProfileContent() {
             onSave={saveProjects}
           />
 
-          {/* 07. Certifications */}
+          {/* 09. Certifications */}
           <RepeatableSection
             id="section-certifications"
-            sectionNumber="07"
+            sectionNumber="09"
             eyebrow="Verified Credentials"
             title="Certifications"
             description="Track cloud, security, domain, and professional credentials with verification URLs."
@@ -474,11 +480,6 @@ function ProfileContent() {
             onSave={saveCertifications}
           />
 
-          {/* 08. Career Preferences */}
-          <PreferencesForm profile={profile} onUpdated={handleUpdated} />
-
-          {/* 09. Career Interests */}
-          <CareerInterestsForm profile={profile} onUpdated={handleUpdated} />
         </div>
       </div>
     </div>

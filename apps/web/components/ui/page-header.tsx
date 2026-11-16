@@ -15,7 +15,7 @@ export function PageHeader({
     <div className="flex flex-col justify-between gap-4 border-b border-ui-border pb-6 sm:flex-row sm:items-end">
       <div>
         {eyebrow && (
-          <p className="mb-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ui-violet">
+          <p className="mb-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ui-copper">
             {eyebrow}
           </p>
         )}

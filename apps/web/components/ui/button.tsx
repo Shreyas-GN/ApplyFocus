@@ -20,8 +20,8 @@ const VARIANT_CLASSES: Record<NonNullable<ButtonProps["variant"]>, string> = {
 };
 
 const SIZE_CLASSES: Record<NonNullable<ButtonProps["size"]>, string> = {
-  sm: "h-8 px-3 text-xs rounded-lg",
-  md: "h-10 px-4 text-sm rounded-[10px]",
+  sm: "h-8 px-3 text-xs rounded-[var(--radius-button)]",
+  md: "h-10 px-4 text-sm rounded-[var(--radius-button)]",
 };
 
 export function Button({

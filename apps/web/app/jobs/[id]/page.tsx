@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Bookmark,
+  BookmarkCheck,
   Briefcase,
   CheckCircle2,
   Compass,
@@ -46,6 +47,7 @@ function JobDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showRawDescription, setShowRawDescription] = useState(false);
+  const [analysisTab, setAnalysisTab] = useState<"fit" | "transferable">("fit");
 
   useEffect(() => {
     let cancelled = false;
@@ -149,7 +151,7 @@ function JobDetailContent() {
   if (loading) {
     return (
       <div className="flex flex-col gap-6">
-        <div className="h-6 w-40 animate-pulse rounded bg-slate-200" />
+        <div className="h-6 w-40 animate-pulse rounded bg-ui-linen" />
         <div className="h-44 animate-pulse rounded-xl bg-ui-linen" />
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="h-72 animate-pulse rounded-xl bg-ui-linen lg:col-span-5" />
@@ -164,7 +166,7 @@ function JobDetailContent() {
       <div className="flex flex-col gap-4">
         <Link
           href="/jobs"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-ui-violet hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ui-teal hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Discover Jobs</span>
@@ -177,6 +179,7 @@ function JobDetailContent() {
   if (!job) return null;
 
   const isSaved = job.userState === "saved" || job.applicationStatus === "saved";
+  const isTracked = !!job.applicationId;
 
   return (
     <div className="flex flex-col gap-6">
@@ -191,7 +194,7 @@ function JobDetailContent() {
         {job.tailoredDocumentsCount > 0 && (
           <Link
             href={`/studio?tab=tailored&jobId=${job.id}`}
-            className="text-xs font-medium text-ui-violet hover:underline"
+            className="text-xs font-medium text-ui-teal hover:underline"
           >
             {job.tailoredDocumentsCount} tailored draft
             {job.tailoredDocumentsCount === 1 ? "" : "s"} created →
@@ -208,14 +211,12 @@ function JobDetailContent() {
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-semibold text-ui-ink">{job.title}</h1>
               <span
-                className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold ${scoreTone(
-                  job.match.score
-                )}`}
+                className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold ${scoreTone(job.match.score)}`}
               >
                 {job.match.score}% Overall Match
               </span>
               {job.match.isAdjacentRole && (
-                <Badge className="bg-ui-lilac-soft text-ui-violet">Adjacent Role</Badge>
+                <Badge className="bg-ui-teal-soft text-ui-teal">Adjacent Role</Badge>
               )}
               {job.applicationStatus && <StatusBadge status={job.applicationStatus} />}
             </div>
@@ -241,206 +242,234 @@ function JobDetailContent() {
             </div>
           </div>
 
+          {/* Consolidated 4-action bar */}
           <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <a
-              href={job.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-ui-border bg-white px-3 py-2 text-xs font-medium text-ui-ink hover:bg-ui-canvas"
-            >
-              <span>Original posting</span>
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-
-            <Button
-              variant={isSaved ? "primary" : "secondary"}
-              className="px-3 py-2 text-xs"
-              loading={busy}
-              onClick={handleToggleSave}
-            >
-              <Bookmark className="mr-1.5 inline h-3.5 w-3.5" />
-              {isSaved ? "Saved" : "Save"}
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="px-3 py-2 text-xs"
-              loading={busy}
-              onClick={handleDismiss}
-            >
-              <EyeOff className="mr-1.5 inline h-3.5 w-3.5" />
-              {job.userState === "dismissed" ? "Restore" : "Dismiss"}
-            </Button>
-
             <Link href={`/studio?tab=tailored&jobId=${job.id}`}>
-              <Button variant="secondary" className="px-3 py-2 text-xs">
+              <Button className="px-3 py-2 text-xs">
                 <FileText className="mr-1.5 inline h-3.5 w-3.5" />
                 Tailor Resume
               </Button>
             </Link>
 
-            <Link href={`/studio?tab=cover-letters&jobId=${job.id}`}>
-              <Button variant="secondary" className="px-3 py-2 text-xs">
-                Draft Cover Letter
-              </Button>
-            </Link>
+            <Button
+              variant={isSaved ? "secondary" : "secondary"}
+              className={`px-3 py-2 text-xs ${isSaved ? "border-ui-teal text-ui-teal" : ""}`}
+              loading={busy}
+              onClick={handleToggleSave}
+            >
+              {isSaved ? (
+                <BookmarkCheck className="mr-1.5 inline h-3.5 w-3.5" />
+              ) : (
+                <Bookmark className="mr-1.5 inline h-3.5 w-3.5" />
+              )}
+              {isSaved ? "Saved" : "Save"}
+            </Button>
 
-            {job.applicationId ? (
+            <a
+              href={job.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-ui-border bg-white px-3 py-2 text-xs font-medium text-ui-ink hover:bg-ui-canvas"
+            >
+              <span>Posting</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+
+            {isTracked ? (
               <Link href="/applications">
-                <Button className="px-3 py-2 text-xs">View in Tracker</Button>
+                <Button variant="ghost" className="px-3 py-2 text-xs">
+                  In Tracker →
+                </Button>
               </Link>
             ) : (
-              <Button className="px-3 py-2 text-xs" loading={busy} onClick={handleMarkApplied}>
+              <Button variant="secondary" className="px-3 py-2 text-xs" loading={busy} onClick={handleMarkApplied}>
                 Mark Applied
               </Button>
             )}
+
+            <button
+              type="button"
+              onClick={handleDismiss}
+              disabled={busy}
+              className="inline-flex items-center gap-1 rounded-[var(--radius-button)] px-2 py-2 text-xs font-medium text-ui-muted transition-colors hover:bg-ui-linen hover:text-ui-ink disabled:opacity-50"
+            >
+              <EyeOff className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only">
+                {job.userState === "dismissed" ? "Restore" : "Dismiss"}
+              </span>
+            </button>
           </div>
         </div>
       </Card>
 
-      {/* Application Strategy */}
-      <StrategyPanel jobId={jobId} />
-
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Left column: Intelligent Match Analysis */}
+        {/* Left column — Tabbed analysis card (Match + Transferable) */}
         <div className="flex flex-col gap-6 lg:col-span-5">
           <Card>
-            <CardHeader
-              title="Match Analysis"
-              description="Transparent fit evaluation comparing your verified profile against this posting."
-            />
+            {/* Tab switcher */}
+            <div className="mb-5 inline-flex gap-1 rounded-lg border border-ui-border bg-ui-canvas p-0.5">
+              <button
+                type="button"
+                onClick={() => setAnalysisTab("fit")}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  analysisTab === "fit"
+                    ? "bg-ui-surface text-ui-ink shadow-sm"
+                    : "text-ui-body hover:text-ui-ink"
+                }`}
+              >
+                Fit Analysis
+              </button>
+              <button
+                type="button"
+                onClick={() => setAnalysisTab("transferable")}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  analysisTab === "transferable"
+                    ? "bg-ui-surface text-ui-ink shadow-sm"
+                    : "text-ui-body hover:text-ui-ink"
+                }`}
+              >
+                Transferable Skills
+                {job.match.transferableSkills.length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-ui-linen px-1.5 py-0.5 font-mono text-[10px] text-ui-muted tabular-nums">
+                    {job.match.transferableSkills.length}
+                  </span>
+                )}
+              </button>
+            </div>
 
-            <div className="flex flex-col gap-4">
-              <div>
-                <div className="mb-1 flex justify-between text-xs font-medium text-ui-ink">
-                  <span>Overall Personalized Fit</span>
-                  <span>{job.match.score}%</span>
-                </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-ui-linen">
-                  <div
-                    className={`h-full rounded-full ${barTone(job.match.score)}`}
-                    style={{ width: `${job.match.score}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg border border-slate-100 bg-ui-canvas p-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs text-ui-muted">Skills compatibility</span>
-                    <span className="text-sm font-semibold text-ui-ink">
-                      {job.match.skillsScore}%
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      className={`h-full rounded-full ${barTone(job.match.skillsScore)}`}
-                      style={{ width: `${job.match.skillsScore}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-slate-100 bg-ui-canvas p-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs text-ui-muted">Experience fit</span>
-                    <span className="text-sm font-semibold text-ui-ink">
-                      {job.match.experienceScore}%
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      className={`h-full rounded-full ${barTone(job.match.experienceScore)}`}
-                      style={{ width: `${job.match.experienceScore}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {job.match.adjacencyReason && (
-                <div className="flex items-start gap-2.5 rounded-lg border border-ui-lilac bg-ui-lilac-soft/70 p-3 text-xs text-ui-ink">
-                  <Compass className="mt-0.5 h-4 w-4 shrink-0 text-ui-violet" />
-                  <div>
-                    <p className="font-semibold text-ui-ink">Adjacent role insight</p>
-                    <p className="mt-0.5 leading-relaxed">{job.match.adjacencyReason}</p>
-                  </div>
-                </div>
-              )}
-
-              {job.match.reasons.length > 0 && (
+            {analysisTab === "fit" ? (
+              <div className="flex flex-col gap-4">
                 <div>
-                  <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-muted">
-                    <Sparkles className="h-3.5 w-3.5 text-ui-violet" />
-                    <span>Why recommended</span>
-                  </p>
-                  <ul className="flex flex-col gap-1.5 text-xs text-ui-ink">
-                    {job.match.reasons.map((r) => (
-                      <li key={r} className="flex items-start gap-2">
-                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                        <span>{r}</span>
+                  <div className="mb-1 flex justify-between text-xs font-medium text-ui-ink">
+                    <span>Overall Personalized Fit</span>
+                    <span>{job.match.score}%</span>
+                  </div>
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-ui-linen">
+                    <div
+                      className={`h-full rounded-full ${barTone(job.match.score)}`}
+                      style={{ width: `${job.match.score}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-ui-border bg-ui-canvas p-3">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-ui-muted">Skills compatibility</span>
+                      <span className="text-sm font-semibold text-ui-ink">
+                        {job.match.skillsScore}%
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ui-linen">
+                      <div
+                        className={`h-full rounded-full ${barTone(job.match.skillsScore)}`}
+                        style={{ width: `${job.match.skillsScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-ui-border bg-ui-canvas p-3">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-ui-muted">Experience fit</span>
+                      <span className="text-sm font-semibold text-ui-ink">
+                        {job.match.experienceScore}%
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ui-linen">
+                      <div
+                        className={`h-full rounded-full ${barTone(job.match.experienceScore)}`}
+                        style={{ width: `${job.match.experienceScore}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {job.match.adjacencyReason && (
+                  <div className="flex items-start gap-2.5 rounded-lg border border-ui-teal-soft bg-ui-teal-soft/50 p-3 text-xs text-ui-ink">
+                    <Compass className="mt-0.5 h-4 w-4 shrink-0 text-ui-teal" />
+                    <div>
+                      <p className="font-semibold text-ui-ink">Adjacent role insight</p>
+                      <p className="mt-0.5 leading-relaxed">{job.match.adjacencyReason}</p>
+                    </div>
+                  </div>
+                )}
+
+                {job.match.reasons.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+                      <Sparkles className="h-3.5 w-3.5 text-ui-teal" />
+                      <span>Why recommended</span>
+                    </p>
+                    <ul className="flex flex-col gap-1.5 text-xs text-ui-ink">
+                      {job.match.reasons.map((r) => (
+                        <li key={r} className="flex items-start gap-2">
+                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                          <span>{r}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {job.match.strengths.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                      Strengths
+                    </p>
+                    <ul className="flex flex-col gap-1 text-xs text-ui-ink">
+                      {job.match.strengths.map((s) => (
+                        <li key={s}>• {s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {job.match.gaps.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                      Missing Requirements & Gaps
+                    </p>
+                    <ul className="flex flex-col gap-1 text-xs text-ui-ink">
+                      {job.match.gaps.map((g) => (
+                        <li key={g}>• {g}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <p className="mb-3 text-xs text-ui-body">
+                  Skills from your profile that bridge missing technical requirements.
+                </p>
+                {job.match.transferableSkills.length > 0 ? (
+                  <ul className="flex flex-col gap-3">
+                    {job.match.transferableSkills.map((item) => (
+                      <li
+                        key={`${item.candidateSkill}-${item.targetSkill}`}
+                        className="rounded-lg border border-ui-teal-soft bg-ui-teal-soft/30 p-3 text-xs"
+                      >
+                        <p className="flex items-center gap-1.5 font-semibold text-ui-ink">
+                          <span>{item.candidateSkill}</span>
+                          <ArrowRight className="h-3.5 w-3.5 text-ui-teal" />
+                          <span>{item.targetSkill}</span>
+                        </p>
+                        <p className="mt-1 leading-relaxed text-ui-body">{item.reason}</p>
                       </li>
                     ))}
                   </ul>
-                </div>
-              )}
-
-              {job.match.strengths.length > 0 && (
-                <div>
-                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                    Strengths
+                ) : (
+                  <p className="text-xs text-ui-muted">
+                    No transferable skill gaps needed — your direct skills already cover the core
+                    stack or none were mapped for missing tags.
                   </p>
-                  <ul className="flex flex-col gap-1 text-xs text-ui-ink">
-                    {job.match.strengths.map((s) => (
-                      <li key={s}>• {s}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {job.match.gaps.length > 0 && (
-                <div>
-                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                    Missing Requirements & Gaps
-                  </p>
-                  <ul className="flex flex-col gap-1 text-xs text-ui-ink">
-                    {job.match.gaps.map((g) => (
-                      <li key={g}>• {g}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader
-              title="Transferable Skills"
-              description="Skills from your profile that bridge missing technical requirements."
-            />
-            {job.match.transferableSkills.length > 0 ? (
-              <ul className="flex flex-col gap-3">
-                {job.match.transferableSkills.map((item) => (
-                  <li
-                    key={`${item.candidateSkill}-${item.targetSkill}`}
-                    className="rounded-lg border border-sky-100 bg-sky-50/50 p-3 text-xs"
-                  >
-                    <p className="flex items-center gap-1.5 font-semibold text-ui-ink">
-                      <span>{item.candidateSkill}</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-sky-600" />
-                      <span>{item.targetSkill}</span>
-                    </p>
-                    <p className="mt-1 leading-relaxed text-ui-body">{item.reason}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-ui-muted">
-                No transferable skill gaps needed — your direct skills already cover the core stack or none were mapped for missing tags.
-              </p>
+                )}
+              </div>
             )}
           </Card>
         </div>
 
-        {/* Right column: Job Intelligence (Details, Responsibilities, Requirements) */}
+        {/* Right column: Job Intelligence */}
         <div className="flex flex-col gap-6 lg:col-span-7">
           <Card>
             <CardHeader
@@ -452,7 +481,7 @@ function JobDetailContent() {
               {job.intelligence.companyAndRoleHighlights.map((hl) => (
                 <div
                   key={hl}
-                  className="flex items-center gap-2 rounded-lg border border-slate-100 bg-ui-canvas px-3 py-2 text-xs font-medium text-ui-ink"
+                  className="flex items-center gap-2 rounded-lg border border-ui-border bg-ui-canvas px-3 py-2 text-xs font-medium text-ui-ink"
                 >
                   <Briefcase className="h-3.5 w-3.5 shrink-0 text-ui-muted" />
                   <span>{hl}</span>
@@ -469,7 +498,7 @@ function JobDetailContent() {
             <ul className="flex flex-col gap-2.5 text-sm leading-relaxed text-ui-ink">
               {job.intelligence.responsibilities.map((item) => (
                 <li key={item} className="flex items-start gap-2.5">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ui-wine" />
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ui-teal" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -534,7 +563,7 @@ function JobDetailContent() {
                   <ul className="flex flex-col gap-2 text-sm leading-relaxed text-ui-ink">
                     {job.intelligence.technicalRequirements.map((req) => (
                       <li key={req} className="flex items-start gap-2.5">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ui-muted" />
                         <span>{req}</span>
                       </li>
                     ))}
@@ -542,11 +571,11 @@ function JobDetailContent() {
                 </div>
               )}
 
-              <div className="border-t border-slate-100 pt-3">
+              <div className="border-t border-ui-border pt-3">
                 <button
                   type="button"
                   onClick={() => setShowRawDescription((prev) => !prev)}
-                  className="text-xs font-medium text-ui-violet hover:underline"
+                  className="text-xs font-medium text-ui-teal hover:underline"
                 >
                   {showRawDescription
                     ? "Hide full job posting description"
@@ -562,7 +591,9 @@ function JobDetailContent() {
           </Card>
         </div>
       </div>
+
+      {/* Application Strategy — below both analysis columns */}
+      <StrategyPanel jobId={jobId} />
     </div>
   );
 }
-
