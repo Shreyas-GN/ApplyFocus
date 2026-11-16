@@ -502,7 +502,7 @@ function JobsContent() {
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {job.match.matchedSkills.slice(0, 4).map((skill) => (
                           <Badge key={`m-${skill}`} className="bg-emerald-50 text-emerald-700">
-                            ✓ {skill}
+                            {`✓ ${skill}`}
                           </Badge>
                         ))}
                         {job.skills

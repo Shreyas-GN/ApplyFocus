@@ -143,7 +143,7 @@ function DashboardContent() {
     if (jobs && jobs.length > 0) {
       return (
         <Link
-          href={`/jobs/${jobs[0].id}`}
+          href={`/jobs/${jobs[0]?.id}`}
           className="inline-flex h-9 items-center justify-center rounded-[var(--radius-button)] bg-ui-teal px-4 text-xs font-medium text-white transition-colors hover:bg-ui-teal-hover"
         >
           View Top Match →
