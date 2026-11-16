@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { ResumeDto } from "@/lib/types";
 import { hasAllowedResumeExtension, RESUME_MAX_FILE_SIZE_BYTES } from "@applypilot/validators";
@@ -14,6 +15,7 @@ import { useApi } from "@/lib/use-api";
 const PROCESSING_STATUSES = new Set(["uploaded", "extracting", "extracted", "parsing"]);
 
 export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
+  const router = useRouter();
   const { data: resumes, loading, error, refetch } = useApi<ResumeDto[]>("/resumes");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -41,8 +43,8 @@ export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
     formData.append("file", file);
     setUploading(true);
     try {
-      await api.upload("/resumes/upload", formData);
-      refetch();
+      const uploaded = await api.upload<ResumeDto>("/resumes/upload", formData);
+      router.push(`/resumes/${uploaded.id}/review`);
     } catch (err) {
       setUploadError(err instanceof ApiError ? err.detail : "Upload failed.");
     } finally {

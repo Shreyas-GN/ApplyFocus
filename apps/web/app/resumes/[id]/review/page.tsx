@@ -1,14 +1,14 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ResumeDto, ResumeParsedDataDto } from "@/lib/types";
 import { resumeParsedDataSchema } from "@applypilot/validators";
 import { ProtectedRoute } from "@/components/layout/protected-route";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/ui/field";
+import { TextField, TextAreaField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import {
   ControlledEntryList,
@@ -17,6 +17,16 @@ import {
 import { api, ApiError } from "@/lib/api-client";
 
 type PersonalForm = Record<string, string>;
+type Phase = "loading" | "parsing" | "failed" | "ready" | "error";
+
+const PROCESSING_STATUSES = new Set(["uploaded", "extracting", "extracted", "parsing"]);
+
+const PHASE_LABELS: Record<string, string> = {
+  uploaded: "Preparing your resume...",
+  extracting: "Extracting text from your resume...",
+  extracted: "Text extracted — starting AI analysis...",
+  parsing: "AI is reading your resume...",
+};
 
 export default function ResumeReviewPage() {
   return (
@@ -33,6 +43,10 @@ function ReviewContent() {
   const router = useRouter();
 
   const [resume, setResume] = useState<ResumeDto | null>(null);
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [phaseLabel, setPhaseLabel] = useState<string>("");
+  const [parseError, setParseError] = useState<string | null>(null);
+
   const [personal, setPersonal] = useState<PersonalForm>({});
   const [experience, setExperience] = useState<ControlledEntry[]>([]);
   const [education, setEducation] = useState<ControlledEntry[]>([]);
@@ -41,110 +55,169 @@ function ReviewContent() {
   const [certifications, setCertifications] = useState<ControlledEntry[]>([]);
   const [overallConfidence, setOverallConfidence] = useState<number | undefined>();
 
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reparsing, setReparsing] = useState(false);
 
+  const populateParsedData = useCallback((parsed: ResumeParsedDataDto) => {
+    setPersonal({
+      fullName: parsed.personal.fullName ?? "",
+      email: parsed.personal.email ?? "",
+      phone: parsed.personal.phone ?? "",
+      location: parsed.personal.location ?? "",
+      linkedinUrl: parsed.personal.linkedinUrl ?? "",
+      githubUrl: parsed.personal.githubUrl ?? "",
+      portfolioUrl: parsed.personal.portfolioUrl ?? "",
+      headline: parsed.personal.headline ?? "",
+      summary: parsed.personal.summary ?? "",
+    });
+    setExperience(
+      parsed.experience.map((e) => ({
+        source: e.source,
+        confidence: e.confidence,
+        values: {
+          company: e.company,
+          title: e.title,
+          location: e.location ?? "",
+          startDate: e.startDate ?? "",
+          endDate: e.endDate ?? "",
+          isCurrent: e.isCurrent ?? false,
+          description: e.description ?? "",
+        },
+      })),
+    );
+    setEducation(
+      parsed.education.map((e) => ({
+        source: e.source,
+        confidence: e.confidence,
+        values: {
+          institution: e.institution,
+          degree: e.degree ?? "",
+          fieldOfStudy: e.fieldOfStudy ?? "",
+          startDate: e.startDate ?? "",
+          endDate: e.endDate ?? "",
+          description: e.description ?? "",
+        },
+      })),
+    );
+    setSkills(
+      parsed.skills.map((s) => ({
+        source: s.source,
+        confidence: s.confidence,
+        values: { name: s.name, category: s.category ?? "" },
+      })),
+    );
+    setProjects(
+      parsed.projects.map((p) => ({
+        source: p.source,
+        confidence: p.confidence,
+        values: {
+          name: p.name,
+          description: p.description ?? "",
+          url: p.url ?? "",
+          startDate: p.startDate ?? "",
+          endDate: p.endDate ?? "",
+        },
+      })),
+    );
+    setCertifications(
+      parsed.certifications.map((c) => ({
+        source: c.source,
+        confidence: c.confidence,
+        values: {
+          name: c.name,
+          issuer: c.issuer ?? "",
+          issueDate: c.issueDate ?? "",
+          expiryDate: c.expiryDate ?? "",
+          credentialUrl: c.credentialUrl ?? "",
+        },
+      })),
+    );
+    setOverallConfidence(parsed.overallConfidence);
+  }, []);
+
+  const loadParsedData = useCallback(async () => {
+    try {
+      const parsed = await api.get<ResumeParsedDataDto>(`/resumes/${id}/parsed-data`);
+      populateParsedData(parsed);
+      setPhase("ready");
+    } catch (err) {
+      setParseError(err instanceof ApiError ? err.detail : "Couldn't load parsed data.");
+      setPhase("error");
+    }
+  }, [id, populateParsedData]);
+
+  // Initial resume load
   useEffect(() => {
     let cancelled = false;
-    async function load() {
+
+    async function init() {
       try {
-        const [resumeData, parsed] = await Promise.all([
-          api.get<ResumeDto>(`/resumes/${id}`),
-          api.get<ResumeParsedDataDto>(`/resumes/${id}/parsed-data`),
-        ]);
+        const resumeData = await api.get<ResumeDto>(`/resumes/${id}`);
         if (cancelled) return;
         setResume(resumeData);
-        setPersonal({
-          fullName: parsed.personal.fullName ?? "",
-          email: parsed.personal.email ?? "",
-          phone: parsed.personal.phone ?? "",
-          location: parsed.personal.location ?? "",
-          linkedinUrl: parsed.personal.linkedinUrl ?? "",
-          githubUrl: parsed.personal.githubUrl ?? "",
-          portfolioUrl: parsed.personal.portfolioUrl ?? "",
-          headline: parsed.personal.headline ?? "",
-          summary: parsed.personal.summary ?? "",
-        });
-        setExperience(
-          parsed.experience.map((e) => ({
-            source: e.source,
-            confidence: e.confidence,
-            values: {
-              company: e.company,
-              title: e.title,
-              location: e.location ?? "",
-              startDate: e.startDate ?? "",
-              endDate: e.endDate ?? "",
-              isCurrent: e.isCurrent ?? false,
-              description: e.description ?? "",
-            },
-          })),
-        );
-        setEducation(
-          parsed.education.map((e) => ({
-            source: e.source,
-            confidence: e.confidence,
-            values: {
-              institution: e.institution,
-              degree: e.degree ?? "",
-              fieldOfStudy: e.fieldOfStudy ?? "",
-              startDate: e.startDate ?? "",
-              endDate: e.endDate ?? "",
-              description: e.description ?? "",
-            },
-          })),
-        );
-        setSkills(
-          parsed.skills.map((s) => ({
-            source: s.source,
-            confidence: s.confidence,
-            values: { name: s.name, category: s.category ?? "" },
-          })),
-        );
-        setProjects(
-          parsed.projects.map((p) => ({
-            source: p.source,
-            confidence: p.confidence,
-            values: {
-              name: p.name,
-              description: p.description ?? "",
-              url: p.url ?? "",
-              startDate: p.startDate ?? "",
-              endDate: p.endDate ?? "",
-            },
-          })),
-        );
-        setCertifications(
-          parsed.certifications.map((c) => ({
-            source: c.source,
-            confidence: c.confidence,
-            values: {
-              name: c.name,
-              issuer: c.issuer ?? "",
-              issueDate: c.issueDate ?? "",
-              expiryDate: c.expiryDate ?? "",
-              credentialUrl: c.credentialUrl ?? "",
-            },
-          })),
-        );
-        setOverallConfidence(parsed.overallConfidence);
+
+        if (resumeData.processingStatus === "failed") {
+          setParseError(resumeData.processingError ?? "Parsing failed.");
+          setPhase("failed");
+        } else if (resumeData.processingStatus === "parsed") {
+          await loadParsedData();
+        } else if (PROCESSING_STATUSES.has(resumeData.processingStatus)) {
+          setPhaseLabel(PHASE_LABELS[resumeData.processingStatus] ?? "Processing...");
+          setPhase("parsing");
+        } else {
+          setParseError("Unexpected processing status.");
+          setPhase("error");
+        }
       } catch (err) {
         if (!cancelled) {
-          setLoadError(err instanceof ApiError ? err.detail : "Couldn't load this resume's parsed data.");
+          setParseError(err instanceof ApiError ? err.detail : "Couldn't load this resume.");
+          setPhase("error");
         }
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     }
-    void load();
+
+    void init();
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, loadParsedData]);
+
+  // Status polling while parsing
+  useEffect(() => {
+    if (phase !== "parsing") return;
+
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const status = await api.get<{ processingStatus: string; error: string | null }>(
+          `/resumes/${id}/status`,
+        );
+        if (cancelled) return;
+
+        const label = PHASE_LABELS[status.processingStatus];
+        if (label) setPhaseLabel(label);
+
+        if (status.processingStatus === "parsed") {
+          clearInterval(interval);
+          await loadParsedData();
+        } else if (status.processingStatus === "failed") {
+          clearInterval(interval);
+          setParseError(status.error ?? "Parsing failed. You can try again.");
+          setPhase("failed");
+        }
+      } catch {
+        // Silently ignore transient poll errors
+      }
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [phase, id, loadParsedData]);
 
   function buildPayload() {
     return resumeParsedDataSchema.parse({
@@ -228,30 +301,104 @@ function ReviewContent() {
     }
   }
 
-  if (loading) {
-    return <div className="h-64 animate-pulse rounded-xl bg-ui-linen" />;
+  async function handleReparse() {
+    setReparsing(true);
+    setSaveError(null);
+    try {
+      await api.post(`/resumes/${id}/reparse`);
+      setParseError(null);
+      setPhase("parsing");
+      setPhaseLabel("Reparsing your resume...");
+    } catch (err) {
+      setSaveError(err instanceof ApiError ? err.detail : "Couldn't start reparse.");
+      setReparsing(false);
+    }
   }
 
-  if (loadError) {
-    return <Alert tone="error">{loadError}</Alert>;
+  // ── Loading skeleton ──────────────────────────────────────────
+  if (phase === "loading") {
+    return (
+      <div className="flex flex-col gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-44 animate-pulse rounded-2xl bg-ui-linen" />
+        ))}
+      </div>
+    );
   }
 
+  // ── Parsing in progress ───────────────────────────────────────
+  if (phase === "parsing") {
+    return (
+      <div className="flex min-h-[320px] flex-col items-center justify-center gap-6 rounded-2xl border border-ui-border bg-ui-surface p-8 text-center">
+        <div
+          aria-label="Parsing in progress"
+          className="h-10 w-10 animate-spin rounded-full border-4 border-ui-lilac border-t-ui-violet"
+        />
+        <div>
+          <p className="font-semibold text-ui-ink">Analysing your resume</p>
+          <p className="mt-1 text-sm text-ui-muted">
+            {phaseLabel || "This usually takes 10–30 seconds."}
+          </p>
+        </div>
+        {resume && (
+          <p className="rounded-lg bg-ui-linen px-4 py-2 font-mono text-xs text-ui-muted">
+            {resume.versionLabel}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // ── Parsing failed ────────────────────────────────────────────
+  if (phase === "failed") {
+    return (
+      <div className="flex flex-col gap-4">
+        <Alert tone="error">
+          <p className="font-medium">Parsing failed</p>
+          {parseError && <p className="mt-1 text-xs">{parseError}</p>}
+        </Alert>
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={handleReparse} loading={reparsing}>
+            Try again
+          </Button>
+          <Button variant="ghost" onClick={() => router.push("/resumes")}>
+            Back to resumes
+          </Button>
+        </div>
+        {saveError && <Alert tone="error">{saveError}</Alert>}
+      </div>
+    );
+  }
+
+  // ── Load error ────────────────────────────────────────────────
+  if (phase === "error") {
+    return (
+      <div className="flex flex-col gap-4">
+        <Alert tone="error">{parseError ?? "Something went wrong."}</Alert>
+        <Button variant="ghost" onClick={() => router.push("/resumes")}>
+          Back to resumes
+        </Button>
+      </div>
+    );
+  }
+
+  // ── Ready — editable form ─────────────────────────────────────
   const alreadyConfirmed = resume?.reviewStatus === "confirmed";
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-28">
       <div>
         <h1 className="text-2xl font-semibold text-ui-ink">Review parsed resume</h1>
         <p className="mt-1 text-sm text-ui-muted">
-          {resume?.versionLabel} — check what we extracted, correct anything that&apos;s wrong, then
-          confirm to update your profile.
+          {resume?.versionLabel} — check what we extracted, correct anything that&apos;s wrong,
+          then confirm to update your profile.
         </p>
       </div>
 
       {alreadyConfirmed && (
         <Alert tone="success">
-          This resume&apos;s data has already been confirmed and applied to your profile. You can still
-          edit it below and re-confirm.
+          This resume has already been confirmed. You can edit below and re-confirm to update your
+          profile again.
         </Alert>
       )}
       {saveError && <Alert tone="error">{saveError}</Alert>}
@@ -280,6 +427,15 @@ function ReviewContent() {
               onChange={(e) => setPersonal((prev) => ({ ...prev, [key]: e.target.value }))}
             />
           ))}
+          <div className="sm:col-span-2">
+            <TextAreaField
+              name="summary"
+              label="Professional summary"
+              rows={4}
+              value={personal.summary ?? ""}
+              onChange={(e) => setPersonal((prev) => ({ ...prev, summary: e.target.value }))}
+            />
+          </div>
         </div>
       </Card>
 
@@ -289,7 +445,15 @@ function ReviewContent() {
           items={experience}
           onChange={setExperience}
           emptyLabel="Nothing extracted — add experience manually if you'd like."
-          blankValues={{ company: "", title: "", location: "", startDate: "", endDate: "", isCurrent: false, description: "" }}
+          blankValues={{
+            company: "",
+            title: "",
+            location: "",
+            startDate: "",
+            endDate: "",
+            isCurrent: false,
+            description: "",
+          }}
           fields={[
             { name: "company", label: "Company", type: "text" },
             { name: "title", label: "Title", type: "text" },
@@ -308,7 +472,14 @@ function ReviewContent() {
           items={education}
           onChange={setEducation}
           emptyLabel="Nothing extracted — add education manually if you'd like."
-          blankValues={{ institution: "", degree: "", fieldOfStudy: "", startDate: "", endDate: "", description: "" }}
+          blankValues={{
+            institution: "",
+            degree: "",
+            fieldOfStudy: "",
+            startDate: "",
+            endDate: "",
+            description: "",
+          }}
           fields={[
             { name: "institution", label: "Institution", type: "text" },
             { name: "degree", label: "Degree", type: "text" },
@@ -357,7 +528,13 @@ function ReviewContent() {
           items={certifications}
           onChange={setCertifications}
           emptyLabel="Nothing extracted."
-          blankValues={{ name: "", issuer: "", issueDate: "", expiryDate: "", credentialUrl: "" }}
+          blankValues={{
+            name: "",
+            issuer: "",
+            issueDate: "",
+            expiryDate: "",
+            credentialUrl: "",
+          }}
           fields={[
             { name: "name", label: "Certification name", type: "text" },
             { name: "issuer", label: "Issuer", type: "text" },
@@ -368,13 +545,23 @@ function ReviewContent() {
         />
       </Card>
 
-      <div className="flex justify-end gap-3 rounded-xl border border-ui-border bg-white p-4 shadow-lg">
-        <Button variant="secondary" onClick={handleSaveCorrections} loading={saving}>
-          Save corrections
-        </Button>
-        <Button onClick={handleConfirm} loading={confirming}>
-          Confirm and update my profile
-        </Button>
+      {/* Sticky action bar — offset by sidebar on desktop */}
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-ui-border bg-white/95 shadow-lg backdrop-blur-sm md:left-64">
+        <div className="px-4 py-4 sm:px-8">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <Button
+              variant="secondary"
+              onClick={handleSaveCorrections}
+              loading={saving}
+              disabled={confirming}
+            >
+              Save corrections
+            </Button>
+            <Button onClick={handleConfirm} loading={confirming} disabled={saving}>
+              Confirm and update my profile
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
