@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { DM_Serif_Display, IBM_Plex_Mono, Inter } from "next/font/google";
+import { DM_Serif_Display, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "sonner";
 
-const inter = Inter({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-instrument-sans",
   display: "swap",
 });
 
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${dmSerifDisplay.variable} ${ibmPlexMono.variable}`}>
+    <html lang="en" className={`${instrumentSans.variable} ${dmSerifDisplay.variable} ${ibmPlexMono.variable}`}>
       <body className="antialiased">
         <AuthProvider>{children}</AuthProvider>
         <Toaster position="bottom-right" theme="light" />

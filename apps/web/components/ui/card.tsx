@@ -60,7 +60,7 @@ export function StatCard({
 }) {
   const dotColor =
     tone === "accent"
-      ? "bg-ui-violet"
+      ? "bg-ui-teal"
       : tone === "success"
         ? "bg-emerald-600"
         : tone === "warning"

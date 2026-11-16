@@ -38,15 +38,15 @@ export function Tabs<T extends string>({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(item.id)}
-            className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-violet ${
+            className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-teal ${
               active
-                ? "bg-ui-lilac-soft text-ui-ink"
+                ? "bg-ui-teal-soft text-ui-ink"
                 : "text-ui-body hover:bg-ui-linen/60 hover:text-ui-ink"
             }`}
           >
             {Icon && (
               <Icon
-                className={`h-4 w-4 ${active ? "text-ui-violet" : "text-ui-muted"}`}
+                className={`h-4 w-4 ${active ? "text-ui-teal" : "text-ui-muted"}`}
                 aria-hidden="true"
               />
             )}

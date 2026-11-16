@@ -39,7 +39,7 @@ const PRIMARY_NAV_ITEMS: NavItem[] = [
 ];
 
 const SECONDARY_NAV_ITEMS: NavItem[] = [
-  { href: "/copilot", label: "Browser Copilot", icon: Bot },
+  { href: "/copilot", label: "Copilot", icon: Bot },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -79,12 +79,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 onClick={onNavigate}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                   active
-                    ? "bg-ui-lilac-soft text-ui-ink"
+                    ? "bg-ui-teal-soft text-ui-ink"
                     : "text-ui-body hover:bg-ui-linen/70 hover:text-ui-ink"
                 }`}
               >
                 <Icon
-                  className={`h-4 w-4 shrink-0 ${active ? "text-ui-violet" : "text-ui-muted"}`}
+                  className={`h-4 w-4 shrink-0 ${active ? "text-ui-teal" : "text-ui-muted"}`}
                 />
                 <span>{item.label}</span>
               </Link>
@@ -104,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={onNavigate}
             className="flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-violet"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-wine text-xs font-semibold tracking-tight text-white">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
               AP
             </span>
             <span className="text-[17px] font-semibold tracking-tight text-ui-ink">
@@ -143,7 +143,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex flex-col gap-3 border-t border-ui-border pt-4">
         <div className="flex items-center justify-between gap-2 rounded-xl border border-ui-border bg-ui-canvas px-3 py-2.5">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ui-lilac-soft font-mono text-[11px] font-semibold text-ui-violet">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ui-teal-soft font-mono text-[11px] font-semibold text-ui-teal">
               {user?.email?.charAt(0).toUpperCase() ?? "U"}
             </span>
             <span className="min-w-0 truncate text-xs font-medium text-ui-ink" title={user?.email}>
@@ -214,13 +214,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               Discover Jobs
             </Link>
-            <Link
-              href="/applications"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-ui-wine px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-ui-wine-hover"
-            >
-              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>Track Application</span>
-            </Link>
+            {pathname !== "/dashboard" && (
+              <Link
+                href="/applications"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-ui-teal px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-ui-teal-hover"
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Track Application</span>
+              </Link>
+            )}
           </div>
         </header>
 
