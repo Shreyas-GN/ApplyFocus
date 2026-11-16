@@ -154,110 +154,95 @@ function TrackerMockup() {
   );
 }
 
-const CARDS = [
+const STEPS = [
   {
-    id: "profile",
-    span: "lg:col-span-2",
-    icon: UserRound,
-    eyebrow: "Master profile",
-    title: "One profile. Every application.",
-    body: "Build a structured professional record from your resume. Skills, experience, education, and projects — organized once, used everywhere. You review every extracted field before it's saved.",
-    accent: "bg-lp-accent-soft",
-    iconColor: "text-lp-accent",
+    num: "01",
+    eyebrow: "Build your profile",
+    title: "Tell ApplyPilot who you are. Once.",
+    body: "Upload your resume and ApplyPilot extracts your skills, experience and education into a structured profile. You review every field before anything is saved. Your profile becomes the foundation for every application you make.",
+    mockup: <ProfileMockup />,
+    textLeft: false,
   },
   {
-    id: "match",
-    span: "lg:col-span-1",
-    icon: Search,
-    eyebrow: "Opportunity matching",
-    title: "Know your fit before you apply.",
-    body: "AI-scored match analysis explains exactly how your background maps to each role — required skills, gaps, and transferable strengths.",
-    accent: "bg-lp-copper-soft",
-    iconColor: "text-lp-copper",
+    num: "02",
+    eyebrow: "Find roles that fit",
+    title: "See where you stand before you click Apply.",
+    body: "ApplyPilot surfaces roles that match your background and explains the fit — which skills align, which don't, and what a recruiter would notice first. No more guessing whether it's worth your time.",
+    mockup: <OpportunityMockup />,
+    textLeft: true,
   },
   {
-    id: "ai",
-    span: "lg:col-span-1",
-    icon: Sparkles,
-    eyebrow: "Intelligence",
-    title: "Insight, not just search.",
-    body: "Understand job requirements in depth: responsibilities, seniority signals, tech stack, and team context — before you spend time applying.",
-    accent: "bg-emerald-50",
-    iconColor: "text-emerald-600",
+    num: "03",
+    eyebrow: "Tailor your resume",
+    title: "A focused resume for each opportunity.",
+    body: "For every role you decide to pursue, ApplyPilot suggests targeted edits to your resume — reframing experience to match what the job description asks for. You see the original and the suggestion side-by-side and approve every change.",
+    mockup: <DiffMockup />,
+    textLeft: false,
   },
   {
-    id: "resume",
-    span: "lg:col-span-2",
-    icon: FileEdit,
-    eyebrow: "Adaptive resume engine",
-    title: "A tailored resume for every opportunity.",
-    body: "ApplyPilot adapts your resume to each job description — highlighting the right skills and projects. You see the original alongside the suggestion and approve every change before it's used.",
-    accent: "bg-lp-accent-soft",
-    iconColor: "text-lp-accent",
-  },
-  {
-    id: "tracking",
-    span: "lg:col-span-1",
-    icon: ListChecks,
-    eyebrow: "Application tracking",
-    title: "Every application, organized.",
-    body: "Track stages, link resume versions, log recruiter notes, and manage follow-up reminders — all in one pipeline.",
-    accent: "bg-lp-copper-soft",
-    iconColor: "text-lp-copper",
-  },
-  {
-    id: "control",
-    span: "lg:col-span-1",
-    icon: ShieldCheck,
-    eyebrow: "Candidate control",
-    title: "Your information. Your decisions.",
-    body: "No application is submitted without your review. Every AI suggestion is transparent, editable, and optional.",
-    accent: "bg-slate-50",
-    iconColor: "text-slate-500",
+    num: "04",
+    eyebrow: "Track your search",
+    title: "Know exactly where every application stands.",
+    body: "From saved to offer, every opportunity lives in one organized view. Link the resume version you used, log interview notes, set follow-up reminders. No spreadsheets. No forgotten threads.",
+    mockup: <TrackerMockup />,
+    textLeft: true,
   },
 ];
 
 export function LandingBento() {
   return (
-    <section id="features" className="bg-lp-bg py-20 sm:py-28">
+    <section id="how-it-works" className="bg-white py-20 sm:py-28">
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
         {/* Section header */}
-        <div className="mb-12 text-center">
+        <div className="mb-6 text-center">
           <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-lp-accent">
-            Everything you need
+            How it works
           </p>
-          <h2 className="mx-auto mt-3 max-w-[640px] font-ui text-[36px] font-bold leading-[1.1] tracking-[-0.03em] text-lp-ink sm:text-[48px]">
-            A complete career workspace.
+          <h2 className="mx-auto mt-3 max-w-[560px] font-display text-[36px] leading-[1.08] text-lp-ink sm:text-[46px]">
+            A clearer way to move your job search forward.
           </h2>
-          <p className="mx-auto mt-4 max-w-[500px] font-ui text-[16px] leading-[1.65] text-lp-body">
-            From discovery to offer — every step of your job search in one place, built around your control.
-          </p>
         </div>
 
-        {/* Bento grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CARDS.map((card) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.id}
-                className={`group relative overflow-hidden rounded-2xl border border-lp-border bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(53,92,255,0.08)] sm:p-7 ${card.span}`}
-              >
-                <div className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${card.accent}`}>
-                  <Icon className={`h-[18px] w-[18px] ${card.iconColor}`} strokeWidth={1.75} />
+        {/* Trust strip */}
+        <div className="mb-20 flex flex-wrap justify-center gap-6 sm:gap-10">
+          {[
+            { Icon: User2, label: "You review every AI suggestion" },
+            { Icon: Search, label: "Understand fit before applying" },
+            { Icon: ListChecks, label: "Every application in one place" },
+          ].map(({ Icon, label }) => (
+            <div key={label} className="flex items-center gap-2.5 font-ui text-[13px] text-lp-body">
+              <Icon className="h-4 w-4 text-lp-accent" strokeWidth={1.75} />
+              {label}
+            </div>
+          ))}
+        </div>
+
+        {/* Steps */}
+        <div className="space-y-20 sm:space-y-28">
+          {STEPS.map((step) => (
+            <div
+              key={step.num}
+              className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-16 ${step.textLeft ? "" : "lg:[&>*:first-child]:order-2 lg:[&>*:last-child]:order-1"}`}
+            >
+              {/* Copy */}
+              <div>
+                <div className="mb-4 inline-flex items-center gap-3">
+                  <span className="font-mono text-[11px] font-semibold tracking-[0.16em] text-lp-accent">{step.num}</span>
+                  <span className="h-px w-6 bg-lp-border" />
+                  <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-lp-muted">{step.eyebrow}</span>
                 </div>
-                <p className="mt-4 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-lp-muted">
-                  {card.eyebrow}
-                </p>
-                <h3 className="mt-1.5 font-ui text-[18px] font-bold leading-snug tracking-[-0.02em] text-lp-ink">
-                  {card.title}
+                <h3 className="font-display text-[28px] leading-[1.1] text-lp-ink sm:text-[34px]">
+                  {step.title}
                 </h3>
-                <p className="mt-2.5 font-ui text-[14px] leading-relaxed text-lp-body">
-                  {card.body}
+                <p className="mt-4 font-ui text-[15px] leading-[1.7] text-lp-body">
+                  {step.body}
                 </p>
               </div>
-            );
-          })}
+
+              {/* Mockup */}
+              <div>{step.mockup}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

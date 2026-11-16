@@ -10,22 +10,22 @@ export function LandingResume() {
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-lp-accent">
               Adaptive Resume Engine
             </p>
-            <h2 className="mt-3 font-ui text-[36px] font-bold leading-[1.08] tracking-[-0.03em] text-lp-ink sm:text-[46px]">
+            <h2 className="mt-3 font-display text-[36px] leading-[1.08] text-lp-ink sm:text-[46px]">
               One profile. A resume tailored to every opportunity.
             </h2>
             <p className="mt-5 font-ui text-[16px] leading-[1.7] text-lp-body">
               Your experience stays the same. How you present it shouldn&apos;t have to.
-              ApplyPilot adapts your resume to each job description by surfacing relevant
-              skills, projects, and experience — without starting from scratch every time.
+              ApplyPilot adapts your resume to each role by surfacing relevant skills,
+              projects, and experience — without starting from scratch every time.
             </p>
             <ul className="mt-7 space-y-3.5">
               {[
-                "Start with your master career profile",
-                "Understand the requirements of each job",
-                "Highlight relevant skills and projects",
-                "Compare original and suggested content side-by-side",
-                "Review every change before accepting it",
-                "Keep a separate resume version for each application",
+                "Start from your structured career profile",
+                "Understand what each role actually requires",
+                "Highlight the skills and work that matters most",
+                "See original and suggested content side-by-side",
+                "Approve every change before it's used",
+                "Keep a versioned resume for each application",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 font-ui text-[14px] text-lp-ink">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-lp-accent" strokeWidth={2} />
@@ -44,13 +44,15 @@ export function LandingResume() {
 
           {/* Right — mockup */}
           <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_32px_rgba(53,92,255,0.08)]">
-            {/* toolbar */}
             <div className="flex items-center justify-between border-b border-lp-border px-5 py-3.5">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-3.5 w-3.5 text-lp-accent" />
                 <span className="font-ui text-[13px] font-semibold text-lp-ink">Resume comparison</span>
                 <span className="rounded border border-lp-border bg-lp-surface px-2 py-0.5 font-mono text-[10px] text-lp-muted">diff view</span>
               </div>
+              <span className="rounded-full border border-lp-border bg-lp-surface px-2.5 py-0.5 font-mono text-[10px] text-lp-muted">
+                Illustrative preview
+              </span>
             </div>
 
             <div className="grid divide-y divide-lp-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
@@ -58,31 +60,31 @@ export function LandingResume() {
               <div className="p-5">
                 <p className="font-mono text-[10px] uppercase tracking-wider text-lp-muted">Original</p>
                 <div className="mt-3 rounded-xl border border-lp-border bg-lp-surface p-4">
-                  <p className="font-ui text-[13px] font-semibold text-lp-ink">Senior Engineer, Kaveri Cloud</p>
-                  <p className="mt-0.5 font-ui text-[11px] text-lp-muted">2022 – Present</p>
+                  <p className="font-ui text-[13px] font-semibold text-lp-ink">Software Intern · Tekvine Systems</p>
+                  <p className="mt-0.5 font-ui text-[11px] text-lp-muted">2023 – 2024</p>
                   <p className="mt-3 font-ui text-[13px] leading-relaxed text-lp-body">
-                    Led backend infrastructure projects. Built microservices using Node.js and PostgreSQL.
-                    Collaborated with cross-functional teams on product delivery.
+                    Built REST APIs using FastAPI and PostgreSQL. Worked on backend services for internal tooling.
                   </p>
                 </div>
               </div>
 
-              {/* Tailored */}
-              <div className="bg-lp-accent-soft/30 p-5">
+              {/* Suggested */}
+              <div className="bg-lp-accent/[0.03] p-5">
                 <div className="flex items-center justify-between">
                   <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-lp-accent">
                     <Sparkles className="h-3 w-3" />
-                    Tailored
+                    Suggested
                   </p>
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 font-ui text-[10px] font-medium text-amber-800">
+                  <span className="rounded-full bg-amber-50 px-2 py-0.5 font-ui text-[10px] font-medium text-amber-700">
                     Awaiting approval
                   </span>
                 </div>
                 <div className="mt-3 rounded-xl border border-lp-accent/20 bg-white p-4 shadow-sm">
-                  <p className="font-ui text-[13px] font-semibold text-lp-ink">Senior Engineer, Kaveri Cloud</p>
-                  <p className="mt-0.5 font-ui text-[11px] text-lp-muted">2022 – Present</p>
+                  <p className="font-ui text-[13px] font-semibold text-lp-ink">Software Intern · Tekvine Systems</p>
+                  <p className="mt-0.5 font-ui text-[11px] text-lp-muted">2023 – 2024</p>
                   <p className="mt-3 font-ui text-[13px] leading-relaxed text-lp-ink">
-                    <span className="rounded bg-lp-accent-soft px-0.5">Architected and scaled distributed microservices</span> handling 2M+ daily requests using Node.js, PostgreSQL, and Kubernetes — directly relevant to the platform engineering scope of this role.
+                    Developed and maintained REST APIs using FastAPI and PostgreSQL,{" "}
+                    <span className="rounded bg-lp-accent-soft px-0.5">directly relevant to the backend platform requirements of this role.</span>
                   </p>
                 </div>
                 <button
@@ -96,7 +98,7 @@ export function LandingResume() {
 
             <div className="border-t border-lp-border px-5 py-3.5 font-ui text-[12px] text-lp-muted">
               <strong className="font-medium text-lp-ink">Evidence-backed: </strong>
-              Reframed scope to match distributed systems requirement. No new claims added.
+              Reframed scope to match role requirements. No new claims added.
             </div>
           </div>
         </div>

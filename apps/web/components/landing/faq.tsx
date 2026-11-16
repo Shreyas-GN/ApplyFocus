@@ -9,8 +9,8 @@ const FAQS = [
     a: "ApplyPilot is a career intelligence workspace that helps you organize your professional profile, discover relevant job opportunities, prepare tailored applications, and manage your job search.",
   },
   {
-    q: "Who is ApplyPilot for?",
-    a: "ApplyPilot is designed for job seekers at different career stages — from fresh graduates and early-career professionals to experienced candidates looking for their next opportunity.",
+    q: "Who is ApplyPilot best suited for?",
+    a: "ApplyPilot is designed for job seekers who want to be intentional about their search — from fresh graduates and early-career professionals to experienced candidates making deliberate career moves. It is especially useful for people who want to understand fit before applying, rather than sending high volumes of generic applications.",
   },
   {
     q: "Do I need to create a new resume?",
@@ -21,8 +21,8 @@ const FAQS = [
     a: "Yes. ApplyPilot's Adaptive Resume Engine creates job-specific resume versions using your existing professional information. You review and approve suggested changes before using them.",
   },
   {
-    q: "Does ApplyPilot apply automatically?",
-    a: "No. ApplyPilot prioritizes candidate control. You review your application materials and confirm before anything is submitted.",
+    q: "Does ApplyPilot apply to jobs automatically?",
+    a: "No. ApplyPilot is not an auto-apply tool. It helps you understand roles, prepare tailored applications, and stay organized — but you review every application and decide what to submit and when. Candidate control is a core design principle.",
   },
   {
     q: "Can I track jobs I found outside ApplyPilot?",
@@ -50,7 +50,7 @@ export function LandingFaq() {
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-lp-accent">
               FAQ
             </p>
-            <h2 className="mt-3 font-ui text-[32px] font-bold leading-[1.1] tracking-[-0.03em] text-lp-ink sm:text-[40px]">
+            <h2 className="mt-3 font-display text-[32px] leading-[1.1] text-lp-ink sm:text-[40px]">
               Questions, answered plainly.
             </h2>
             <p className="mt-4 font-ui text-[15px] leading-relaxed text-lp-body">
