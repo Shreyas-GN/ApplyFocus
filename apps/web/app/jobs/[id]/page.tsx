@@ -404,6 +404,28 @@ function JobDetailContent() {
                   </ul>
                 </div>
               )}
+
+              {job.match.missingSkills.length > 0 && (
+                <div>
+                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-600">
+                    Missing Evidence
+                  </p>
+                  <ul className="flex flex-col gap-1">
+                    {job.match.missingSkills.map((s) => (
+                      <li
+                        key={s}
+                        className="flex items-center gap-1.5 text-xs text-ui-body"
+                      >
+                        <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                        <span>
+                          <span className="font-medium text-ui-ink">{s}</span>
+                          {" — not verified in your profile"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </Card>
 

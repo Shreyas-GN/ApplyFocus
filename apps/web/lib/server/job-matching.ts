@@ -218,6 +218,25 @@ export function findTransferableSkills(
   return results.slice(0, 6);
 }
 
+function computeFreshnessBonus(postedAt: Date | string | null | undefined): number {
+  if (!postedAt) return 0;
+  const date = postedAt instanceof Date ? postedAt : new Date(postedAt);
+  if (Number.isNaN(date.getTime())) return 0;
+  const daysOld = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
+  if (daysOld <= 3) return 5;
+  if (daysOld <= 7) return 3;
+  if (daysOld <= 14) return 1;
+  return 0;
+}
+
+function isFreshJob(postedAt: Date | string | null | undefined): boolean {
+  if (!postedAt) return false;
+  const date = postedAt instanceof Date ? postedAt : new Date(postedAt);
+  if (Number.isNaN(date.getTime())) return false;
+  const daysOld = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
+  return daysOld <= 7;
+}
+
 export function computeJobMatch(
   profile: ProfileDto | null,
   job: {
@@ -226,6 +245,7 @@ export function computeJobMatch(
     workMode: string | null;
     description: string;
     skills: string[];
+    postedAt?: Date | string | null;
   }
 ): JobMatchBreakdown {
   if (!profile) {
@@ -241,6 +261,7 @@ export function computeJobMatch(
       reasons: ['Sign in and complete your profile for personalized match scoring.'],
       isAdjacentRole: false,
       adjacencyReason: null,
+      isFresh: isFreshJob(job.postedAt),
     };
   }
 
@@ -270,6 +291,7 @@ export function computeJobMatch(
       reasons: ['Add skills and preferences to your profile to unlock accurate match scores.'],
       isAdjacentRole: false,
       adjacencyReason: null,
+      isFresh: isFreshJob(job.postedAt),
     };
   }
 
@@ -450,8 +472,35 @@ export function computeJobMatch(
     adjacencyReason = `Different title track from your usual search, but your background in ${overlapSummary} transfers strongly.`;
   }
 
+  // Responsibility alignment bonus: check how many job description sentences (responsibility-shaped)
+  // mention one of the candidate's matched skills.
+  if (matchedSkills.length > 0) {
+    const responsibilitySentences = job.description
+      .split(/(?<=[.!?])\s+|\s*[•·▪]\s+|\n+/)
+      .map((s) => s.trim())
+      .filter(
+        (s) =>
+          s.length >= 25 &&
+          s.length <= 280 &&
+          /\b(build|design|develop|own|lead|maintain|implement|ship|deliver|create|improve)\b/i.test(s)
+      );
+    const alignedCount = responsibilitySentences.filter((r) => {
+      const rl = r.toLowerCase();
+      return matchedSkills.some((s) => rl.includes(s.toLowerCase()));
+    }).length;
+    if (alignedCount >= 3) {
+      experienceScore = Math.min(100, experienceScore + 3);
+      score = Math.min(100, score + 3);
+      strengths.push(`Your skills appear in ${alignedCount} role responsibilities`);
+    }
+  }
+
+  // Freshness bonus (up to +5 pts, capped at 100)
+  const freshnessBonus = computeFreshnessBonus(job.postedAt);
+  const finalScore = Math.max(0, Math.min(100, score + freshnessBonus));
+
   return {
-    score: Math.max(0, Math.min(100, score)),
+    score: finalScore,
     skillsScore,
     experienceScore,
     matchedSkills,
@@ -462,6 +511,7 @@ export function computeJobMatch(
     reasons,
     isAdjacentRole,
     adjacencyReason,
+    isFresh: isFreshJob(job.postedAt),
   };
 }
 

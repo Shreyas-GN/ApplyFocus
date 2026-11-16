@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -13,6 +14,12 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return 'tsvector';
+  },
+});
 import { authenticatedRole, authUid, authUsers } from 'drizzle-orm/supabase';
 
 // Enums
@@ -403,6 +410,33 @@ export const auditLogs = pgTable(
   ]
 );
 
+// 10a. Job Boards (ATS board catalogue)
+export const jobBoards = pgTable(
+  'job_boards',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    // 'greenhouse' | 'lever' | 'ashby' | 'smartrecruiters'
+    provider: text('provider').notNull(),
+    slug: text('slug').notNull(),
+    companyName: text('company_name').notNull(),
+    isActive: boolean('is_active').notNull().default(true),
+    lastSyncedAt: timestamp('last_synced_at', { withTimezone: true }),
+    lastSyncStatus: text('last_sync_status'), // 'ok' | 'failed' | 'partial'
+    failureCount: integer('failure_count').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('job_boards_provider_slug_idx').on(table.provider, table.slug),
+    pgPolicy('job_boards_authenticated_read_policy', {
+      for: 'select',
+      to: authenticatedRole,
+      using: sql`true`,
+    }),
+  ]
+);
+
 // 10. Jobs (Public ATS & ingested listings)
 export const jobs = pgTable(
   'jobs',
@@ -425,6 +459,8 @@ export const jobs = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
+    isActive: boolean('is_active').notNull().default(true),
+    searchVector: tsvector('search_vector'),
   },
   (table) => [
     uniqueIndex('jobs_source_external_id_idx').on(
@@ -432,6 +468,8 @@ export const jobs = pgTable(
       table.externalId
     ),
     index('jobs_company_idx').on(table.company),
+    index('jobs_is_active_idx').on(table.isActive),
+    index('jobs_search_vector_idx').using('gin', table.searchVector),
     pgPolicy('jobs_authenticated_read_policy', {
       for: 'select',
       to: authenticatedRole,

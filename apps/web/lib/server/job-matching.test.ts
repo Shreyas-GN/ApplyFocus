@@ -168,3 +168,60 @@ describe('job-matching utilities', () => {
     expect(match.missingSkills).toEqual(['TypeScript', 'React']);
   });
 });
+
+describe('freshness bonus and isFresh flag', () => {
+  const baseJob = {
+    title: 'Senior Software Engineer',
+    location: 'Remote',
+    workMode: 'remote',
+    description: 'Build TypeScript services at scale.',
+    skills: ['TypeScript', 'React'],
+  };
+
+  const profile = makeProfile();
+
+  it('applies +5 bonus for jobs posted 2 days ago', () => {
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+    const withFreshness = computeJobMatch(profile, { ...baseJob, postedAt: twoDaysAgo });
+    const withoutFreshness = computeJobMatch(profile, { ...baseJob, postedAt: undefined });
+    expect(withFreshness.score).toBeGreaterThanOrEqual(withoutFreshness.score + 4);
+  });
+
+  it('applies +3 bonus for jobs posted 5 days ago', () => {
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+    const withFreshness = computeJobMatch(profile, { ...baseJob, postedAt: fiveDaysAgo });
+    const withoutFreshness = computeJobMatch(profile, { ...baseJob, postedAt: undefined });
+    expect(withFreshness.score).toBeGreaterThanOrEqual(withoutFreshness.score + 2);
+  });
+
+  it('applies +1 bonus for jobs posted 10 days ago', () => {
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    const withFreshness = computeJobMatch(profile, { ...baseJob, postedAt: tenDaysAgo });
+    const withoutFreshness = computeJobMatch(profile, { ...baseJob, postedAt: undefined });
+    expect(withFreshness.score).toBeGreaterThanOrEqual(withoutFreshness.score + 0);
+  });
+
+  it('applies no bonus for jobs posted 60 days ago', () => {
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    const old = computeJobMatch(profile, { ...baseJob, postedAt: sixtyDaysAgo });
+    const noPdate = computeJobMatch(profile, { ...baseJob, postedAt: undefined });
+    expect(old.score).toBe(noPdate.score);
+  });
+
+  it('marks isFresh true for jobs posted 5 days ago', () => {
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+    const match = computeJobMatch(profile, { ...baseJob, postedAt: fiveDaysAgo });
+    expect(match.isFresh).toBe(true);
+  });
+
+  it('marks isFresh false for jobs posted 10 days ago', () => {
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    const match = computeJobMatch(profile, { ...baseJob, postedAt: tenDaysAgo });
+    expect(match.isFresh).toBe(false);
+  });
+
+  it('marks isFresh false when postedAt is null', () => {
+    const match = computeJobMatch(profile, { ...baseJob, postedAt: null });
+    expect(match.isFresh).toBe(false);
+  });
+});

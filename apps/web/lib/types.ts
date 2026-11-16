@@ -283,6 +283,7 @@ export interface JobMatchBreakdown {
   reasons: string[];
   isAdjacentRole: boolean;
   adjacencyReason: string | null;
+  isFresh: boolean;
 }
 
 export interface JobIntelligenceBreakdown {

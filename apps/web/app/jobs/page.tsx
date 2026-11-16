@@ -519,6 +519,9 @@ function JobsContent() {
                       >
                         {job.match.score}% Match
                       </span>
+                      {job.match.isFresh && (
+                        <Badge className="bg-emerald-50 text-emerald-700">New</Badge>
+                      )}
                       {job.match.isAdjacentRole && (
                         <Badge className="bg-ui-lilac-soft text-ui-violet">
                           Adjacent Role
@@ -589,6 +592,33 @@ function JobsContent() {
                           ))}
                       </div>
                     )}
+
+                    {/* Next-step nudge */}
+                    {!isDismissed && (() => {
+                      const { score, missingSkills } = job.match;
+                      if (score >= 75) {
+                        return (
+                          <p className="mt-2 text-xs font-medium text-ui-violet">
+                            Strong match —{" "}
+                            <Link href={`/studio?tab=tailored&jobId=${job.id}`} className="underline">
+                              tailor your resume
+                            </Link>{" "}
+                            to maximise your application.
+                          </p>
+                        );
+                      }
+                      if (score >= 25 && score < 50 && missingSkills.length > 0) {
+                        return (
+                          <p className="mt-2 text-xs text-ui-muted">
+                            Missing from profile:{" "}
+                            <span className="font-medium text-ui-ink">
+                              {missingSkills.slice(0, 2).join(", ")}
+                            </span>
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
 
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
