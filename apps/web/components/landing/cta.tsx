@@ -10,7 +10,7 @@ export function LandingCta() {
           <div
             aria-hidden="true"
             className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 opacity-30"
-            style={{ background: "radial-gradient(ellipse at 50% 0%, #155e63, transparent 70%)" }}
+            style={{ background: "radial-gradient(ellipse at 50% 0%, #355CFF, transparent 70%)" }}
           />
           <div className="relative">
             <div className="mx-auto mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-lp-accent font-ui text-sm font-bold text-white">

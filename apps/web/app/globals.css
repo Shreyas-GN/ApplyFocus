@@ -16,70 +16,70 @@
 
   /* ApplyPilot marketing design system — "The Opportunity Field Guide" (docs/design/DESIGN.md).
      Scoped to --ap-* tokens so the authenticated app's brand-* theme above is untouched. */
-  --color-ap-paper: #f7f4ed;
-  --color-ap-paper-deep: #eee9de;
-  --color-ap-surface: #fffdf8;
-  --color-ap-surface-muted: #f0eee7;
-  --color-ap-ink: #252820;
-  --color-ap-body: #55594f;
-  --color-ap-muted: #85877d;
-  --color-ap-line: #dcd8ce;
-  --color-ap-vermilion: #c85b3f;
-  --color-ap-vermilion-soft: #f2dfd6;
-  --color-ap-sage: #65745e;
-  --color-ap-sage-soft: #e5eadf;
-  --color-ap-butter: #e8d79c;
+  --color-ap-paper: #F5F6F8;
+  --color-ap-paper-deep: #ECEEF2;
+  --color-ap-surface: #FFFFFF;
+  --color-ap-surface-muted: #F5F6F8;
+  --color-ap-ink: #171A21;
+  --color-ap-body: #4B5162;
+  --color-ap-muted: #9298A8;
+  --color-ap-line: #E5E7EC;
+  --color-ap-vermilion: #355CFF;
+  --color-ap-vermilion-soft: #EBF0FF;
+  --color-ap-sage: #355CFF;
+  --color-ap-sage-soft: #EBF0FF;
+  --color-ap-butter: #D8F06A;
 
   --font-display: var(--font-dm-serif), "Source Serif 4", Georgia, serif;
   --font-ui: var(--font-instrument-sans), "DM Sans", system-ui, sans-serif;
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 
   /* Landing page design system tokens */
-  --color-lp-ink: #181716;
-  --color-lp-body: #4a4744;
-  --color-lp-muted: #827e78;
-  --color-lp-bg: #ffffff;
-  --color-lp-surface: #f4f6f5;
-  --color-lp-surface-subtle: #ffffff;
-  --color-lp-border: #e4e8e6;
-  --color-lp-accent: #155e63;
-  --color-lp-accent-hover: #0f474b;
-  --color-lp-accent-soft: #e8f4f4;
-  --color-lp-wine: #155e63;
-  --color-lp-wine-hover: #0f474b;
-  --color-lp-copper: #b86f4b;
-  --color-lp-copper-soft: #f5ede6;
-  --color-lp-lagoon: #0c2a2b;
-  --color-lp-sand: #f8f7f4;
-  --color-lp-emerald: #0d825c;
+  --color-lp-ink: #171A21;
+  --color-lp-body: #4B5162;
+  --color-lp-muted: #9298A8;
+  --color-lp-bg: #FFFFFF;
+  --color-lp-surface: #F5F6F8;
+  --color-lp-surface-subtle: #FFFFFF;
+  --color-lp-border: #E5E7EC;
+  --color-lp-accent: #355CFF;
+  --color-lp-accent-hover: #2448E0;
+  --color-lp-accent-soft: #EBF0FF;
+  --color-lp-wine: #355CFF;
+  --color-lp-wine-hover: #2448E0;
+  --color-lp-copper: #D8F06A;
+  --color-lp-copper-soft: #F5FAD9;
+  --color-lp-lagoon: #0F1729;
+  --color-lp-sand: #F5F6F8;
+  --color-lp-emerald: #355CFF;
 
   /* Authenticated App Design System — "Warm Editorial Workspace" */
-  --color-ui-canvas: #f6f5f0;
-  --color-ui-surface: #ffffff;
-  --color-ui-linen: #efeee8;
-  --color-ui-border: #e4e5dd;
-  --color-ui-ink: #202723;
-  --color-ui-body: #626d66;
-  --color-ui-muted: #8c8b88;
+  --color-ui-canvas: #F5F6F8;
+  --color-ui-surface: #FFFFFF;
+  --color-ui-linen: #ECEEF2;
+  --color-ui-border: #E5E7EC;
+  --color-ui-ink: #171A21;
+  --color-ui-body: #4B5162;
+  --color-ui-muted: #9298A8;
 
-  /* Primary — Deep Petrol Teal */
-  --color-ui-teal: #155e63;
-  --color-ui-teal-hover: #0f474b;
-  --color-ui-teal-soft: #e8f2f2;
+  /* Primary — Blue */
+  --color-ui-teal: #355CFF;
+  --color-ui-teal-hover: #2448E0;
+  --color-ui-teal-soft: #EBF0FF;
 
-  /* Accent — Muted Copper */
-  --color-ui-copper: #b86f4b;
-  --color-ui-copper-soft: #f5e8e0;
+  /* Accent — Citrus (use sparingly) */
+  --color-ui-copper: #D8F06A;
+  --color-ui-copper-soft: #F5FAD9;
 
-  /* Wine aliased to teal — preserves existing bg-ui-wine callsites */
-  --color-ui-wine: #155e63;
-  --color-ui-wine-hover: #0f474b;
+  /* Wine aliased to blue — preserves existing bg-ui-wine callsites */
+  --color-ui-wine: #355CFF;
+  --color-ui-wine-hover: #2448E0;
 
   /* AI / Interactive (kept intentionally — provenance badges, focus rings) */
   --color-ui-violet: #714cb6;
   --color-ui-lilac: #d4c7ff;
   --color-ui-lilac-soft: #ede8ff;
-  --color-ui-lagoon: #0c4243;
+  --color-ui-lagoon: #1A2E8F;
 
   /* Semantic */
   --color-ui-success: #287a57;
@@ -105,8 +105,8 @@ html {
 }
 
 body {
-  color: #202723;
-  background: #f6f5f0;
+  color: #171A21;
+  background: #F5F6F8;
   font-family: var(--font-ui);
   overflow-x: hidden;
 }
@@ -116,7 +116,7 @@ body {
 }
 
 .bg-dot-pattern {
-  background-image: radial-gradient(#dcd8ce 1px, transparent 1px);
+  background-image: radial-gradient(#E5E7EC 1px, transparent 1px);
   background-size: 24px 24px;
 }
 

@@ -13,14 +13,14 @@ export function LandingHero() {
           className="absolute left-1/2 top-0 h-[700px] w-[900px] -translate-x-1/2 opacity-40"
           style={{
             background:
-              "radial-gradient(ellipse at 50% 0%, #155e63 0%, transparent 65%)",
+              "radial-gradient(ellipse at 50% 0%, #355CFF 0%, transparent 65%)",
           }}
         />
         <div
           className="absolute -right-64 top-1/3 h-[500px] w-[600px] opacity-10"
           style={{
             background:
-              "radial-gradient(ellipse, #b86f4b 0%, transparent 70%)",
+              "radial-gradient(ellipse, #D8F06A 0%, transparent 70%)",
           }}
         />
       </div>
@@ -114,11 +114,11 @@ export function LandingHero() {
             className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-32"
             style={{
               background:
-                "linear-gradient(to bottom, transparent, #0c2a2b)",
+                "linear-gradient(to bottom, transparent, #0F1729)",
             }}
           />
 
-          <div className="overflow-hidden rounded-t-2xl border border-white/10 shadow-[0_-24px_80px_rgba(21,94,99,0.3)]">
+          <div className="overflow-hidden rounded-t-2xl border border-white/10 shadow-[0_-24px_80px_rgba(53,92,255,0.3)]">
             {/* Window chrome */}
             <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.04] px-5 py-3.5">
               <div className="flex gap-1.5">
@@ -134,7 +134,7 @@ export function LandingHero() {
             </div>
 
             {/* Dashboard content */}
-            <div className="bg-[#0d1f20] p-4 sm:p-7">
+            <div className="bg-[#0F1729] p-4 sm:p-7">
               {/* Stats row */}
               <div className="mb-4 grid grid-cols-2 gap-2.5 sm:mb-5 sm:grid-cols-4 sm:gap-3">
                 {[
