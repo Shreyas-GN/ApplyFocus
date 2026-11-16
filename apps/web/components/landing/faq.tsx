@@ -22,11 +22,11 @@ const FAQS = [
   },
   {
     q: "Does ApplyPilot apply to jobs automatically?",
-    a: "No. ApplyPilot is not an auto-apply tool. It helps you understand roles, prepare tailored applications, and stay organized — but you review every application and decide what to submit and when. Candidate control is a core design principle.",
+    a: "No. ApplyPilot is not an auto-apply tool. You review every application and decide what to submit and when — candidate control is a core design principle. A companion browser extension lets you save roles from any external job board directly into your tracker, but submitting is always your decision.",
   },
   {
     q: "Can I track jobs I found outside ApplyPilot?",
-    a: "Yes. The application tracker is designed to work with opportunities from any source, including external employer websites and job boards.",
+    a: "Yes. The application tracker works with opportunities from any source. The companion browser extension makes it easy to save roles directly from external job boards and employer sites without leaving the page.",
   },
   {
     q: "Is there a free plan?",
