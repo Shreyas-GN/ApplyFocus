@@ -470,7 +470,7 @@ export async function buildApplicationStrategy(
   );
 
   // Step E: Strategy compilation (AI or fallback)
-  const hasAiKey = Boolean(process.env.ANTHROPIC_API_KEY) || Boolean(client);
+  const hasAiKey = Boolean(process.env.OPENROUTER_API_KEY) || Boolean(client);
   if (hasAiKey) {
     try {
       return await generateStrategyWithAI(
