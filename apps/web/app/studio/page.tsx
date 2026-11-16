@@ -15,17 +15,20 @@ const TABS: { id: StudioTab; label: string; description: string }[] = [
   {
     id: "resumes",
     label: "My Resumes",
-    description: "Upload PDF or DOCX versions, set your primary resume, and review parsed facts.",
+    description:
+      "Upload your base resume — we extract your verified experience, skills, and education. This becomes the source of truth for every tailored version.",
   },
   {
     id: "tailored",
     label: "Tailored Resumes",
-    description: "Reorganize and tailor your verified experience and skills for a target role.",
+    description:
+      "Take your base resume and tailor it for a specific role. AI restructures and reweights your verified experience to match the job's requirements.",
   },
   {
     id: "cover-letters",
     label: "Cover Letters",
-    description: "Draft role-specific cover letters grounded strictly in your verified profile.",
+    description:
+      "Draft a cover letter grounded entirely in your verified profile and the job's specifics — no hallucination, no generic boilerplate.",
   },
 ];
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { updateProfileSchema, hasAllowedResumeExtension, RESUME_MAX_FILE_SIZE_BYTES } from "@applypilot/validators";
+import { FileUp } from "lucide-react";
 import { ProtectedRoute } from "@/components/layout/protected-route";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -168,7 +169,7 @@ function OnboardingWizard() {
   if (initLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-ui-canvas">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-ui-violet border-t-transparent" />
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-ui-teal border-t-transparent" />
       </div>
     );
   }
@@ -177,7 +178,7 @@ function OnboardingWizard() {
     <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-wine text-xs font-semibold tracking-tight text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
             AP
           </span>
           <span className="text-lg font-semibold tracking-tight text-ui-ink">ApplyPilot</span>
@@ -188,10 +189,10 @@ function OnboardingWizard() {
           <div className="mb-6">
             <div className="mb-2 flex gap-1.5">
               <div
-                className={`h-1 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-ui-violet" : "bg-slate-200"}`}
+                className={`h-1 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-ui-teal" : "bg-slate-200"}`}
               />
               <div
-                className={`h-1 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-ui-violet" : "bg-slate-200"}`}
+                className={`h-1 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-ui-teal" : "bg-slate-200"}`}
               />
             </div>
             <p className="text-xs text-ui-muted">
@@ -352,11 +353,9 @@ function Step2Resume({
         <button
           type="button"
           onClick={onUploadClick}
-          className="flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed border-ui-border bg-ui-linen/40 px-6 py-8 text-center transition hover:border-ui-violet hover:bg-ui-lilac-soft/20"
+          className="flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed border-ui-border bg-ui-linen/40 px-6 py-8 text-center transition hover:border-ui-teal hover:bg-ui-teal-soft/20"
         >
-          <span className="text-3xl" aria-hidden="true">
-            📄
-          </span>
+          <FileUp className="h-8 w-8 text-ui-teal" aria-hidden="true" />
           <div>
             <p className="font-medium text-ui-ink">Click to upload a resume</p>
             <p className="mt-0.5 text-xs text-ui-muted">PDF or DOCX, up to 4 MB</p>
@@ -366,14 +365,14 @@ function Step2Resume({
 
       {phase === "uploading" && (
         <div className="flex items-center gap-3 rounded-xl border border-ui-border bg-ui-linen/40 p-4">
-          <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-ui-violet border-t-transparent" />
+          <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-ui-teal border-t-transparent" />
           <p className="text-sm text-ui-body">Uploading your resume…</p>
         </div>
       )}
 
       {phase === "processing" && (
         <div className="flex items-start gap-3 rounded-xl border border-ui-border bg-ui-linen/40 p-4">
-          <span className="mt-0.5 h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-ui-violet border-t-transparent" />
+          <span className="mt-0.5 h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-ui-teal border-t-transparent" />
           <div>
             <p className="text-sm font-medium text-ui-ink">Analyzing your resume…</p>
             <p className="mt-0.5 text-xs text-ui-muted">
