@@ -26,7 +26,7 @@ export function LandingTracking() {
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left — mockup */}
-          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_32px_rgba(21,94,99,0.08)]">
+          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_32px_rgba(53,92,255,0.08)]">
             {/* Stage strip */}
             <div className="grid grid-cols-4 divide-x divide-lp-border border-b border-lp-border">
               {STAGES.map((s) => (

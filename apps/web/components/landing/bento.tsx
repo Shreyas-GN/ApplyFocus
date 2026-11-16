@@ -87,7 +87,7 @@ export function LandingBento() {
             return (
               <div
                 key={card.id}
-                className={`group relative overflow-hidden rounded-2xl border border-lp-border bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(21,94,99,0.08)] sm:p-7 ${card.span}`}
+                className={`group relative overflow-hidden rounded-2xl border border-lp-border bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(53,92,255,0.08)] sm:p-7 ${card.span}`}
               >
                 <div className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${card.accent}`}>
                   <Icon className={`h-[18px] w-[18px] ${card.iconColor}`} strokeWidth={1.75} />

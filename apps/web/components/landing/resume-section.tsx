@@ -43,7 +43,7 @@ export function LandingResume() {
           </div>
 
           {/* Right — mockup */}
-          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_32px_rgba(21,94,99,0.08)]">
+          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_32px_rgba(53,92,255,0.08)]">
             {/* toolbar */}
             <div className="flex items-center justify-between border-b border-lp-border px-5 py-3.5">
               <div className="flex items-center gap-2">
