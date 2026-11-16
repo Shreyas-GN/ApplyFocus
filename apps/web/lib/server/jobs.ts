@@ -191,7 +191,7 @@ async function ingestLeverBoard(
   return upsertJobBatch(rows);
 }
 
-export type DiscoverJobsTab = 'for_you' | 'search' | 'adjacent' | 'saved';
+export type DiscoverJobsTab = 'for_you' | 'search' | 'adjacent' | 'saved' | 'dismissed';
 
 export interface ListJobsOptions {
   tab?: DiscoverJobsTab;
@@ -341,7 +341,7 @@ export async function listMatchedJobs(
     };
   });
 
-  if (!includeDismissed) {
+  if (!includeDismissed && tab !== 'dismissed') {
     mapped = mapped.filter((j) => j.userState !== 'dismissed');
   }
 
@@ -355,6 +355,8 @@ export async function listMatchedJobs(
     mapped = mapped.filter(
       (j) => j.userState === 'saved' || j.applicationStatus === 'saved'
     );
+  } else if (tab === 'dismissed') {
+    mapped = mapped.filter((j) => j.userState === 'dismissed');
   }
 
   if (minScore > 0) {

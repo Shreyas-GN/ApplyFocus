@@ -12,7 +12,8 @@ import {
   Sparkles,
   Undo2,
 } from "lucide-react";
-import type { JobDto } from "@/lib/types";
+import type { JobDto, ProfileDto } from "@/lib/types";
+import { useApi } from "@/lib/use-api";
 import { ProtectedRoute } from "@/components/layout/protected-route";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card } from "@/components/ui/card";
@@ -22,13 +23,13 @@ import { Badge, StatusBadge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tabs";
 import { api, ApiError } from "@/lib/api-client";
-import { formatFreshness, scoreTone } from "@/lib/job-ui";
+import { formatFreshness, matchLabel, matchLabelClass } from "@/lib/job-ui";
 
-type UiTab = "for-you" | "search" | "adjacent" | "saved";
+type UiTab = "for-you" | "search" | "adjacent" | "saved" | "dismissed";
 
 const UI_TABS: Array<{
   id: UiTab;
-  apiTab: "for_you" | "search" | "adjacent" | "saved";
+  apiTab: "for_you" | "search" | "adjacent" | "saved" | "dismissed";
   label: string;
   description: string;
 }> = [
@@ -57,10 +58,16 @@ const UI_TABS: Array<{
     label: "Saved Jobs",
     description: "Bookmarked opportunities ready for tailoring and application.",
   },
+  {
+    id: "dismissed",
+    apiTab: "dismissed",
+    label: "Dismissed",
+    description: "Opportunities you've dismissed. Restore any to bring them back to your feed.",
+  },
 ];
 
 function parseTab(raw: string | null): UiTab {
-  if (raw === "search" || raw === "adjacent" || raw === "saved") return raw;
+  if (raw === "search" || raw === "adjacent" || raw === "saved" || raw === "dismissed") return raw;
   return "for-you";
 }
 
@@ -102,6 +109,8 @@ function JobsContent() {
   const searchParams = useSearchParams();
   const activeTab = parseTab(searchParams.get("tab"));
 
+  const { data: profile } = useApi<ProfileDto>("/profile");
+
   const [jobs, setJobs] = useState<JobDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -120,6 +129,10 @@ function JobsContent() {
   const [seniority, setSeniority] = useState("all");
   const [includeDismissed, setIncludeDismissed] = useState(false);
   const [busyJobId, setBusyJobId] = useState<string | null>(null);
+
+  const hasConfirmedSkills = (profile?.skills ?? []).some((s) => s.source !== "ai");
+  const hasPreferences = (profile?.preferredTitles ?? []).length > 0 || Boolean(profile?.workMode);
+  const profileIncomplete = profile !== null && !hasConfirmedSkills && !hasPreferences;
 
   const fetchJobs = useCallback(
     async (overrides?: {
@@ -339,6 +352,23 @@ function JobsContent() {
         items={UI_TABS.map((tab) => ({ id: tab.id, label: tab.label }))}
       />
 
+      {activeTab === "for-you" && profileIncomplete && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">
+          <div>
+            <p className="font-semibold text-ui-ink">Your recommendations are less personalized</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-ui-body">
+              Add confirmed skills and target roles to your profile so your For You feed reflects your actual background and preferences.
+            </p>
+          </div>
+          <Link
+            href="/profile"
+            className="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-ui-ink hover:bg-amber-50"
+          >
+            Complete profile
+          </Link>
+        </div>
+      )}
+
       {activeTab === "adjacent" && (
         <div className="flex items-start gap-3 rounded-xl border border-ui-lilac bg-ui-lilac-soft p-4 text-sm text-ui-ink">
           <Compass className="mt-0.5 h-5 w-5 shrink-0 text-ui-violet" />
@@ -346,6 +376,18 @@ function JobsContent() {
             <p className="font-semibold text-ui-ink">Adjacent-role discovery</p>
             <p className="mt-0.5 text-xs leading-relaxed text-ui-body">
               These roles have titles outside your primary search targets, yet strongly overlap with your verified skills and transferable capabilities.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "dismissed" && (
+        <div className="flex items-start gap-3 rounded-xl border border-ui-border bg-ui-linen p-4 text-sm text-ui-ink">
+          <EyeOff className="mt-0.5 h-5 w-5 shrink-0 text-ui-muted" />
+          <div>
+            <p className="font-semibold text-ui-ink">Dismissed opportunities</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-ui-body">
+              These roles are hidden from your other feeds. Click Restore on any to bring it back.
             </p>
           </div>
         </div>
@@ -453,7 +495,7 @@ function JobsContent() {
               <option value="staff">Staff / Lead</option>
             </select>
 
-            {activeTab !== "saved" && (
+            {activeTab !== "saved" && activeTab !== "dismissed" && (
               <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs text-ui-body">
                 <input
                   type="checkbox"
@@ -486,12 +528,16 @@ function JobsContent() {
                 ? "No saved jobs yet."
                 : activeTab === "adjacent"
                   ? "No adjacent roles matched your current skills and filters."
-                  : "No jobs found matching your filters."}
+                  : activeTab === "dismissed"
+                    ? "No dismissed jobs."
+                    : "No jobs found matching your filters."}
             </p>
             <p className="mt-1 text-sm text-ui-muted">
               {activeTab === "saved"
                 ? "Save roles from For You or Search Jobs to review and tailor applications later."
-                : 'Try adjusting your filters or click "Sync live jobs" above to pull fresh postings.'}
+                : activeTab === "dismissed"
+                  ? "Jobs you dismiss from your feed will appear here. You can always restore them."
+                  : 'Try adjusting your filters or click "Sync live jobs" above to pull fresh postings.'}
             </p>
           </div>
         </Card>
@@ -513,11 +559,11 @@ function JobsContent() {
                         {job.title}
                       </Link>
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${scoreTone(
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${matchLabelClass(
                           job.match.score
                         )}`}
                       >
-                        {job.match.score}% Match
+                        {matchLabel(job.match.score)}
                       </span>
                       {job.match.isAdjacentRole && (
                         <Badge className="bg-ui-lilac-soft text-ui-violet">

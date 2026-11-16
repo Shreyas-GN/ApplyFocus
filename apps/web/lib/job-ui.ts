@@ -10,6 +10,20 @@ export function barTone(score: number): string {
   return "bg-slate-400";
 }
 
+export function matchLabel(score: number): string {
+  if (score >= 75) return "Strong evidence match";
+  if (score >= 55) return "Worth exploring";
+  if (score >= 35) return "Some requirements need stronger evidence";
+  return "Lower priority";
+}
+
+export function matchLabelClass(score: number): string {
+  if (score >= 75) return "bg-emerald-50 border border-emerald-200 text-emerald-800";
+  if (score >= 55) return "bg-amber-50 border border-amber-200 text-amber-800";
+  if (score >= 35) return "bg-slate-100 border border-slate-200 text-slate-700";
+  return "bg-ui-linen border border-ui-border text-ui-muted";
+}
+
 export function formatFreshness(
   postedAt: string | null,
   createdAt: string

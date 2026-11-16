@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Bookmark,
@@ -13,9 +14,12 @@ import {
   ExternalLink,
   EyeOff,
   FileText,
+  Info,
   Sparkles,
+  Undo2,
+  User,
 } from "lucide-react";
-import type { JobDetailDto } from "@/lib/types";
+import type { JobDetailDto, ProfileDto } from "@/lib/types";
 import { ProtectedRoute } from "@/components/layout/protected-route";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -23,7 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { api, ApiError } from "@/lib/api-client";
-import { barTone, formatFreshness, scoreTone } from "@/lib/job-ui";
+import { useApi } from "@/lib/use-api";
+import { barTone, formatFreshness, matchLabel, matchLabelClass } from "@/lib/job-ui";
 
 export default function JobDetailPage() {
   return (
@@ -45,6 +50,8 @@ function JobDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showRawDescription, setShowRawDescription] = useState(false);
+
+  const { data: profile } = useApi<ProfileDto>("/profile");
 
   useEffect(() => {
     let cancelled = false;
@@ -176,9 +183,87 @@ function JobDetailContent() {
   if (!job) return null;
 
   const isSaved = job.userState === "saved" || job.applicationStatus === "saved";
+  const isDismissed = job.userState === "dismissed";
+
+  // Compute which profile gaps are preference/constraint vs skill gaps
+  const preferenceGaps = job.match.gaps.filter(
+    (g) =>
+      g.toLowerCase().includes("work mode") ||
+      g.toLowerCase().includes("prefer") ||
+      g.toLowerCase().includes("excluded role") ||
+      g.toLowerCase().includes("senior") ||
+      g.toLowerCase().includes("entry-level")
+  );
+  const skillGaps = job.match.gaps.filter((g) => !preferenceGaps.includes(g));
+
+  // Find relevant experience from profile
+  const jobTitleWords = job.title.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
+  const matchedSkillsLower = new Set(job.match.matchedSkills.map((s) => s.toLowerCase()));
+  const relevantExperience = (profile?.experience ?? [])
+    .filter((e) => e.source !== "ai")
+    .filter((e) => {
+      const expTitle = e.title.toLowerCase();
+      const expDesc = (e.description ?? "").toLowerCase();
+      const titleOverlap = jobTitleWords.some((w) => expTitle.includes(w));
+      const techOverlap = (e.technologies ?? []).some((t) => matchedSkillsLower.has(t.toLowerCase()));
+      const descOverlap = job.match.matchedSkills.some((s) =>
+        expDesc.includes(s.toLowerCase())
+      );
+      return titleOverlap || techOverlap || descOverlap;
+    })
+    .slice(0, 3);
+
+  const relevantProjects = (profile?.projects ?? [])
+    .filter((p) => p.source !== "ai")
+    .filter((p) =>
+      (p.technologies ?? []).some((t) => matchedSkillsLower.has(t.toLowerCase()))
+    )
+    .slice(0, 2);
+
+  // Build recommended next action
+  function getRecommendedAction(): { label: string; href: string; description: string } {
+    if (job!.applicationId) {
+      return {
+        label: "View in Application Tracker",
+        href: "/applications",
+        description: "Track your progress and prepare for next steps.",
+      };
+    }
+    if (isSaved) {
+      return {
+        label: "Tailor Your Resume",
+        href: `/studio?tab=tailored&jobId=${job!.id}`,
+        description: "Create a tailored version of your resume targeting this specific role.",
+      };
+    }
+    if (isDismissed) {
+      return {
+        label: "Restore to Your Feed",
+        href: "#",
+        description: "This role was dismissed. Restore it if you want to reconsider.",
+      };
+    }
+    const confirmedSkillsCount = (profile?.skills ?? []).filter((s) => s.source !== "ai").length;
+    if (confirmedSkillsCount < 3) {
+      return {
+        label: "Complete Your Profile First",
+        href: "/profile",
+        description:
+          "Add confirmed skills and experience to get a more accurate evaluation for this role.",
+      };
+    }
+    return {
+      label: "Save & Build Application Strategy",
+      href: "#save",
+      description: "Save this role and tailor your materials for a stronger application.",
+    };
+  }
+
+  const recommendedAction = getRecommendedAction();
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Nav */}
       <div className="flex items-center justify-between gap-4">
         <Link
           href="/jobs"
@@ -200,23 +285,26 @@ function JobDetailContent() {
 
       {error && <Alert tone="error">{error}</Alert>}
 
-      {/* Job Header Card */}
+      {/* Job Header */}
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-semibold text-ui-ink">{job.title}</h1>
               <span
-                className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold ${scoreTone(
+                className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold ${matchLabelClass(
                   job.match.score
                 )}`}
               >
-                {job.match.score}% Overall Match
+                {matchLabel(job.match.score)}
               </span>
               {job.match.isAdjacentRole && (
                 <Badge className="bg-ui-lilac-soft text-ui-violet">Adjacent Role</Badge>
               )}
               {job.applicationStatus && <StatusBadge status={job.applicationStatus} />}
+              {isDismissed && (
+                <Badge className="bg-ui-linen text-ui-muted">Dismissed</Badge>
+              )}
             </div>
 
             <p className="mt-2 text-sm text-ui-body">
@@ -267,20 +355,23 @@ function JobDetailContent() {
               loading={busy}
               onClick={handleDismiss}
             >
-              <EyeOff className="mr-1.5 inline h-3.5 w-3.5" />
-              {job.userState === "dismissed" ? "Restore" : "Dismiss"}
+              {isDismissed ? (
+                <>
+                  <Undo2 className="mr-1.5 inline h-3.5 w-3.5" />
+                  Restore
+                </>
+              ) : (
+                <>
+                  <EyeOff className="mr-1.5 inline h-3.5 w-3.5" />
+                  Dismiss
+                </>
+              )}
             </Button>
 
             <Link href={`/studio?tab=tailored&jobId=${job.id}`}>
               <Button variant="secondary" className="px-3 py-2 text-xs">
                 <FileText className="mr-1.5 inline h-3.5 w-3.5" />
                 Tailor Resume
-              </Button>
-            </Link>
-
-            <Link href={`/studio?tab=cover-letters&jobId=${job.id}`}>
-              <Button variant="secondary" className="px-3 py-2 text-xs">
-                Draft Cover Letter
               </Button>
             </Link>
 
@@ -297,29 +388,20 @@ function JobDetailContent() {
         </div>
       </Card>
 
+      {/* Main two-column evaluation */}
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Left column: Intelligent Match Analysis */}
+        {/* Left: Why it matches + constraints */}
         <div className="flex flex-col gap-6 lg:col-span-5">
+
+          {/* Opportunity Evaluation */}
           <Card>
             <CardHeader
-              title="Match Analysis"
-              description="Transparent fit evaluation comparing your verified profile against this posting."
+              title="Opportunity Evaluation"
+              description="How your confirmed profile aligns with this role."
             />
 
             <div className="flex flex-col gap-4">
-              <div>
-                <div className="mb-1 flex justify-between text-xs font-medium text-ui-ink">
-                  <span>Overall Personalized Fit</span>
-                  <span>{job.match.score}%</span>
-                </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-ui-linen">
-                  <div
-                    className={`h-full rounded-full ${barTone(job.match.score)}`}
-                    style={{ width: `${job.match.score}%` }}
-                  />
-                </div>
-              </div>
-
+              {/* Scores */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-slate-100 bg-ui-canvas p-3">
                   <div className="flex items-baseline justify-between">
@@ -366,7 +448,7 @@ function JobDetailContent() {
                 <div>
                   <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-muted">
                     <Sparkles className="h-3.5 w-3.5 text-ui-violet" />
-                    <span>Why recommended</span>
+                    <span>Why this was recommended</span>
                   </p>
                   <ul className="flex flex-col gap-1.5 text-xs text-ui-ink">
                     {job.match.reasons.map((r) => (
@@ -391,28 +473,195 @@ function JobDetailContent() {
                   </ul>
                 </div>
               )}
+            </div>
+          </Card>
 
-              {job.match.gaps.length > 0 && (
-                <div>
-                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                    Missing Requirements & Gaps
+          {/* Preferences & Constraints */}
+          {(preferenceGaps.length > 0 || job.workMode || (profile?.workMode)) && (
+            <Card>
+              <CardHeader
+                title="Your Preferences & Constraints"
+                description="How this role aligns with your stated preferences."
+              />
+              <div className="flex flex-col gap-3 text-xs">
+                {job.workMode && (
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-ui-muted">Work mode</span>
+                    <span
+                      className={`font-medium ${
+                        profile?.workMode && profile.workMode !== job.workMode
+                          ? "text-amber-700"
+                          : "text-ui-ink"
+                      }`}
+                    >
+                      {job.workMode}
+                      {profile?.workMode && profile.workMode !== job.workMode
+                        ? ` (you prefer ${profile.workMode})`
+                        : profile?.workMode === job.workMode
+                          ? " ✓ matches your preference"
+                          : ""}
+                    </span>
+                  </div>
+                )}
+                {job.location && (
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-ui-muted">Location</span>
+                    <span className="font-medium text-ui-ink">{job.location}</span>
+                  </div>
+                )}
+                {preferenceGaps.map((g) => (
+                  <div key={g} className="flex items-start gap-2 rounded-lg bg-amber-50 p-2.5 text-amber-800">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{g}</span>
+                  </div>
+                ))}
+                {preferenceGaps.length === 0 && !profile?.workMode && (
+                  <p className="text-ui-muted">
+                    Set work mode and location preferences in your{" "}
+                    <Link href="/profile" className="font-medium text-ui-violet hover:underline">
+                      profile
+                    </Link>{" "}
+                    to see constraint analysis.
                   </p>
-                  <ul className="flex flex-col gap-1 text-xs text-ui-ink">
-                    {job.match.gaps.map((g) => (
-                      <li key={g}>• {g}</li>
+                )}
+              </div>
+            </Card>
+          )}
+        </div>
+
+        {/* Right: Demonstrated capabilities, requirements, missing */}
+        <div className="flex flex-col gap-6 lg:col-span-7">
+
+          {/* What You Can Demonstrate */}
+          <Card>
+            <CardHeader
+              title="What You Can Demonstrate"
+              description="Requirements supported by your confirmed profile."
+            />
+            <div className="flex flex-col gap-4">
+              {job.match.matchedSkills.length > 0 ? (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                    Confirmed skill matches
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {job.match.matchedSkills.map((skill) => (
+                      <Badge key={`m-${skill}`} className="bg-emerald-50 text-emerald-700">
+                        <CheckCircle2 className="mr-1 inline h-3 w-3" />
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2 rounded-lg border border-ui-border bg-ui-linen p-3 text-xs text-ui-muted">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    No skills from your profile directly match listed requirements. Add confirmed skills in your{" "}
+                    <Link href="/profile" className="font-medium text-ui-violet hover:underline">profile</Link>.
+                  </span>
+                </div>
+              )}
+
+              {/* Relevant experience */}
+              {relevantExperience.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+                    Relevant experience
+                  </p>
+                  <ul className="flex flex-col gap-2.5">
+                    {relevantExperience.map((exp) => (
+                      <li key={exp.id} className="rounded-lg border border-slate-100 bg-ui-canvas p-3 text-xs">
+                        <div className="flex items-start gap-2">
+                          <Briefcase className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ui-muted" />
+                          <div>
+                            <p className="font-semibold text-ui-ink">
+                              {exp.title}
+                              {exp.company ? ` at ${exp.company}` : ""}
+                            </p>
+                            {exp.startDate && (
+                              <p className="text-ui-muted">
+                                {exp.startDate}
+                                {exp.endDate ? ` – ${exp.endDate}` : exp.isCurrent ? " – Present" : ""}
+                              </p>
+                            )}
+                            {(exp.technologies ?? []).length > 0 && (
+                              <div className="mt-1.5 flex flex-wrap gap-1">
+                                {(exp.technologies ?? [])
+                                  .filter((t) => matchedSkillsLower.has(t.toLowerCase()))
+                                  .slice(0, 4)
+                                  .map((t) => (
+                                    <span
+                                      key={t}
+                                      className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700"
+                                    >
+                                      {t}
+                                    </span>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </li>
                     ))}
                   </ul>
                 </div>
               )}
+
+              {/* Relevant projects */}
+              {relevantProjects.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+                    Relevant projects
+                  </p>
+                  <ul className="flex flex-col gap-2">
+                    {relevantProjects.map((proj) => (
+                      <li key={proj.id} className="rounded-lg border border-slate-100 bg-ui-canvas p-3 text-xs">
+                        <p className="font-semibold text-ui-ink">{proj.name}</p>
+                        {proj.description && (
+                          <p className="mt-0.5 text-ui-body line-clamp-2">{proj.description}</p>
+                        )}
+                        {(proj.technologies ?? []).length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {(proj.technologies ?? []).slice(0, 5).map((t) => (
+                              <span
+                                key={t}
+                                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                  matchedSkillsLower.has(t.toLowerCase())
+                                    ? "bg-emerald-50 text-emerald-700"
+                                    : "bg-ui-linen text-ui-body"
+                                }`}
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {relevantExperience.length === 0 && relevantProjects.length === 0 && job.match.matchedSkills.length > 0 && (
+                <p className="text-xs text-ui-muted">
+                  Add technologies to your work experience and projects in your{" "}
+                  <Link href="/profile" className="font-medium text-ui-violet hover:underline">
+                    profile
+                  </Link>{" "}
+                  to see relevant entries here.
+                </p>
+              )}
             </div>
           </Card>
 
-          <Card>
-            <CardHeader
-              title="Transferable Skills"
-              description="Skills from your profile that bridge missing technical requirements."
-            />
-            {job.match.transferableSkills.length > 0 ? (
+          {/* Transferable Capabilities */}
+          {job.match.transferableSkills.length > 0 && (
+            <Card>
+              <CardHeader
+                title="Transferable Capabilities"
+                description="Skills from your profile that bridge related requirements."
+              />
               <ul className="flex flex-col gap-3">
                 {job.match.transferableSkills.map((item) => (
                   <li
@@ -428,54 +677,14 @@ function JobDetailContent() {
                   </li>
                 ))}
               </ul>
-            ) : (
-              <p className="text-xs text-ui-muted">
-                No transferable skill gaps needed — your direct skills already cover the core stack or none were mapped for missing tags.
-              </p>
-            )}
-          </Card>
-        </div>
+            </Card>
+          )}
 
-        {/* Right column: Job Intelligence (Details, Responsibilities, Requirements) */}
-        <div className="flex flex-col gap-6 lg:col-span-7">
+          {/* What This Role Requires */}
           <Card>
             <CardHeader
-              title="Job Details"
-              description="Company context, seniority expectations, and role overview."
-            />
-            <p className="text-sm leading-relaxed text-ui-ink">{job.intelligence.summary}</p>
-            <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-              {job.intelligence.companyAndRoleHighlights.map((hl) => (
-                <div
-                  key={hl}
-                  className="flex items-center gap-2 rounded-lg border border-slate-100 bg-ui-canvas px-3 py-2 text-xs font-medium text-ui-ink"
-                >
-                  <Briefcase className="h-3.5 w-3.5 shrink-0 text-ui-muted" />
-                  <span>{hl}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader
-              title="Responsibilities"
-              description="What this role focuses on day-to-day."
-            />
-            <ul className="flex flex-col gap-2.5 text-sm leading-relaxed text-ui-ink">
-              {job.intelligence.responsibilities.map((item) => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ui-wine" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          <Card>
-            <CardHeader
-              title="Requirements"
-              description="Required vs. preferred skills, technical depth, and seniority expectations."
+              title="What This Role Requires"
+              description="Requirements extracted from the posting. ✓ marks skills found in your profile."
             />
             <div className="flex flex-col gap-5">
               <div>
@@ -525,7 +734,7 @@ function JobDetailContent() {
               {job.intelligence.technicalRequirements.length > 0 && (
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
-                    Technical Requirements & Engineering Scope
+                    Technical Requirements
                   </p>
                   <ul className="flex flex-col gap-2 text-sm leading-relaxed text-ui-ink">
                     {job.intelligence.technicalRequirements.map((req) => (
@@ -537,28 +746,165 @@ function JobDetailContent() {
                   </ul>
                 </div>
               )}
-
-              <div className="border-t border-slate-100 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowRawDescription((prev) => !prev)}
-                  className="text-xs font-medium text-ui-violet hover:underline"
-                >
-                  {showRawDescription
-                    ? "Hide full job posting description"
-                    : "Show full job posting description"}
-                </button>
-                {showRawDescription && (
-                  <p className="mt-3 whitespace-pre-line rounded-lg bg-ui-canvas p-4 text-xs leading-relaxed text-ui-ink">
-                    {job.description}
-                  </p>
-                )}
-              </div>
             </div>
           </Card>
+
+          {/* Not Documented in Your Profile */}
+          {(job.match.missingSkills.length > 0 || skillGaps.length > 0) && (
+            <Card>
+              <CardHeader
+                title="Not Documented in Your Profile"
+                description=""
+              />
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                  <p className="leading-relaxed">
+                    These requirements weren&apos;t found in your documented profile. This does not mean you lack these skills — it means they aren&apos;t currently documented. Add them to your profile if you have the experience.
+                  </p>
+                </div>
+
+                {job.match.missingSkills.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-semibold text-ui-muted">Missing from your profile</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {job.match.missingSkills.map((skill) => (
+                        <Badge key={`missing-${skill}`} className="bg-ui-linen text-ui-body">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {skillGaps.length > 0 && (
+                  <div>
+                    <p className="mb-1 text-xs font-semibold text-ui-muted">Other notes</p>
+                    <ul className="flex flex-col gap-1 text-xs text-ui-ink">
+                      {skillGaps.map((g) => (
+                        <li key={g}>• {g}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <Link
+                  href="/profile#section-skills"
+                  className="text-xs font-medium text-ui-violet hover:underline"
+                >
+                  Add skills to your profile →
+                </Link>
+              </div>
+            </Card>
+          )}
         </div>
       </div>
+
+      {/* Recommended Next Action */}
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ui-lilac-soft">
+              <Sparkles className="h-4 w-4 text-ui-violet" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ui-muted">
+                Recommended Next Action
+              </p>
+              <p className="mt-0.5 text-base font-semibold text-ui-ink">
+                {recommendedAction.label}
+              </p>
+              <p className="mt-0.5 text-sm text-ui-body">{recommendedAction.description}</p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            {isDismissed ? (
+              <Button loading={busy} onClick={handleDismiss}>
+                <Undo2 className="mr-1.5 inline h-4 w-4" />
+                Restore to Feed
+              </Button>
+            ) : !isSaved ? (
+              <>
+                <Button loading={busy} onClick={handleToggleSave}>
+                  <Bookmark className="mr-1.5 inline h-4 w-4" />
+                  Save This Role
+                </Button>
+                <Link href={`/studio?tab=tailored&jobId=${job.id}`}>
+                  <Button variant="secondary">
+                    <FileText className="mr-1.5 inline h-4 w-4" />
+                    Tailor Resume
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <Link href={`/studio?tab=tailored&jobId=${job.id}`}>
+                <Button>
+                  <FileText className="mr-1.5 inline h-4 w-4" />
+                  Tailor Resume
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {/* Role Overview */}
+      <Card>
+        <CardHeader
+          title="Role Overview"
+          description="Company context, seniority expectations, and what this role focuses on."
+        />
+        <div className="flex flex-col gap-4">
+          <p className="text-sm leading-relaxed text-ui-ink">{job.intelligence.summary}</p>
+
+          {job.intelligence.companyAndRoleHighlights.length > 0 && (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {job.intelligence.companyAndRoleHighlights.map((hl) => (
+                <div
+                  key={hl}
+                  className="flex items-center gap-2 rounded-lg border border-slate-100 bg-ui-canvas px-3 py-2 text-xs font-medium text-ui-ink"
+                >
+                  <Briefcase className="h-3.5 w-3.5 shrink-0 text-ui-muted" />
+                  <span>{hl}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {job.intelligence.responsibilities.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+                Key Responsibilities
+              </p>
+              <ul className="flex flex-col gap-2.5 text-sm leading-relaxed text-ui-ink">
+                {job.intelligence.responsibilities.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ui-wine" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="border-t border-slate-100 pt-3">
+            <button
+              type="button"
+              onClick={() => setShowRawDescription((prev) => !prev)}
+              className="text-xs font-medium text-ui-violet hover:underline"
+            >
+              {showRawDescription
+                ? "Hide full job posting"
+                : "Show full job posting"}
+            </button>
+            {showRawDescription && (
+              <p className="mt-3 whitespace-pre-line rounded-lg bg-ui-canvas p-4 text-xs leading-relaxed text-ui-ink">
+                {job.description}
+              </p>
+            )}
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
-

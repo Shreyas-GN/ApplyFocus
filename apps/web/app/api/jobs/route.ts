@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/supabase/auth';
 import { listMatchedJobs, type DiscoverJobsTab } from '@/lib/server/jobs';
 
-const VALID_TABS = new Set<DiscoverJobsTab>(['for_you', 'search', 'adjacent', 'saved']);
+const VALID_TABS = new Set<DiscoverJobsTab>(['for_you', 'search', 'adjacent', 'saved', 'dismissed']);
 const VALID_FRESHNESS = new Set(['all', '24h', '7d', '30d']);
 
 export async function GET(request: NextRequest) {
