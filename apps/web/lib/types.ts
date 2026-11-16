@@ -356,9 +356,63 @@ export interface OpportunityEvaluation {
   evaluationVersion: string;
 }
 
+export type StrategyAction =
+  | 'apply_now'
+  | 'apply_with_improvements'
+  | 'strengthen_first'
+  | 'deprioritize';
+
+export interface StrategyExperience {
+  experienceId: string;
+  company: string;
+  title: string;
+  priority: number;
+  coveredRequirements: string[];
+  achievementsToHighlight: string[];
+  suggestedFocusAreas: string[];
+}
+
+export interface StrategyProject {
+  projectId: string;
+  name: string;
+  priority: number;
+  coveredRequirements: string[];
+  whySelected: string;
+}
+
+export interface ResumeSectionChange {
+  section: 'summary' | 'skills' | 'experience' | 'projects';
+  change: string;
+  reason: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+export interface ScreeningTopic {
+  topic: string;
+  reason: string;
+  preparationHint: string;
+}
+
+export interface ApplicationStrategy {
+  recommendedAction: StrategyAction;
+  actionReasons: string[];
+  positioning: string;
+  selectedExperiences: StrategyExperience[];
+  selectedProjects: StrategyProject[];
+  skillsToEmphasize: string[];
+  achievementsToHighlight: string[];
+  insufficientEvidenceRequirements: string[];
+  resumeSectionChanges: ResumeSectionChange[];
+  screeningTopics: ScreeningTopic[];
+  confidenceLevel: 'high' | 'medium' | 'low';
+  uncertaintyReasons: string[];
+  strategyVersion: string;
+}
+
 export interface JobDetailDto extends JobDto {
   intelligence: JobIntelligenceBreakdown;
   evaluation: OpportunityEvaluation;
+  strategy: ApplicationStrategy;
   tailoredDocumentsCount: number;
 }
 

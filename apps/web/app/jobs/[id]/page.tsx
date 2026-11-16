@@ -7,14 +7,17 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  BookOpen,
   Bookmark,
   Briefcase,
   CheckCircle2,
+  ChevronRight,
   CircleDot,
   Compass,
   ExternalLink,
   EyeOff,
   FileText,
+  ListChecks,
   Minus,
   Sparkles,
   TrendingUp,
@@ -443,8 +446,10 @@ function JobDetailContent() {
           </Card>
         </div>
 
-        {/* Right column: Job Intelligence (Details, Responsibilities, Requirements) */}
+        {/* Right column: Strategy + Job Intelligence */}
         <div className="flex flex-col gap-6 lg:col-span-7">
+          <ApplicationStrategyCard job={job} />
+
           <Card>
             <CardHeader
               title="Job Details"
@@ -604,6 +609,180 @@ function strengthLabel(strength: "demonstrated" | "confirmed" | "inferred" | "un
   if (strength === "confirmed") return "confirmed";
   if (strength === "inferred") return "inferred";
   return "not documented";
+}
+
+function strategyActionStyle(
+  action: "apply_now" | "apply_with_improvements" | "strengthen_first" | "deprioritize",
+) {
+  if (action === "apply_now")
+    return {
+      badge: "bg-emerald-100 text-emerald-800",
+      icon: <TrendingUp className="h-3.5 w-3.5" />,
+      label: "Apply Now",
+    };
+  if (action === "apply_with_improvements")
+    return {
+      badge: "bg-amber-100 text-amber-800",
+      icon: <Sparkles className="h-3.5 w-3.5" />,
+      label: "Apply with Improvements",
+    };
+  if (action === "strengthen_first")
+    return {
+      badge: "bg-orange-100 text-orange-800",
+      icon: <BookOpen className="h-3.5 w-3.5" />,
+      label: "Strengthen First",
+    };
+  return {
+    badge: "bg-slate-100 text-slate-600",
+    icon: <Minus className="h-3.5 w-3.5" />,
+    label: "Deprioritize",
+  };
+}
+
+function ApplicationStrategyCard({ job }: { job: JobDetailDto }) {
+  const { strategy } = job;
+  const action = strategyActionStyle(strategy.recommendedAction);
+
+  return (
+    <Card>
+      <CardHeader
+        title="Application Strategy"
+        description="Personalized positioning, evidence selection, and preparation guidance."
+      />
+
+      <div className="flex flex-col gap-4">
+        {/* Action + reasons */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${action.badge}`}
+          >
+            {action.icon}
+            <span>{action.label}</span>
+          </span>
+          <span className="text-xs text-ui-muted">Recommended action</span>
+        </div>
+
+        {strategy.actionReasons.length > 0 && (
+          <ul className="flex flex-col gap-1 text-xs text-ui-ink">
+            {strategy.actionReasons.map((reason) => (
+              <li key={reason} className="flex items-start gap-1.5">
+                <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ui-muted" />
+                <span>{reason}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Positioning */}
+        <div className="rounded-lg border border-ui-lilac bg-ui-lilac-soft/60 p-3 text-xs leading-relaxed">
+          <p className="mb-1 font-semibold text-ui-violet">Positioning</p>
+          <p className="text-ui-ink">{strategy.positioning}</p>
+        </div>
+
+        {/* Selected experiences */}
+        {strategy.selectedExperiences.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+              Lead With These Experiences
+            </p>
+            <ul className="flex flex-col gap-2">
+              {strategy.selectedExperiences.map((exp) => (
+                <li
+                  key={exp.experienceId}
+                  className="rounded-lg border border-slate-100 bg-ui-canvas p-3 text-xs"
+                >
+                  <p className="font-semibold text-ui-ink">
+                    #{exp.priority} {exp.title} at {exp.company}
+                  </p>
+                  {exp.coveredRequirements.length > 0 && (
+                    <p className="mt-1 text-ui-body">
+                      Covers: {exp.coveredRequirements.join(", ")}
+                    </p>
+                  )}
+                  {exp.suggestedFocusAreas.length > 0 && (
+                    <p className="mt-0.5 text-ui-muted">
+                      Focus: {exp.suggestedFocusAreas.slice(0, 2).join("; ")}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Resume improvements */}
+        {strategy.resumeSectionChanges.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+              Resume Improvements
+            </p>
+            <ul className="flex flex-col gap-1.5">
+              {strategy.resumeSectionChanges
+                .sort((a, b) => (a.priority === "high" ? -1 : b.priority === "high" ? 1 : 0))
+                .map((change, idx) => (
+                  <li
+                    key={idx}
+                    className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs ${
+                      change.priority === "high"
+                        ? "border border-amber-100 bg-amber-50 text-amber-900"
+                        : "border border-slate-100 bg-ui-canvas text-ui-ink"
+                    }`}
+                  >
+                    <ListChecks className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ui-muted" />
+                    <div>
+                      <p className="font-medium">{change.change}</p>
+                      <p className="mt-0.5 text-ui-muted">{change.reason}</p>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Screening topics */}
+        {strategy.screeningTopics.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+              Prepare for Screening
+            </p>
+            <ul className="flex flex-col gap-2">
+              {strategy.screeningTopics.slice(0, 3).map((topic, idx) => (
+                <li
+                  key={idx}
+                  className="rounded-lg border border-sky-100 bg-sky-50/50 p-3 text-xs"
+                >
+                  <p className="font-semibold text-ui-ink">{topic.topic}</p>
+                  <p className="mt-0.5 leading-relaxed text-ui-body">{topic.preparationHint}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Confidence */}
+        <div className="flex items-center gap-2 border-t border-slate-100 pt-3">
+          <span
+            className={`text-xs font-semibold ${
+              strategy.confidenceLevel === "high"
+                ? "text-emerald-700"
+                : strategy.confidenceLevel === "medium"
+                  ? "text-amber-700"
+                  : "text-slate-500"
+            }`}
+          >
+            {strategy.confidenceLevel.charAt(0).toUpperCase() +
+              strategy.confidenceLevel.slice(1)}{" "}
+            confidence
+          </span>
+          {strategy.uncertaintyReasons.length > 0 && (
+            <span className="text-xs text-ui-muted">
+              · {strategy.uncertaintyReasons[0]}
+            </span>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 function OpportunityEvaluationCard({ job }: { job: JobDetailDto }) {

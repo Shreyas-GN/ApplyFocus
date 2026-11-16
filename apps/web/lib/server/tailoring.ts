@@ -9,6 +9,7 @@ import {
   tailoredDocuments,
 } from '@/lib/db/schema';
 import type {
+  ApplicationStrategy,
   CoverLetterContent,
   CoverLetterTone,
   ProfileDto,
@@ -19,6 +20,12 @@ import type {
 } from '@/lib/types';
 import { recordAudit } from './audit';
 import { getProfile } from './profile';
+import {
+  analyzeJobIntelligence,
+  computeJobMatch,
+  computeOpportunityEvaluation,
+} from './job-matching';
+import { computeApplicationStrategy } from './application-strategy';
 
 export const tailoredResumeExperienceItemSchema = z.object({
   company: z.string().min(1),
@@ -245,19 +252,31 @@ async function runClaudeJson<T>(
 export async function tailorResumeWithClaude(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
-  client?: ClaudeMessagesClient
+  client?: ClaudeMessagesClient,
+  strategy?: ApplicationStrategy,
 ): Promise<TailoredResumeContent> {
   const candidate = buildCandidateContext(profile);
-  const userMessage = JSON.stringify({
-    targetJob: job,
-    candidateProfile: candidate,
-  });
+  const payload: Record<string, unknown> = { targetJob: job, candidateProfile: candidate };
+
+  if (strategy && strategy.recommendedAction !== 'deprioritize') {
+    payload.applicationStrategy = {
+      positioning: strategy.positioning,
+      prioritizedExperiences: strategy.selectedExperiences.map((e) => ({
+        company: e.company,
+        title: e.title,
+        priority: e.priority,
+        focusAreas: e.suggestedFocusAreas,
+      })),
+      skillsToEmphasize: strategy.skillsToEmphasize,
+      requirementsWithoutEvidence: strategy.insufficientEvidenceRequirements,
+    };
+  }
 
   return runClaudeJson(
     RESUME_TAILOR_SYSTEM_PROMPT,
-    userMessage,
+    JSON.stringify(payload),
     tailoredResumeContentSchema,
-    client
+    client,
   );
 }
 
@@ -265,18 +284,23 @@ export async function draftCoverLetterWithClaude(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
   tone: CoverLetterTone,
-  client?: ClaudeMessagesClient
+  client?: ClaudeMessagesClient,
+  strategy?: ApplicationStrategy,
 ): Promise<CoverLetterContent> {
   const candidate = buildCandidateContext(profile);
-  const userMessage = JSON.stringify({
-    tone,
-    targetJob: job,
-    candidateProfile: candidate,
-  });
+  const payload: Record<string, unknown> = { tone, targetJob: job, candidateProfile: candidate };
+
+  if (strategy && strategy.recommendedAction !== 'deprioritize') {
+    payload.applicationStrategy = {
+      positioning: strategy.positioning,
+      skillsToEmphasize: strategy.skillsToEmphasize,
+      requirementsWithoutEvidence: strategy.insufficientEvidenceRequirements,
+    };
+  }
 
   return runClaudeJson(
     COVER_LETTER_SYSTEM_PROMPT,
-    userMessage,
+    JSON.stringify(payload),
     coverLetterContentSchema,
     client
   );
@@ -516,6 +540,7 @@ export async function createTailoredDocument(
     if (!resolvedJobId && appRow.jobId) resolvedJobId = appRow.jobId;
   }
 
+  let resolvedJobRow: typeof jobs.$inferSelect | undefined;
   if (resolvedJobId) {
     const [jobRow] = await db
       .select()
@@ -526,6 +551,7 @@ export async function createTailoredDocument(
     if (!jobRow) {
       throw new Error('Job posting not found.');
     }
+    resolvedJobRow = jobRow;
     if (!company) company = jobRow.company;
     if (!jobTitle) jobTitle = jobRow.title;
     if (!jobDescription) jobDescription = jobRow.description;
@@ -549,7 +575,26 @@ export async function createTailoredDocument(
 
   if (!hasCandidateSignal) {
     throw new Error(
-      'Please add profile details or confirm a parsed resume before tailoring.'
+      'Please add profile details or confirm a parsed resume before tailoring.',
+    );
+  }
+
+  let strategy: ApplicationStrategy | undefined;
+  if (resolvedJobRow) {
+    const strategyMatch = computeJobMatch(profile, resolvedJobRow);
+    const strategyIntel = analyzeJobIntelligence(resolvedJobRow);
+    const strategyEval = computeOpportunityEvaluation(
+      profile,
+      resolvedJobRow,
+      strategyMatch,
+      strategyIntel,
+    );
+    strategy = computeApplicationStrategy(
+      profile,
+      resolvedJobRow,
+      strategyMatch,
+      strategyIntel,
+      strategyEval,
     );
   }
 
@@ -561,13 +606,15 @@ export async function createTailoredDocument(
       ? await tailorResumeWithClaude(
           profile,
           { company, title: jobTitle, description: jobDescription },
-          client
+          client,
+          strategy,
         )
       : await draftCoverLetterWithClaude(
           profile,
           { company, title: jobTitle, description: jobDescription },
           tone ?? 'conversational',
-          client
+          client,
+          strategy,
         );
 
   const [created] = await db

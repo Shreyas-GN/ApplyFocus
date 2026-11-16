@@ -23,6 +23,7 @@ import {
   inferWorkMode,
   stripHtml,
 } from './job-matching';
+import { computeApplicationStrategy } from './application-strategy';
 
 export interface BoardSource {
   provider: 'greenhouse' | 'lever';
@@ -399,6 +400,7 @@ export async function getJobDetail(
   const match = computeJobMatch(userProfile, jobRow);
   const intelligence = analyzeJobIntelligence(jobRow);
   const evaluation = computeOpportunityEvaluation(userProfile, jobRow, match, intelligence);
+  const strategy = computeApplicationStrategy(userProfile, jobRow, match, intelligence, evaluation);
   const existingApp = appRows[0];
 
   return {
@@ -421,6 +423,7 @@ export async function getJobDetail(
     applicationStatus: existingApp?.status ?? null,
     intelligence,
     evaluation,
+    strategy,
     tailoredDocumentsCount: Number(tailoredCountRows[0]?.value ?? 0),
   };
 }
