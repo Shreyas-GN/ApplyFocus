@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import {
   createTailoredDocument,
   listTailoredDocuments,
@@ -71,4 +71,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ detail: message }, { status });
   }
 }
+
 

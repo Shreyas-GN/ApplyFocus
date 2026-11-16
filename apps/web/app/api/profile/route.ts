@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { getProfile, updateBasicInfo } from '@/lib/server/profile';
 import { updateProfileSchema } from '@applypilot/validators';
 
@@ -47,4 +47,5 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
 

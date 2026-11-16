@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import {
   deleteApplication,
   updateApplication,
@@ -68,4 +68,5 @@ export async function DELETE(
     return NextResponse.json({ detail: message }, { status: 404 });
   }
 }
+
 

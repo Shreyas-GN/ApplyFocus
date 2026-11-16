@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { replaceCertifications } from '@/lib/server/profile';
 import { replaceCertificationsSchema } from '@applypilot/validators';
 
@@ -29,4 +29,5 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
 

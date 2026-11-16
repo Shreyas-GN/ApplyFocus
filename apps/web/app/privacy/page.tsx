@@ -24,8 +24,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-semibold text-ui-ink">2. Infrastructure & AI Processing</h2>
             <p className="mt-1.5">
-              Authentication, relational storage, and private résumé files are hosted on
-              Supabase. When you upload a résumé or trigger AI tailoring, relevant text is
+              Authentication and relational database storage are hosted on Neon.
+              When you upload a résumé or trigger AI tailoring, relevant text is
               sent to Anthropic Claude solely to extract your profile or draft your requested
               material. ApplyPilot never requests or stores your third-party ATS passwords.
             </p>

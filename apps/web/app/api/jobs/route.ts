@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { listMatchedJobs, type DiscoverJobsTab } from '@/lib/server/jobs';
 
 const VALID_TABS = new Set<DiscoverJobsTab>(['for_you', 'search', 'adjacent', 'saved']);
@@ -48,3 +48,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

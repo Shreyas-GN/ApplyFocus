@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { getParsedData, updateParsedData } from '@/lib/server/resumes';
 import { resumeParsedDataSchema } from '@applypilot/validators';
 
@@ -51,4 +51,5 @@ export async function PATCH(
     return NextResponse.json({ detail: message }, { status: 400 });
   }
 }
+
 

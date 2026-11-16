@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { getDownloadUrl } from '@/lib/server/resumes';
 
 export async function GET(
@@ -21,4 +21,5 @@ export async function GET(
     return NextResponse.json({ detail: message }, { status: 404 });
   }
 }
+
 

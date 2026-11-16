@@ -1,11 +1,27 @@
+import { auth } from '@/lib/auth/server';
 import { type NextRequest } from 'next/server';
-import { updateSession } from './lib/supabase/middleware';
+
+const authMiddleware = auth.middleware({
+  loginUrl: '/login',
+  publicRoutes: [
+    '/',
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset-password',
+    '/privacy',
+    '/terms',
+    '/api/auth',
+    '/api/cron',
+  ],
+});
 
 export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+  return authMiddleware(request);
 }
 
 export const middleware = proxy;
+export default proxy;
 
 export const config = {
   matcher: [

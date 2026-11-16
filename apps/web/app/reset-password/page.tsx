@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { passwordSchema } from "@applypilot/validators";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -27,9 +27,11 @@ function ResetPasswordForm() {
     setError(null);
     setSubmitting(true);
     try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: result.data,
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token") || "";
+      const { error: updateError } = await authClient.resetPassword({
+        newPassword: result.data,
+        token,
       });
       if (updateError) {
         throw updateError;

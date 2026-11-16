@@ -19,7 +19,7 @@ const KNOWN_SKILLS = [
   'SQL',
   'PostgreSQL',
   'Postgres',
-  'Supabase',
+  'Neon',
   'MongoDB',
   'Redis',
   'GraphQL',
@@ -78,7 +78,7 @@ const TRANSFERABLE_SKILL_RULES: Array<{
     reason: 'Core JavaScript runtime mastery accelerates ramp-up across TypeScript & JS frameworks.',
   },
   {
-    from: ['PostgreSQL', 'Postgres', 'Supabase', 'SQL'],
+    from: ['PostgreSQL', 'Postgres', 'Neon', 'SQL'],
     to: ['SQL', 'PostgreSQL', 'Prisma', 'Drizzle', 'Redis', 'MongoDB'],
     reason: 'Relational modeling and query optimization experience transfers across data stores.',
   },

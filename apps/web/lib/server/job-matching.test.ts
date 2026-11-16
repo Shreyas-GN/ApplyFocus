@@ -76,15 +76,15 @@ describe('job-matching utilities', () => {
       title: 'Senior Frontend Engineer',
       location: 'Remote',
       workMode: 'remote',
-      description: 'Build apps with TypeScript, React, Next.js, and Supabase.',
-      skills: ['TypeScript', 'React', 'Next.js', 'Supabase'],
+      description: 'Build apps with TypeScript, React, Next.js, and Neon.',
+      skills: ['TypeScript', 'React', 'Next.js', 'Neon'],
     });
 
     expect(match.score).toBeGreaterThanOrEqual(85);
     expect(match.skillsScore).toBeGreaterThanOrEqual(70);
     expect(match.experienceScore).toBeGreaterThanOrEqual(80);
     expect(match.matchedSkills).toEqual(['TypeScript', 'React', 'Next.js']);
-    expect(match.missingSkills).toEqual(['Supabase']);
+    expect(match.missingSkills).toEqual(['Neon']);
     expect(match.reasons.length).toBeGreaterThan(0);
     expect(match.isAdjacentRole).toBe(false);
   });

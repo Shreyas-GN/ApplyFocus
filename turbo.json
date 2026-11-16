@@ -2,11 +2,10 @@
   "$schema": "https://turbo.build/schema.json",
   "globalPassThroughEnv": [
     "NODE_ENV",
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-    "SUPABASE_SECRET_KEY",
     "DATABASE_URL",
     "DATABASE_MIGRATION_URL",
+    "NEON_AUTH_BASE_URL",
+    "NEON_AUTH_COOKIE_SECRET",
     "ANTHROPIC_API_KEY",
     "ANTHROPIC_MODEL",
     "NEXT_PUBLIC_APP_URL",

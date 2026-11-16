@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { uploadResume } from '@/lib/server/resumes';
 import { processResumeBackground } from '@/lib/server/resume-parsing';
 
@@ -50,4 +50,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ detail: message }, { status: 400 });
   }
 }
+
 

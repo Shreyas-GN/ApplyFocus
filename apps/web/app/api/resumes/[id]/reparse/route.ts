@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { reparseResume } from '@/lib/server/resumes';
 
 export async function POST(
@@ -21,4 +21,5 @@ export async function POST(
     return NextResponse.json({ detail: message }, { status: 400 });
   }
 }
+
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { deleteUserAccount } from '@/lib/server/account';
 
 const deleteAccountSchema = z.object({
@@ -32,4 +32,5 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ detail: message }, { status: 500 });
   }
 }
+
 
