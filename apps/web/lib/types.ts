@@ -413,6 +413,50 @@ export interface TailoredDocumentDto {
   updatedAt: string;
 }
 
+// Application Strategy types
+export interface RankedEvidenceItem {
+  type: 'experience' | 'skill' | 'project' | 'education';
+  id: string;
+  label: string;
+  relevanceScore: number;
+  reason: string;
+}
+
+export interface ApplicationStrategyContent {
+  positioning: string;
+  topEvidence: RankedEvidenceItem[];
+  coveringStrengths: string[];
+  gaps: string[];
+  recommendations: string[];
+  approved: boolean;
+  approvedAt: string | null;
+}
+
+export interface ApplicationStrategyDto {
+  id: string;
+  jobId: string | null;
+  applicationId: string | null;
+  company: string;
+  jobTitle: string;
+  content: ApplicationStrategyContent;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PrepDocStatus {
+  status: 'not_started' | 'generating' | 'ready_for_review' | 'approved' | 'failed';
+  documentId: string | null;
+}
+
+export interface ScreeningAnswerEntry {
+  question: string;
+  answer: string;
+  groundedFacts: string[];
+  source: 'claude' | 'grounded_fallback';
+  generating: boolean;
+  approved: boolean;
+}
+
 export interface ExtensionSessionDto {
   id: string;
   label: string;

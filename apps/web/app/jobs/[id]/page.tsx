@@ -24,6 +24,7 @@ import { Alert } from "@/components/ui/alert";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { api, ApiError } from "@/lib/api-client";
 import { barTone, formatFreshness, scoreTone } from "@/lib/job-ui";
+import { PreparationWorkspace } from "@/components/jobs/preparation-workspace";
 
 export default function JobDetailPage() {
   return (
@@ -35,6 +36,8 @@ export default function JobDetailPage() {
   );
 }
 
+type JobTab = "analysis" | "prepare";
+
 function JobDetailContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -45,6 +48,7 @@ function JobDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showRawDescription, setShowRawDescription] = useState(false);
+  const [activeTab, setActiveTab] = useState<JobTab>("analysis");
 
   useEffect(() => {
     let cancelled = false;
@@ -297,6 +301,32 @@ function JobDetailContent() {
         </div>
       </Card>
 
+      {/* Tab bar */}
+      <div className="flex gap-1 rounded-xl border border-ui-border bg-ui-canvas p-1">
+        {(["analysis", "prepare"] as JobTab[]).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === tab
+                ? "bg-white text-ui-ink shadow-sm"
+                : "text-ui-muted hover:text-ui-ink"
+            }`}
+          >
+            {tab === "analysis" ? "Match Analysis" : "Prepare Application"}
+          </button>
+        ))}
+      </div>
+
+      {/* Prepare tab */}
+      {activeTab === "prepare" && (
+        <div>
+          <PreparationWorkspace job={job} />
+        </div>
+      )}
+
+      {activeTab === "analysis" && (
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Left column: Intelligent Match Analysis */}
         <div className="flex flex-col gap-6 lg:col-span-5">
@@ -558,6 +588,7 @@ function JobDetailContent() {
           </Card>
         </div>
       </div>
+      )}
     </div>
   );
 }
