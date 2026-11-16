@@ -220,7 +220,7 @@ function ReviewContent() {
       const payload = buildPayload();
       await api.patch(`/resumes/${id}/parsed-data`, payload);
       await api.post(`/resumes/${id}/confirm`);
-      router.push("/profile");
+      router.push("/dashboard");
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.detail : "Failed to confirm this resume.");
     } finally {

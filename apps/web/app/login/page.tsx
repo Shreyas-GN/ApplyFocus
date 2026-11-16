@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { loginSchema } from "@applypilot/validators";
 import { useAuth } from "@/lib/auth-context";
-import { ApiError } from "@/lib/api-client";
+import { api, ApiError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -54,6 +54,15 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(result.data.email, result.data.password);
+      try {
+        const profile = await api.get<{ fullName: string | null }>("/profile");
+        if (!profile.fullName) {
+          router.push("/onboarding");
+          return;
+        }
+      } catch {
+        // Profile check failed — fall through to dashboard
+      }
       router.push("/dashboard");
     } catch (error) {
       if (error instanceof ApiError) {
