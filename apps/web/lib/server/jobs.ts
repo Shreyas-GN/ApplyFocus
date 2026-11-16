@@ -1,9 +1,10 @@
-import { desc, eq, ilike, or, and, gte, count, sql } from 'drizzle-orm';
+import { desc, eq, ilike, or, and, gte, count, sql, notInArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   applicationEvents,
   applications,
   jobs,
+  jobBoards,
   jobStates,
   tailoredDocuments,
 } from '@/lib/db/schema';
@@ -24,17 +25,12 @@ import {
 } from './job-matching';
 
 export interface BoardSource {
-  provider: 'greenhouse' | 'lever';
+  provider: 'greenhouse' | 'lever' | 'ashby' | 'smartrecruiters';
   slug: string;
   companyName: string;
 }
 
-const DEFAULT_BOARDS: BoardSource[] = [
-  { provider: 'greenhouse', slug: 'vercel', companyName: 'Vercel' },
-  { provider: 'greenhouse', slug: 'anthropic', companyName: 'Anthropic' },
-  { provider: 'greenhouse', slug: 'stripe', companyName: 'Stripe' },
-  { provider: 'greenhouse', slug: 'figma', companyName: 'Figma' },
-];
+// ─── ATS type definitions ─────────────────────────────────────────────────────
 
 interface GreenhouseJob {
   id: number;
@@ -58,21 +54,98 @@ interface LeverPosting {
   createdAt?: number;
 }
 
+interface AshbyPosting {
+  id: string;
+  title: string;
+  locationName?: string;
+  employmentType?: string;
+  jobLink?: string;
+  departmentName?: string;
+  descriptionHtml?: string;
+  descriptionPlain?: string;
+  publishedDate?: string;
+}
+
+interface SmartRecruitersPosting {
+  id: string;
+  name: string;
+  location?: {
+    city?: string;
+    country?: string;
+    remote?: boolean;
+  };
+  typeOfEmployment?: { id?: string; label?: string };
+  jobAd?: {
+    sections?: {
+      companyDescription?: { text?: string };
+      jobDescription?: { text?: string };
+    };
+  };
+  releasedDate?: string;
+  ref?: string;
+}
+
+// ─── Sync orchestration ───────────────────────────────────────────────────────
+
 export async function syncPublicJobs(
   customBoards?: BoardSource[]
 ): Promise<{ synced: number; boardsChecked: number }> {
-  const boards = customBoards && customBoards.length > 0 ? customBoards : DEFAULT_BOARDS;
+  let boards: BoardSource[];
+
+  if (customBoards && customBoards.length > 0) {
+    boards = customBoards;
+  } else {
+    // Load active boards from the catalogue; fall back to hardcoded seeds if table is empty
+    try {
+      const dbBoards = await db
+        .select({
+          provider: jobBoards.provider,
+          slug: jobBoards.slug,
+          companyName: jobBoards.companyName,
+        })
+        .from(jobBoards)
+        .where(eq(jobBoards.isActive, true));
+
+      boards =
+        dbBoards.length > 0
+          ? dbBoards.map((b) => ({
+              provider: b.provider as BoardSource['provider'],
+              slug: b.slug,
+              companyName: b.companyName,
+            }))
+          : FALLBACK_BOARDS;
+    } catch {
+      boards = FALLBACK_BOARDS;
+    }
+  }
+
   let totalSynced = 0;
 
   for (const board of boards) {
     try {
+      let count = 0;
       if (board.provider === 'greenhouse') {
-        const count = await ingestGreenhouseBoard(board.slug, board.companyName);
-        totalSynced += count;
+        count = await ingestGreenhouseBoard(board.slug, board.companyName);
       } else if (board.provider === 'lever') {
-        const count = await ingestLeverBoard(board.slug, board.companyName);
-        totalSynced += count;
+        count = await ingestLeverBoard(board.slug, board.companyName);
+      } else if (board.provider === 'ashby') {
+        count = await ingestAshbyBoard(board.slug, board.companyName);
+      } else if (board.provider === 'smartrecruiters') {
+        count = await ingestSmartRecruitersBoard(board.slug, board.companyName);
       }
+      totalSynced += count;
+
+      // Update last_synced_at for this board in the catalogue
+      await db
+        .update(jobBoards)
+        .set({ lastSyncedAt: new Date() })
+        .where(
+          and(
+            eq(jobBoards.provider, board.provider),
+            eq(jobBoards.slug, board.slug)
+          )
+        )
+        .catch(() => undefined); // Non-fatal if board row doesn't exist yet
     } catch (error) {
       console.warn(
         `[Jobs Sync] Failed syncing ${board.provider}:${board.slug}`,
@@ -84,10 +157,31 @@ export async function syncPublicJobs(
   return { synced: totalSynced, boardsChecked: boards.length };
 }
 
+// Fallback boards used when the job_boards catalogue is empty.
+const FALLBACK_BOARDS: BoardSource[] = [
+  { provider: 'greenhouse', slug: 'vercel', companyName: 'Vercel' },
+  { provider: 'greenhouse', slug: 'anthropic', companyName: 'Anthropic' },
+  { provider: 'greenhouse', slug: 'stripe', companyName: 'Stripe' },
+  { provider: 'greenhouse', slug: 'figma', companyName: 'Figma' },
+];
+
+// ─── Upsert helpers ───────────────────────────────────────────────────────────
+
 type UpsertJobRow = typeof jobs.$inferInsert;
 
-async function upsertJobBatch(rows: UpsertJobRow[]): Promise<number> {
+/**
+ * Upsert a batch of jobs. Returns the count of rows upserted.
+ * Also deactivates jobs from this source/slug that were NOT returned
+ * by the latest sync (stale-job handling).
+ */
+async function upsertJobBatch(
+  rows: UpsertJobRow[],
+  source: string,
+  slug: string
+): Promise<number> {
   if (rows.length === 0) return 0;
+
+  // Deduplicate within the batch
   const dedupedMap = new Map<string, UpsertJobRow>();
   for (const row of rows) {
     dedupedMap.set(`${row.source}:${row.externalId}`, row);
@@ -107,11 +201,31 @@ async function upsertJobBatch(rows: UpsertJobRow[]): Promise<number> {
         description: sql`excluded.description`,
         skills: sql`excluded.skills`,
         postedAt: sql`excluded.posted_at`,
+        isActive: sql`true`,
       },
     });
 
+  // Deactivate jobs from this board that were not in this sync response
+  const syncedExternalIds = deduped.map((r) => r.externalId as string);
+  if (syncedExternalIds.length > 0) {
+    await db
+      .update(jobs)
+      .set({ isActive: false })
+      .where(
+        and(
+          eq(jobs.source, source),
+          sql`${jobs.externalId} LIKE ${slug + ':%'}`,
+          eq(jobs.isActive, true),
+          notInArray(jobs.externalId, syncedExternalIds)
+        )
+      )
+      .catch(() => undefined); // Non-fatal
+  }
+
   return deduped.length;
 }
+
+// ─── ATS ingestion functions ──────────────────────────────────────────────────
 
 async function ingestGreenhouseBoard(
   slug: string,
@@ -123,11 +237,11 @@ async function ingestGreenhouseBoard(
     signal: AbortSignal.timeout(8000),
   });
   if (!res.ok) {
-    throw new Error(`Greenhouse API returned ${res.status}`);
+    throw new Error(`Greenhouse API returned ${res.status} for ${slug}`);
   }
 
   const data = (await res.json()) as { jobs?: GreenhouseJob[] };
-  const items = (data.jobs ?? []).slice(0, 20);
+  const items = (data.jobs ?? []).slice(0, 50);
   const rows: UpsertJobRow[] = items.map((item) => {
     const cleanDescription = stripHtml(item.content ?? '');
     const location = item.location?.name ?? null;
@@ -145,11 +259,12 @@ async function ingestGreenhouseBoard(
       url: item.absolute_url,
       description: cleanDescription.slice(0, 12000),
       skills,
+      isActive: true,
       postedAt: postedAt && !Number.isNaN(postedAt.getTime()) ? postedAt : null,
     };
   });
 
-  return upsertJobBatch(rows);
+  return upsertJobBatch(rows, 'greenhouse', slug);
 }
 
 async function ingestLeverBoard(
@@ -162,10 +277,10 @@ async function ingestLeverBoard(
     signal: AbortSignal.timeout(8000),
   });
   if (!res.ok) {
-    throw new Error(`Lever API returned ${res.status}`);
+    throw new Error(`Lever API returned ${res.status} for ${slug}`);
   }
 
-  const items = ((await res.json()) as LeverPosting[]).slice(0, 20);
+  const items = ((await res.json()) as LeverPosting[]).slice(0, 50);
   const rows: UpsertJobRow[] = items.map((item) => {
     const cleanDescription =
       item.descriptionPlain ?? stripHtml(item.description ?? '');
@@ -184,12 +299,105 @@ async function ingestLeverBoard(
       url: item.hostedUrl,
       description: cleanDescription.slice(0, 12000),
       skills,
+      isActive: true,
       postedAt: postedAt && !Number.isNaN(postedAt.getTime()) ? postedAt : null,
     };
   });
 
-  return upsertJobBatch(rows);
+  return upsertJobBatch(rows, 'lever', slug);
 }
+
+async function ingestAshbyBoard(
+  slug: string,
+  companyName: string
+): Promise<number> {
+  const url = `https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(slug)}`;
+  const res = await fetch(url, {
+    next: { revalidate: 0 },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) {
+    throw new Error(`Ashby API returned ${res.status} for ${slug}`);
+  }
+
+  const data = (await res.json()) as { jobPostings?: AshbyPosting[] };
+  const items = (data.jobPostings ?? []).slice(0, 50);
+  const rows: UpsertJobRow[] = items.map((item) => {
+    const cleanDescription =
+      item.descriptionPlain ?? stripHtml(item.descriptionHtml ?? '');
+    const location = item.locationName ?? null;
+    const workMode = inferWorkMode(item.title, location, cleanDescription);
+    const skills = extractJobSkills(item.title, cleanDescription);
+    const postedAt = item.publishedDate ? new Date(item.publishedDate) : null;
+    return {
+      source: 'ashby',
+      externalId: `${slug}:${item.id}`,
+      company: companyName,
+      title: item.title,
+      location,
+      workMode,
+      employmentType: item.employmentType ?? 'full_time',
+      url: item.jobLink ?? `https://jobs.ashbyhq.com/${encodeURIComponent(slug)}/${item.id}`,
+      description: cleanDescription.slice(0, 12000),
+      skills,
+      isActive: true,
+      postedAt: postedAt && !Number.isNaN(postedAt.getTime()) ? postedAt : null,
+    };
+  });
+
+  return upsertJobBatch(rows, 'ashby', slug);
+}
+
+async function ingestSmartRecruitersBoard(
+  slug: string,
+  companyName: string
+): Promise<number> {
+  const url = `https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(slug)}/postings?limit=50`;
+  const res = await fetch(url, {
+    next: { revalidate: 0 },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) {
+    throw new Error(`SmartRecruiters API returned ${res.status} for ${slug}`);
+  }
+
+  const data = (await res.json()) as { content?: SmartRecruitersPosting[] };
+  const items = (data.content ?? []).slice(0, 50);
+  const rows: UpsertJobRow[] = items.map((item) => {
+    const descriptionParts = [
+      item.jobAd?.sections?.companyDescription?.text ?? '',
+      item.jobAd?.sections?.jobDescription?.text ?? '',
+    ].filter(Boolean);
+    const rawDescription = descriptionParts.join('\n\n');
+    const cleanDescription = stripHtml(rawDescription);
+    const locationParts = [item.location?.city, item.location?.country].filter(Boolean);
+    const location = locationParts.join(', ') || null;
+    const isRemote = item.location?.remote ?? false;
+    const workMode = isRemote
+      ? 'remote'
+      : inferWorkMode(item.name, location, cleanDescription);
+    const skills = extractJobSkills(item.name, cleanDescription);
+    const postedAt = item.releasedDate ? new Date(item.releasedDate) : null;
+    return {
+      source: 'smartrecruiters',
+      externalId: `${slug}:${item.id}`,
+      company: companyName,
+      title: item.name,
+      location,
+      workMode,
+      employmentType: item.typeOfEmployment?.id ?? 'full_time',
+      url: item.ref ?? `https://jobs.smartrecruiters.com/${encodeURIComponent(slug)}/${item.id}`,
+      description: cleanDescription.slice(0, 12000),
+      skills,
+      isActive: true,
+      postedAt: postedAt && !Number.isNaN(postedAt.getTime()) ? postedAt : null,
+    };
+  });
+
+  return upsertJobBatch(rows, 'smartrecruiters', slug);
+}
+
+// ─── Job listing ──────────────────────────────────────────────────────────────
 
 export type DiscoverJobsTab = 'for_you' | 'search' | 'adjacent' | 'saved';
 
@@ -218,7 +426,10 @@ let initialJobsSeedPromise: Promise<void> | null = null;
 
 async function ensureJobsSeededIfEmpty() {
   try {
-    const [countRow] = await db.select({ total: count() }).from(jobs);
+    const [countRow] = await db
+      .select({ total: count() })
+      .from(jobs)
+      .where(eq(jobs.isActive, true));
     if ((countRow?.total ?? 0) > 0) return;
 
     if (!initialJobsSeedPromise) {
@@ -253,17 +464,28 @@ export async function listMatchedJobs(
     limit = 100,
   } = options;
 
-  const conditions = [];
+  const conditions = [eq(jobs.isActive, true)];
+
   if (q && q.trim()) {
-    const term = `%${q.trim()}%`;
-    conditions.push(
-      or(
-        ilike(jobs.title, term),
-        ilike(jobs.company, term),
-        ilike(jobs.description, term),
-        ilike(jobs.location, term)
-      )
-    );
+    // Use full-text search when available, fall back to ILIKE
+    const term = q.trim();
+    const sanitizedTerm = term.replace(/[^\w\s]/g, ' ').trim();
+    if (sanitizedTerm) {
+      conditions.push(
+        or(
+          sql`${jobs.searchVector} @@ plainto_tsquery('english', ${sanitizedTerm})`,
+          ilike(jobs.company, `%${term}%`),
+          ilike(jobs.location, `%${term}%`)
+        )!
+      );
+    } else {
+      conditions.push(
+        or(
+          ilike(jobs.title, `%${term}%`),
+          ilike(jobs.company, `%${term}%`)
+        )!
+      );
+    }
   }
   if (workMode && workMode !== 'all') {
     conditions.push(eq(jobs.workMode, workMode));
@@ -272,14 +494,14 @@ export async function listMatchedJobs(
     const now = Date.now();
     const hours = freshness === '24h' ? 24 : freshness === '7d' ? 24 * 7 : 24 * 30;
     const cutoff = new Date(now - hours * 60 * 60 * 1000);
-    conditions.push(or(gte(jobs.postedAt, cutoff), gte(jobs.createdAt, cutoff)));
+    conditions.push(or(gte(jobs.postedAt, cutoff), gte(jobs.createdAt, cutoff))!);
   }
 
   const [jobRows, userProfile, userApps, userStates] = await Promise.all([
     db
       .select()
       .from(jobs)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .where(and(...conditions))
       .orderBy(desc(jobs.postedAt), desc(jobs.createdAt))
       .limit(limit),
     getProfile(userId),
@@ -502,4 +724,3 @@ export async function clearJobState(
     .returning({ id: jobStates.id });
   return deleted.length > 0;
 }
-

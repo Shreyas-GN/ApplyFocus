@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -14,6 +15,12 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { authenticatedRole, authUid, authUsers } from 'drizzle-orm/supabase';
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return 'tsvector';
+  },
+});
 
 // Enums
 export const resumeProcessingStatusEnum = pgEnum('resume_processing_status', [
@@ -408,7 +415,7 @@ export const jobs = pgTable(
   'jobs',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    source: text('source').notNull(), // 'greenhouse' | 'lever' | 'manual'
+    source: text('source').notNull(), // 'greenhouse' | 'lever' | 'ashby' | 'smartrecruiters'
     externalId: text('external_id').notNull(),
     company: text('company').notNull(),
     title: text('title').notNull(),
@@ -421,6 +428,10 @@ export const jobs = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
+    isActive: boolean('is_active').default(true).notNull(),
+    searchVector: tsvector('search_vector').generatedAlwaysAs(
+      sql`to_tsvector('english', coalesce(title, '') || ' ' || coalesce(company, '') || ' ' || left(coalesce(description, ''), 4096))`
+    ),
     postedAt: timestamp('posted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -432,7 +443,43 @@ export const jobs = pgTable(
       table.externalId
     ),
     index('jobs_company_idx').on(table.company),
+    index('jobs_is_active_idx').on(table.isActive),
+    index('jobs_search_vector_gin_idx')
+      .using('gin', table.searchVector),
     pgPolicy('jobs_authenticated_read_policy', {
+      for: 'select',
+      to: authenticatedRole,
+      using: sql`true`,
+    }),
+  ]
+);
+
+// 10a. Job Boards (ATS provider catalogue)
+export const jobBoardProviderEnum = pgEnum('job_board_provider', [
+  'greenhouse',
+  'lever',
+  'ashby',
+  'smartrecruiters',
+]);
+
+export const jobBoards = pgTable(
+  'job_boards',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    provider: jobBoardProviderEnum('provider').notNull(),
+    slug: text('slug').notNull(),
+    companyName: text('company_name').notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    isSeed: boolean('is_seed').default(false).notNull(),
+    lastSyncedAt: timestamp('last_synced_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('job_boards_provider_slug_idx').on(table.provider, table.slug),
+    index('job_boards_is_active_idx').on(table.isActive),
+    pgPolicy('job_boards_authenticated_read_policy', {
       for: 'select',
       to: authenticatedRole,
       using: sql`true`,
