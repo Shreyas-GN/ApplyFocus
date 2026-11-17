@@ -312,6 +312,30 @@ export interface JobIntelligenceBreakdown {
   companyAndRoleHighlights: string[];
 }
 
+export type RequirementAssessment =
+  | "demonstrated"
+  | "strongly_supported"
+  | "transferable"
+  | "partial"
+  | "not_established";
+
+export interface RequirementAssessmentItem {
+  requirement: string;
+  importance: "mandatory" | "preferred";
+  assessment: RequirementAssessment;
+  evidence: string;
+  evidenceSource: string | null;
+  explanation: string;
+  confidence: number;
+}
+
+export interface RequirementAnalysis {
+  items: RequirementAssessmentItem[];
+  demonstratedCount: number;
+  transferableCount: number;
+  notEstablishedCount: number;
+}
+
 export interface JobDto {
   id: string;
   source: string;
@@ -334,6 +358,7 @@ export interface JobDto {
 
 export interface JobDetailDto extends JobDto {
   intelligence: JobIntelligenceBreakdown;
+  requirementAnalysis: RequirementAnalysis;
   tailoredDocumentsCount: number;
 }
 

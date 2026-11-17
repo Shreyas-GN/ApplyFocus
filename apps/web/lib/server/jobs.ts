@@ -17,6 +17,7 @@ import { getProfile } from './profile';
 import {
   analyzeJobIntelligence,
   computeJobMatch,
+  computeRequirementAnalysis,
   extractJobSkills,
   inferSeniorityLevel,
   inferWorkMode,
@@ -397,6 +398,11 @@ export async function getJobDetail(
 
   const match = computeJobMatch(userProfile, jobRow);
   const intelligence = analyzeJobIntelligence(jobRow);
+  const requirementAnalysis = computeRequirementAnalysis(
+    userProfile,
+    intelligence.requiredSkills,
+    intelligence.preferredSkills
+  );
   const existingApp = appRows[0];
 
   return {
@@ -418,6 +424,7 @@ export async function getJobDetail(
     applicationId: existingApp?.id ?? null,
     applicationStatus: existingApp?.status ?? null,
     intelligence,
+    requirementAnalysis,
     tailoredDocumentsCount: Number(tailoredCountRows[0]?.value ?? 0),
   };
 }

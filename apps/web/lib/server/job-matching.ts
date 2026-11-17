@@ -2,6 +2,9 @@ import type {
   JobIntelligenceBreakdown,
   JobMatchBreakdown,
   ProfileDto,
+  RequirementAnalysis,
+  RequirementAssessment,
+  RequirementAssessmentItem,
   TransferableSkillMatch,
 } from '@/lib/types';
 
@@ -86,6 +89,16 @@ const TRANSFERABLE_SKILL_RULES: Array<{
     from: ['Node.js', 'Express', 'NestJS'],
     to: ['FastAPI', 'Django', 'Rails', 'Go', 'GraphQL'],
     reason: 'API design, async concurrency, and service architecture patterns carry over cleanly.',
+  },
+  {
+    from: ['FastAPI', 'Flask'],
+    to: ['Django', 'DRF'],
+    reason: 'FastAPI/Flask Python web experience maps directly to Django REST patterns and Python ORM usage.',
+  },
+  {
+    from: ['Django', 'DRF'],
+    to: ['FastAPI', 'Flask'],
+    reason: 'Django/DRF Python web experience transfers cleanly to FastAPI async patterns and Pydantic modeling.',
   },
   {
     from: ['Python', 'Django', 'FastAPI'],
@@ -562,4 +575,274 @@ export function analyzeJobIntelligence(job: {
     expectedExperienceYears,
     companyAndRoleHighlights: highlights,
   };
+}
+
+// ─── Requirement-Level Matching Engine ───────────────────────────────────────
+
+function findEvidenceSource(
+  skillLower: string,
+  profile: ProfileDto
+): { description: string; source: string | null } {
+  const confirmedSkills = profile.skills.filter((s) => s.source !== 'ai');
+  const confirmedExp = profile.experience.filter((e) => e.source !== 'ai');
+  const confirmedProjects = profile.projects.filter((p) => p.source !== 'ai');
+
+  // 1. Direct skill match
+  const directSkill = confirmedSkills.find((s) => s.name.toLowerCase() === skillLower);
+  if (directSkill) {
+    const proficiency = directSkill.proficiency ? ` (${directSkill.proficiency})` : '';
+    const years = directSkill.yearsOfExperience ? `, ${directSkill.yearsOfExperience} yrs` : '';
+    return {
+      description: `Confirmed skill${proficiency}${years}`,
+      source: directSkill.evidence ?? null,
+    };
+  }
+
+  // 2. Exact match in experience technologies
+  const expWithTech = confirmedExp.find((e) =>
+    (e.technologies ?? []).some((t) => t.toLowerCase() === skillLower)
+  );
+  if (expWithTech) {
+    return {
+      description: `Used at ${expWithTech.company} (${expWithTech.title})`,
+      source: `${expWithTech.title} at ${expWithTech.company}`,
+    };
+  }
+
+  // 3. Partial match in experience technologies (e.g. "fastapi" in "FastAPI backend")
+  const expWithPartialTech = confirmedExp.find((e) =>
+    (e.technologies ?? []).some(
+      (t) => t.toLowerCase().includes(skillLower) || skillLower.includes(t.toLowerCase())
+    )
+  );
+  if (expWithPartialTech) {
+    return {
+      description: `Referenced at ${expWithPartialTech.company}`,
+      source: `${expWithPartialTech.title} at ${expWithPartialTech.company}`,
+    };
+  }
+
+  // 4. Project technologies
+  const projWithTech = confirmedProjects.find((p) =>
+    (p.technologies ?? []).some(
+      (t) => t.toLowerCase() === skillLower || t.toLowerCase().includes(skillLower) || skillLower.includes(t.toLowerCase())
+    )
+  );
+  if (projWithTech) {
+    return {
+      description: `Used in project: ${projWithTech.name}`,
+      source: projWithTech.name,
+    };
+  }
+
+  // 5. Skill mentioned partially (e.g. user has "Django" skill, job asks for "Django REST framework")
+  const partialSkill = confirmedSkills.find(
+    (s) =>
+      s.name.toLowerCase().includes(skillLower) || skillLower.includes(s.name.toLowerCase())
+  );
+  if (partialSkill) {
+    return {
+      description: `Related: ${partialSkill.name} in profile`,
+      source: null,
+    };
+  }
+
+  // 6. Mentioned in descriptions
+  const expWithDesc = confirmedExp.find((e) =>
+    (e.description ?? '').toLowerCase().includes(skillLower)
+  );
+  if (expWithDesc) {
+    return {
+      description: `Mentioned in work history (${expWithDesc.company})`,
+      source: `${expWithDesc.title} at ${expWithDesc.company}`,
+    };
+  }
+
+  return { description: 'No documented evidence found', source: null };
+}
+
+function assessRequirement(
+  requirement: string,
+  profile: ProfileDto,
+  transferableMatches: TransferableSkillMatch[]
+): { assessment: RequirementAssessment; evidence: string; evidenceSource: string | null; explanation: string; confidence: number } {
+  const reqLower = requirement.toLowerCase();
+  const confirmedSkills = profile.skills.filter((s) => s.source !== 'ai');
+  const confirmedExp = profile.experience.filter((e) => e.source !== 'ai');
+  const confirmedProjects = profile.projects.filter((p) => p.source !== 'ai');
+
+  // ── Demonstrated: direct confirmed skill or tech match ──
+  const directSkill = confirmedSkills.some((s) => s.name.toLowerCase() === reqLower);
+  if (directSkill) {
+    const { description, source } = findEvidenceSource(reqLower, profile);
+    return {
+      assessment: 'demonstrated',
+      evidence: description,
+      evidenceSource: source,
+      explanation: `${requirement} is a confirmed skill in your profile.`,
+      confidence: 0.95,
+    };
+  }
+
+  // ── Demonstrated: exact technology in experience ──
+  const expTechMatch = confirmedExp.find((e) =>
+    (e.technologies ?? []).some((t) => t.toLowerCase() === reqLower)
+  );
+  if (expTechMatch) {
+    return {
+      assessment: 'demonstrated',
+      evidence: `Used at ${expTechMatch.company} (${expTechMatch.title})`,
+      evidenceSource: `${expTechMatch.title} at ${expTechMatch.company}`,
+      explanation: `${requirement} appears in your verified work experience at ${expTechMatch.company}.`,
+      confidence: 0.9,
+    };
+  }
+
+  // ── Demonstrated: exact technology in projects ──
+  const projTechMatch = confirmedProjects.find((p) =>
+    (p.technologies ?? []).some((t) => t.toLowerCase() === reqLower)
+  );
+  if (projTechMatch) {
+    return {
+      assessment: 'demonstrated',
+      evidence: `Used in project: ${projTechMatch.name}`,
+      evidenceSource: projTechMatch.name,
+      explanation: `${requirement} is documented in your project "${projTechMatch.name}".`,
+      confidence: 0.85,
+    };
+  }
+
+  // ── Strongly supported: partial skill name match (e.g. "postgres" matches "postgresql") ──
+  const partialSkillMatch = confirmedSkills.find(
+    (s) =>
+      s.name.toLowerCase().includes(reqLower) ||
+      reqLower.includes(s.name.toLowerCase())
+  );
+  if (partialSkillMatch) {
+    return {
+      assessment: 'strongly_supported',
+      evidence: `Related skill: ${partialSkillMatch.name}`,
+      evidenceSource: null,
+      explanation: `Your ${partialSkillMatch.name} skill closely relates to the ${requirement} requirement.`,
+      confidence: 0.75,
+    };
+  }
+
+  // ── Strongly supported: partial tech in experience ──
+  const partialExpTech = confirmedExp.find((e) =>
+    (e.technologies ?? []).some(
+      (t) => t.toLowerCase().includes(reqLower) || reqLower.includes(t.toLowerCase())
+    )
+  );
+  if (partialExpTech) {
+    return {
+      assessment: 'strongly_supported',
+      evidence: `Related tech used at ${partialExpTech.company}`,
+      evidenceSource: `${partialExpTech.title} at ${partialExpTech.company}`,
+      explanation: `A related technology to ${requirement} appears in your work at ${partialExpTech.company}.`,
+      confidence: 0.7,
+    };
+  }
+
+  // ── Transferable: mapped via TRANSFERABLE_SKILL_RULES ──
+  const transferable = transferableMatches.find(
+    (t) => t.targetSkill.toLowerCase() === reqLower
+  );
+  if (transferable) {
+    return {
+      assessment: 'transferable',
+      evidence: `${transferable.candidateSkill} → ${transferable.targetSkill}`,
+      evidenceSource: null,
+      explanation: `Your ${transferable.candidateSkill} background transfers to ${requirement}. ${transferable.reason}`,
+      confidence: 0.6,
+    };
+  }
+
+  // ── Partial: mentioned in descriptions but not as a formal skill/tech ──
+  const mentionedInDesc = confirmedExp.some((e) =>
+    (e.description ?? '').toLowerCase().includes(reqLower) ||
+    (e.responsibilities ?? []).some((r) => r.toLowerCase().includes(reqLower))
+  );
+  if (mentionedInDesc) {
+    const matchingExp = confirmedExp.find(
+      (e) =>
+        (e.description ?? '').toLowerCase().includes(reqLower) ||
+        (e.responsibilities ?? []).some((r) => r.toLowerCase().includes(reqLower))
+    );
+    return {
+      assessment: 'partial',
+      evidence: matchingExp
+        ? `Referenced in responsibilities at ${matchingExp.company}`
+        : 'Referenced in work history',
+      evidenceSource: matchingExp
+        ? `${matchingExp.title} at ${matchingExp.company}`
+        : null,
+      explanation: `${requirement} is mentioned in your work history but not documented as a primary skill or technology.`,
+      confidence: 0.45,
+    };
+  }
+
+  // ── Not established ──
+  return {
+    assessment: 'not_established',
+    evidence: 'Not documented in your profile',
+    evidenceSource: null,
+    explanation: `No evidence of ${requirement} was found in your confirmed profile data.`,
+    confidence: 0.1,
+  };
+}
+
+export function computeRequirementAnalysis(
+  profile: ProfileDto | null,
+  requiredSkills: string[],
+  preferredSkills: string[]
+): RequirementAnalysis {
+  if (!profile) {
+    const items: RequirementAssessmentItem[] = [
+      ...requiredSkills.map((req) => ({
+        requirement: req,
+        importance: 'mandatory' as const,
+        assessment: 'not_established' as const,
+        evidence: 'Sign in and complete your profile for personalized analysis.',
+        evidenceSource: null,
+        explanation: 'Complete your profile to see your requirement match.',
+        confidence: 0,
+      })),
+      ...preferredSkills.map((req) => ({
+        requirement: req,
+        importance: 'preferred' as const,
+        assessment: 'not_established' as const,
+        evidence: 'Sign in and complete your profile for personalized analysis.',
+        evidenceSource: null,
+        explanation: 'Complete your profile to see your requirement match.',
+        confidence: 0,
+      })),
+    ];
+    return { items, demonstratedCount: 0, transferableCount: 0, notEstablishedCount: items.length };
+  }
+
+  const userSkills = profile.skills.filter((s) => s.source !== 'ai').map((s) => s.name);
+  const allMissingSkills = [...requiredSkills, ...preferredSkills].filter(
+    (req) => !userSkills.some((s) => s.toLowerCase() === req.toLowerCase())
+  );
+  const transferableMatches = findTransferableSkills(userSkills, allMissingSkills);
+
+  const items: RequirementAssessmentItem[] = [
+    ...requiredSkills.map((req) => {
+      const result = assessRequirement(req, profile, transferableMatches);
+      return { requirement: req, importance: 'mandatory' as const, ...result };
+    }),
+    ...preferredSkills.map((req) => {
+      const result = assessRequirement(req, profile, transferableMatches);
+      return { requirement: req, importance: 'preferred' as const, ...result };
+    }),
+  ];
+
+  const demonstratedCount = items.filter(
+    (i) => i.assessment === 'demonstrated' || i.assessment === 'strongly_supported'
+  ).length;
+  const transferableCount = items.filter((i) => i.assessment === 'transferable' || i.assessment === 'partial').length;
+  const notEstablishedCount = items.filter((i) => i.assessment === 'not_established').length;
+
+  return { items, demonstratedCount, transferableCount, notEstablishedCount };
 }

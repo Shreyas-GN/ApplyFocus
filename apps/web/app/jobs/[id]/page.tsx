@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { StrategyPanel } from "@/components/jobs/strategy-panel";
+import { RequirementAnalysisPanel } from "@/components/jobs/requirement-analysis-panel";
 import { api, ApiError } from "@/lib/api-client";
 import { barTone, formatFreshness, scoreTone } from "@/lib/job-ui";
 
@@ -589,6 +590,17 @@ function JobDetailContent() {
               </div>
             </div>
           </Card>
+
+          {/* Requirement Analysis — per-requirement evidence breakdown */}
+          {(job.intelligence.requiredSkills.length > 0 || job.intelligence.preferredSkills.length > 0) && (
+            <Card>
+              <CardHeader
+                title="Requirement Analysis"
+                description="How your confirmed profile data maps to each job requirement."
+              />
+              <RequirementAnalysisPanel analysis={job.requirementAnalysis} />
+            </Card>
+          )}
         </div>
       </div>
 
