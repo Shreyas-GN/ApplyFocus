@@ -10,7 +10,9 @@
     "OPENROUTER_API_KEY",
     "OPENROUTER_MODEL",
     "NEXT_PUBLIC_APP_URL",
-    "CRON_SECRET"
+    "CRON_SECRET",
+    "NEON_AUTH_BASE_URL",
+    "NEON_AUTH_COOKIE_SECRET"
   ],
   "tasks": {
     "build": {
