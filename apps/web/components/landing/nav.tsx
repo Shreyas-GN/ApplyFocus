@@ -10,11 +10,14 @@ import { useTheme } from "@/lib/theme-context";
 
 export function LandingNav() {
   const [scrolled, setScrolled] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const { theme, toggle } = useTheme();
 
   React.useEffect(() => {
-    setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
