@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Printer } from "lucide-react";
 import { api, ApiError } from "@/lib/api-client";
 
 function formatResumeAsText(doc: TailoredDocumentDto): string {
@@ -82,6 +83,7 @@ export function TailoringStudioPanel({
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [previewingPdf, setPreviewingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -226,6 +228,40 @@ export function TailoringStudioPanel({
       setError(err instanceof ApiError ? err.detail : "Failed to save changes.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handlePreviewPdf() {
+    if (!activeDoc || !draftContent) return;
+    // Open a blank tab synchronously while still in the user-gesture call stack.
+    // Browsers block window.open() called after an await, treating it as an
+    // unsolicited popup. We navigate the tab to the PDF URL once the save succeeds,
+    // or close it if the save fails so no blank tab is left behind.
+    // Note: noopener is intentionally omitted — with it, window.open returns null
+    // in modern browsers and we cannot navigate the returned reference.
+    const tab = window.open("", "_blank");
+    setPreviewingPdf(true);
+    setError(null);
+    try {
+      const updated = await api.patch<TailoredDocumentDto>(
+        `/tailor/${activeDoc.id}`,
+        { content: draftContent }
+      );
+      setDocs((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+      setActiveDoc(updated);
+      setDraftContent(updated.content);
+      if (tab) {
+        tab.location.href = `/api/tailor/${activeDoc.id}/pdf`;
+      }
+    } catch (err) {
+      tab?.close();
+      setError(
+        err instanceof ApiError
+          ? err.detail
+          : "Failed to save before PDF preview. Please save your edits first and try again."
+      );
+    } finally {
+      setPreviewingPdf(false);
     }
   }
 
@@ -487,6 +523,8 @@ export function TailoringStudioPanel({
                   formatResumeAsText({ ...activeDoc, content: draftContent })
                 )
               }
+              onPreviewPdf={handlePreviewPdf}
+              previewingPdf={previewingPdf}
               saving={saving}
             />
           ) : (
@@ -505,6 +543,8 @@ export function TailoringStudioPanel({
                   })
                 )
               }
+              onPreviewPdf={handlePreviewPdf}
+              previewingPdf={previewingPdf}
               saving={saving}
             />
           )}
@@ -521,6 +561,8 @@ function ResumeDraftEditor({
   onSave,
   onCopy,
   onDownload,
+  onPreviewPdf,
+  previewingPdf,
   saving,
 }: {
   doc: TailoredDocumentDto;
@@ -529,6 +571,8 @@ function ResumeDraftEditor({
   onSave: () => void;
   onCopy: () => void;
   onDownload: () => void;
+  onPreviewPdf: () => void;
+  previewingPdf?: boolean;
   saving: boolean;
 }) {
   return (
@@ -548,6 +592,15 @@ function ResumeDraftEditor({
           </Button>
           <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={onDownload}>
             Download .txt
+          </Button>
+          <Button
+            variant="secondary"
+            className="px-3 py-1.5 text-xs"
+            loading={previewingPdf}
+            onClick={onPreviewPdf}
+          >
+            <Printer className="mr-1.5 inline h-3 w-3" />
+            Preview PDF
           </Button>
           <Button className="px-3 py-1.5 text-xs" loading={saving} onClick={onSave}>
             Save edits
@@ -671,6 +724,8 @@ function CoverLetterEditor({
   onSave,
   onCopy,
   onDownload,
+  onPreviewPdf,
+  previewingPdf,
   saving,
 }: {
   doc: TailoredDocumentDto;
@@ -679,6 +734,8 @@ function CoverLetterEditor({
   onSave: () => void;
   onCopy: () => void;
   onDownload: () => void;
+  onPreviewPdf: () => void;
+  previewingPdf?: boolean;
   saving: boolean;
 }) {
   return (
@@ -698,6 +755,15 @@ function CoverLetterEditor({
           </Button>
           <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={onDownload}>
             Download .txt
+          </Button>
+          <Button
+            variant="secondary"
+            className="px-3 py-1.5 text-xs"
+            loading={previewingPdf}
+            onClick={onPreviewPdf}
+          >
+            <Printer className="mr-1.5 inline h-3 w-3" />
+            Preview PDF
           </Button>
           <Button className="px-3 py-1.5 text-xs" loading={saving} onClick={onSave}>
             Save edits
