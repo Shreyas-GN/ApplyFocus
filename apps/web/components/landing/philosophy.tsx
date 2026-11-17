@@ -25,7 +25,7 @@ export function LandingPhilosophy() {
             </h2>
             <p className="mt-5 max-w-[480px] font-ui text-[16px] leading-[1.7] text-white/55">
               A meaningful job search isn&apos;t about volume. It&apos;s about understanding your strengths,
-              recognizing opportunities worth pursuing, and presenting your experience honestly.
+              recognising opportunities worth pursuing, and presenting your experience honestly.
             </p>
             <p className="mt-5 font-ui text-[15px] font-medium text-white/40">
               You make the decisions. ApplyPilot helps you make them with better information.

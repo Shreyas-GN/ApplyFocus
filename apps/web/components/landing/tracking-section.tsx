@@ -2,7 +2,7 @@ import { CheckCircle2, FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const STAGES = [
-  { label: "Saved", count: 6, color: "bg-slate-100 text-slate-500" },
+  { label: "Saved", count: 6, color: "bg-lp-bg text-lp-muted border border-lp-border" },
   { label: "Applied", count: 3, color: "bg-lp-accent-soft text-lp-accent" },
   { label: "Interview", count: 1, color: "bg-amber-50 text-amber-700" },
 ];
@@ -16,7 +16,7 @@ const APPS = [
 const STAGE_STYLE: Record<string, string> = {
   Interview: "bg-amber-50 text-amber-700",
   Applied: "bg-lp-accent-soft text-lp-accent",
-  Saved: "bg-slate-100 text-slate-500",
+  Saved: "bg-lp-bg text-lp-muted border border-lp-border",
 };
 
 export function LandingTracking() {
@@ -25,7 +25,7 @@ export function LandingTracking() {
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left — mockup */}
-          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_32px_rgba(53,92,255,0.08)]">
+          <div className="overflow-hidden rounded-2xl border border-lp-border bg-lp-surface shadow-[0_4px_32px_rgba(32,33,36,0.07)]">
             {/* Stage strip */}
             <div className="grid grid-cols-3 divide-x divide-lp-border border-b border-lp-border">
               {STAGES.map((s) => (

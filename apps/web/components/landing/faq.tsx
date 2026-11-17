@@ -42,7 +42,7 @@ export function LandingFaq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="border-t border-lp-border bg-lp-bg py-20 sm:py-28">
+    <section id="faq" className="border-t border-lp-border bg-lp-surface py-20 sm:py-28">
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-[300px_1fr] lg:gap-16">
           {/* Left */}
@@ -65,7 +65,7 @@ export function LandingFaq() {
           </div>
 
           {/* Right — accordion */}
-          <div className="divide-y divide-lp-border rounded-2xl border border-lp-border bg-white overflow-hidden">
+          <div className="divide-y divide-lp-border rounded-2xl border border-lp-border bg-lp-surface overflow-hidden">
             {FAQS.map((item, i) => (
               <div key={item.q}>
                 <button
