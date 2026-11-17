@@ -1,11 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function LandingCta() {
   return (
     <section className="bg-lp-lagoon py-24 sm:py-32">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-        <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.03] px-8 py-20 sm:px-16 sm:py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.65 }}
+          className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.03] px-8 py-20 sm:px-16 sm:py-24"
+        >
           {/* Warm glow */}
           <div
             aria-hidden="true"
@@ -60,7 +69,7 @@ export function LandingCta() {
               Free account · No credit card · Candidate control guaranteed
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

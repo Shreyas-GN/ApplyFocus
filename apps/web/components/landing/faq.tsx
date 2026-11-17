@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Minus } from "lucide-react";
+import { motion } from "framer-motion";
 
 const FAQS = [
   {
@@ -42,11 +43,16 @@ export function LandingFaq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="bg-white py-24 sm:py-32">
+    <section id="faq" className="bg-lp-surface py-24 sm:py-32">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <div className="grid gap-14 lg:grid-cols-[320px_1fr] lg:gap-20">
           {/* Left */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.55 }}
+          >
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
               FAQ
             </p>
@@ -62,10 +68,16 @@ export function LandingFaq() {
             >
               Still have questions? Contact us →
             </a>
-          </div>
+          </motion.div>
 
           {/* Right — accordion */}
-          <div className="divide-y divide-lp-border overflow-hidden rounded-2xl border border-lp-border bg-white">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.55, delay: 0.08 }}
+            className="divide-y divide-lp-border overflow-hidden rounded-2xl border border-lp-border bg-lp-surface"
+          >
             {FAQS.map((item, i) => (
               <div key={item.q}>
                 <button
@@ -85,7 +97,7 @@ export function LandingFaq() {
                 )}
               </div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

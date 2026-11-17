@@ -98,7 +98,7 @@ export function LandingFitAnalysis() {
         </div>
 
         {/* Product demo */}
-        <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_8px_48px_rgba(32,33,36,0.08)]">
+        <div className="overflow-hidden rounded-2xl border border-lp-border bg-lp-surface shadow-[0_8px_48px_rgba(32,33,36,0.08)]">
           {/* Demo header */}
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-lp-border px-6 py-5 sm:px-8">
             <div>
@@ -205,7 +205,7 @@ export function LandingFitAnalysis() {
             { label: "Transferable skills mapped", desc: "Adjacent skills from your experience are connected to requirements you don't directly meet." },
             { label: "Gaps made actionable", desc: "Missing requirements become preparation tasks, not dead ends." },
           ].map((item) => (
-            <div key={item.label} className="rounded-xl border border-lp-border bg-white px-5 py-4">
+            <div key={item.label} className="rounded-xl border border-lp-border bg-lp-surface px-5 py-4">
               <p className="font-ui text-[14px] font-semibold text-lp-ink">{item.label}</p>
               <p className="mt-1.5 font-ui text-[13px] leading-relaxed text-lp-body">{item.desc}</p>
             </div>

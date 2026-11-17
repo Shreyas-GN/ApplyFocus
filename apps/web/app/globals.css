@@ -99,6 +99,34 @@
   --radius-input: 8px;
 }
 
+/* ── Dark mode token overrides ── */
+:root[data-theme="dark"] {
+  --color-lp-bg:             #18191b;
+  --color-lp-surface:        #252729;
+  --color-lp-surface-subtle: #2e3135;
+  --color-lp-border:         #333638;
+  --color-lp-ink:            #F0EDE8;
+  --color-lp-body:           #A09D98;
+  --color-lp-muted:          #5E6270;
+  --color-lp-lagoon:         #121314;
+  --color-lp-sand:           #18191b;
+  --color-lp-accent-soft:    #3D1A14;
+  --color-lp-accent-hover:   #C6533B;
+}
+
+/* ── Smooth theme transition ── */
+.theme-transitioning *:not([data-no-transition]) {
+  transition: background-color 0.3s ease, border-color 0.25s ease, color 0.2s ease !important;
+}
+
+/* ── Nav scrolled background (adapts to theme) ── */
+.nav-scrolled-bg {
+  background-color: rgba(255, 255, 255, 0.90);
+}
+:root[data-theme="dark"] .nav-scrolled-bg {
+  background-color: rgba(26, 28, 30, 0.92);
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
