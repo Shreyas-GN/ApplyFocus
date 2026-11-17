@@ -1,6 +1,10 @@
 import { LandingNav } from "@/components/landing/nav";
 import { LandingHero } from "@/components/landing/hero";
+import { LandingProblem } from "@/components/landing/problem";
 import { LandingBento } from "@/components/landing/bento";
+import { LandingProfileSection } from "@/components/landing/profile-section";
+import { LandingFitAnalysis } from "@/components/landing/fit-analysis";
+import { LandingStrategy } from "@/components/landing/strategy";
 import { LandingResume } from "@/components/landing/resume-section";
 import { LandingTracking } from "@/components/landing/tracking-section";
 import { LandingPhilosophy } from "@/components/landing/philosophy";
@@ -13,7 +17,11 @@ export default function HomePage() {
     <div className="bg-lp-bg text-lp-ink">
       <LandingNav />
       <LandingHero />
+      <LandingProblem />
       <LandingBento />
+      <LandingProfileSection />
+      <LandingFitAnalysis />
+      <LandingStrategy />
       <LandingResume />
       <LandingTracking />
       <LandingPhilosophy />

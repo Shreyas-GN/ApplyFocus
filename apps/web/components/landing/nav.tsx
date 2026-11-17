@@ -16,13 +16,6 @@ export function LandingNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const linkClass = cn(
-    "rounded-full px-3.5 py-2 font-ui text-sm font-medium transition-colors",
-    scrolled
-      ? "text-lp-body hover:text-lp-ink"
-      : "text-white/80 hover:text-white"
-  );
-
   return (
     <header className="fixed top-3 left-0 right-0 z-50 px-4 sm:px-6">
       <div className="mx-auto flex max-w-7xl items-center justify-center">
@@ -30,8 +23,8 @@ export function LandingNav() {
           className={cn(
             "flex h-16 w-full max-w-5xl items-center justify-between gap-2 rounded-full border px-4 backdrop-blur-2xl backdrop-saturate-200 transition-all duration-300 md:px-6",
             scrolled
-              ? "border-white/25 bg-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.4)]"
-              : "border-white/15 bg-white/[0.07] shadow-[0_8px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]"
+              ? "border-lp-border/60 bg-lp-surface/90 shadow-[0_8px_32px_rgba(32,33,36,0.08),inset_0_1px_0_rgba(255,255,255,0.8)]"
+              : "border-lp-border/40 bg-lp-bg/80 shadow-[0_4px_16px_rgba(32,33,36,0.06)]"
           )}
         >
           {/* Logo */}
@@ -39,34 +32,35 @@ export function LandingNav() {
             href="/"
             className="group flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lp-accent"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-lp-accent font-ui text-xs font-semibold tracking-tight text-white transition-transform duration-150 group-hover:scale-105">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-lp-ink font-ui text-xs font-semibold tracking-tight text-white transition-transform duration-150 group-hover:scale-105">
               AP
             </span>
-            <span
-              className={cn(
-                "font-ui text-lg font-bold tracking-tight transition-colors",
-                scrolled ? "text-lp-ink" : "text-white drop-shadow-sm"
-              )}
-            >
+            <span className="font-ui text-lg font-bold tracking-tight text-lp-ink drop-shadow-none transition-colors">
               ApplyPilot
             </span>
           </Link>
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
-            <a href="#how-it-works" className={linkClass}>Product</a>
-            <a href="#how-it-works" className={linkClass}>How it works</a>
-            <a href="#faq" className={linkClass}>FAQ</a>
+            {["Product", "How it works", "FAQ"].map((label, i) => {
+              const href = i === 2 ? "#faq" : "#how-it-works";
+              return (
+                <a
+                  key={label}
+                  href={href}
+                  className="rounded-full px-3.5 py-2 font-ui text-sm font-medium text-lp-body transition-colors hover:text-lp-ink"
+                >
+                  {label}
+                </a>
+              );
+            })}
           </nav>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className={cn(
-                "hidden rounded-full px-3.5 py-2 font-ui text-sm font-medium transition-colors sm:inline-block",
-                scrolled ? "text-lp-body hover:text-lp-ink" : "text-white/80 hover:text-white"
-              )}
+              className="hidden rounded-full px-3.5 py-2 font-ui text-sm font-medium text-lp-body transition-colors hover:text-lp-ink sm:inline-block"
             >
               Sign in
             </Link>
@@ -88,17 +82,14 @@ export function LandingNav() {
                     variant="ghost"
                     size="icon"
                     aria-label="Open navigation menu"
-                    className={cn(
-                      "rounded-full",
-                      scrolled ? "text-lp-ink" : "text-white"
-                    )}
+                    className="rounded-full text-lp-ink"
                   >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="flex w-[300px] flex-col gap-6 p-6">
+                <SheetContent side="right" className="flex w-[300px] flex-col gap-6 bg-lp-surface p-6">
                   <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-lp-accent font-ui text-xs font-semibold text-white">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-lp-ink font-ui text-xs font-semibold text-white">
                       AP
                     </span>
                     <span className="font-ui text-lg font-bold tracking-tight text-lp-ink">
@@ -121,7 +112,7 @@ export function LandingNav() {
                   <div className="mt-auto flex flex-col gap-2.5 border-t border-lp-border pt-6">
                     <Link
                       href="/login"
-                      className="w-full rounded-full border border-lp-border px-4 py-2.5 text-center font-ui text-sm font-medium text-lp-ink transition-colors hover:bg-lp-surface"
+                      className="w-full rounded-full border border-lp-border px-4 py-2.5 text-center font-ui text-sm font-medium text-lp-ink transition-colors hover:bg-lp-bg"
                     >
                       Sign in
                     </Link>

@@ -3,25 +3,24 @@ import { ArrowRight } from "lucide-react";
 
 export function LandingCta() {
   return (
-    <section className="bg-lp-surface py-16 sm:py-20">
+    <section className="bg-lp-bg py-16 sm:py-20">
       <div className="mx-auto max-w-[900px] px-5 text-center sm:px-8">
         <div className="relative overflow-hidden rounded-3xl bg-lp-lagoon px-8 py-16 sm:px-16 sm:py-20">
-          {/* glow */}
+          {/* Subtle glow using Vermilion */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 opacity-30"
-            style={{ background: "radial-gradient(ellipse at 50% 0%, #355CFF, transparent 70%)" }}
+            className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 opacity-25"
+            style={{ background: "radial-gradient(ellipse at 50% 0%, #C6533B, transparent 70%)" }}
           />
           <div className="relative">
             <div className="mx-auto mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-lp-accent font-ui text-sm font-bold text-white">
               AP
             </div>
             <h2 className="mx-auto max-w-[560px] font-display text-[32px] leading-[1.1] text-white sm:text-[46px]">
-              Make your next move a considered one.
+              Know your value. Apply with confidence.
             </h2>
             <p className="mx-auto mt-4 max-w-[460px] font-ui text-[16px] leading-[1.65] text-white/50">
-              Bring your experience together, find roles worth pursuing, and prepare
-              every application with intention — not volume.
+              Bring your experience together, evaluate opportunities with real evidence, and prepare every application with intention — not volume.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <Link
