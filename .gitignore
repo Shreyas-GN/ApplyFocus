@@ -43,3 +43,5 @@ infrastructure/terraform/*.tfstate
 infrastructure/terraform/*.tfstate.backup
 infrastructure/terraform/.terraform.lock.hcl
 .env*
+.agents/
+.claude/skills/
