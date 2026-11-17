@@ -325,6 +325,42 @@ export function computeJobMatch(
     if (missingSkills.length > 0 && matchedSkills.length > 0) {
       gaps.push(`Unlisted in your profile: ${missingSkills.slice(0, 4).join(', ')}`);
     }
+
+    // Surface confirmed experience evidence (never AI-inferred)
+    const confirmedExperiences = profile.experience.filter((e) => e.source !== 'ai');
+    if (confirmedExperiences.length > 0 && matchedSkills.length > 0) {
+      const jobWords = job.title.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
+      const relevantExp = confirmedExperiences
+        .filter(
+          (e) =>
+            jobWords.some((w) => e.title.toLowerCase().includes(w)) ||
+            matchedSkills.some((s) => e.title.toLowerCase().includes(s.toLowerCase())) ||
+            (e.technologies ?? []).some((t) =>
+              matchedSkills.some((s) => s.toLowerCase() === t.toLowerCase())
+            )
+        )
+        .slice(0, 2);
+      if (relevantExp.length > 0) {
+        strengths.push(
+          `Experience: ${relevantExp.map((e) => `${e.title} at ${e.company}`).join('; ')}`
+        );
+      }
+    }
+
+    // Surface confirmed project evidence (never AI-inferred)
+    const confirmedProjects = profile.projects.filter((p) => p.source !== 'ai');
+    if (confirmedProjects.length > 0 && matchedSkills.length > 0) {
+      const relevantProjects = confirmedProjects
+        .filter((p) =>
+          (p.technologies ?? []).some((t) =>
+            matchedSkills.some((s) => s.toLowerCase() === t.toLowerCase())
+          )
+        )
+        .slice(0, 2);
+      if (relevantProjects.length > 0) {
+        strengths.push(`Projects: ${relevantProjects.map((p) => p.name).join(', ')}`);
+      }
+    }
   } else {
     score += 15;
   }
@@ -457,7 +493,7 @@ export function computeJobMatch(
     matchedSkills,
     missingSkills: missingSkills.slice(0, 6),
     transferableSkills,
-    strengths: strengths.slice(0, 5),
+    strengths: strengths.slice(0, 7),
     gaps: gaps.slice(0, 5),
     reasons,
     isAdjacentRole,

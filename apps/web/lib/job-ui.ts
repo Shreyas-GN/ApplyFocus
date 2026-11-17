@@ -10,6 +10,32 @@ export function barTone(score: number): string {
   return "bg-ui-muted";
 }
 
+export function getApplyRecommendation(score: number): {
+  verdict: string;
+  detail: string;
+  classes: string;
+} {
+  if (score >= 75) {
+    return {
+      verdict: "Strong fit — go ahead and apply",
+      detail: "Your background aligns well with this role.",
+      classes: "bg-emerald-50 border-emerald-200 text-emerald-800",
+    };
+  }
+  if (score >= 55) {
+    return {
+      verdict: "Decent fit — worth applying",
+      detail: "You meet most requirements. Use your cover letter to address any gaps.",
+      classes: "bg-amber-50 border-amber-200 text-amber-800",
+    };
+  }
+  return {
+    verdict: "Partial fit — apply selectively",
+    detail: "There are significant gaps. Apply only if this role interests you strongly.",
+    classes: "bg-slate-50 border-slate-200 text-slate-700",
+  };
+}
+
 export function formatFreshness(
   postedAt: string | null,
   createdAt: string

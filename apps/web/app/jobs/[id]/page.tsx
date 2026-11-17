@@ -25,7 +25,7 @@ import { Alert } from "@/components/ui/alert";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { StrategyPanel } from "@/components/jobs/strategy-panel";
 import { api, ApiError } from "@/lib/api-client";
-import { barTone, formatFreshness, scoreTone } from "@/lib/job-ui";
+import { barTone, formatFreshness, getApplyRecommendation, scoreTone } from "@/lib/job-ui";
 
 export default function JobDetailPage() {
   return (
@@ -34,6 +34,167 @@ export default function JobDetailPage() {
         <JobDetailContent />
       </AppShell>
     </ProtectedRoute>
+  );
+}
+
+function FitAnalysisContent({ job }: { job: JobDetailDto }) {
+  const profileNeedsCompletion = job.match.reasons.some(
+    (r) => r.includes("profile") || r.includes("Sign in")
+  );
+  const recommendation = getApplyRecommendation(job.match.score);
+
+  const preferredSkillSet = new Set(
+    job.intelligence.preferredSkills.map((s) => s.toLowerCase())
+  );
+  const missingRequired = job.match.missingSkills.filter(
+    (s) => !preferredSkillSet.has(s.toLowerCase())
+  );
+  const missingNiceToHave = job.match.missingSkills.filter((s) =>
+    preferredSkillSet.has(s.toLowerCase())
+  );
+  const otherGaps = job.match.gaps.filter(
+    (g) => !g.startsWith("Unlisted in your profile") && !g.startsWith("Missing listed stack")
+  );
+  const hasGaps =
+    missingRequired.length > 0 || missingNiceToHave.length > 0 || otherGaps.length > 0;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Should I apply? */}
+      {profileNeedsCompletion ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          <p className="font-semibold">Complete your profile for accurate matching</p>
+          <p className="mt-0.5 leading-relaxed">{job.match.reasons[0]}</p>
+          <Link
+            href="/profile"
+            className="mt-1.5 inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline"
+          >
+            Go to Profile <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+      ) : (
+        <div className={`rounded-lg border p-3 text-xs ${recommendation.classes}`}>
+          <p className="font-semibold">{recommendation.verdict}</p>
+          <p className="mt-0.5 leading-relaxed">{recommendation.detail}</p>
+        </div>
+      )}
+
+      {/* Overall match bar */}
+      <div>
+        <div className="mb-1 flex justify-between text-xs font-medium text-ui-ink">
+          <span>Overall Personalized Fit</span>
+          <span>{job.match.score}%</span>
+        </div>
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-ui-linen">
+          <div
+            className={`h-full rounded-full ${barTone(job.match.score)}`}
+            style={{ width: `${job.match.score}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Sub-score bars */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-lg border border-ui-border bg-ui-canvas p-3">
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-ui-muted">Skills match</span>
+            <span className="text-sm font-semibold text-ui-ink">{job.match.skillsScore}%</span>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ui-linen">
+            <div
+              className={`h-full rounded-full ${barTone(job.match.skillsScore)}`}
+              style={{ width: `${job.match.skillsScore}%` }}
+            />
+          </div>
+        </div>
+        <div className="rounded-lg border border-ui-border bg-ui-canvas p-3">
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-ui-muted">Background fit</span>
+            <span className="text-sm font-semibold text-ui-ink">{job.match.experienceScore}%</span>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ui-linen">
+            <div
+              className={`h-full rounded-full ${barTone(job.match.experienceScore)}`}
+              style={{ width: `${job.match.experienceScore}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Adjacent role insight */}
+      {job.match.adjacencyReason && (
+        <div className="flex items-start gap-2.5 rounded-lg border border-ui-teal-soft bg-ui-teal-soft/50 p-3 text-xs text-ui-ink">
+          <Compass className="mt-0.5 h-4 w-4 shrink-0 text-ui-teal" />
+          <div>
+            <p className="font-semibold text-ui-ink">Adjacent role insight</p>
+            <p className="mt-0.5 leading-relaxed">{job.match.adjacencyReason}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Why you're a good fit */}
+      {job.match.strengths.length > 0 && (
+        <div>
+          <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+            <Sparkles className="h-3.5 w-3.5" />
+            Why you're a good fit
+          </p>
+          <ul className="flex flex-col gap-1.5 text-xs text-ui-ink">
+            {job.match.strengths.map((s) => (
+              <li key={s} className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* What you're missing */}
+      {hasGaps && (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
+            What you're missing
+          </p>
+          <div className="flex flex-col gap-2">
+            {missingRequired.length > 0 && (
+              <div>
+                <p className="mb-1 text-xs font-medium text-ui-ink">Required skills not in your profile:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {missingRequired.map((s) => (
+                    <Badge key={s} className="bg-amber-50 text-amber-800">
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {missingNiceToHave.length > 0 && (
+              <div>
+                <p className="mb-1 text-xs font-medium text-ui-muted">Nice to have (not blocking):</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {missingNiceToHave.map((s) => (
+                    <Badge key={s} className="bg-ui-linen text-ui-muted">
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {otherGaps.length > 0 && (
+              <ul className="flex flex-col gap-1 text-xs text-ui-ink">
+                {otherGaps.map((g) => (
+                  <li key={g} className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                    <span>{g}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -338,105 +499,7 @@ function JobDetailContent() {
             </div>
 
             {analysisTab === "fit" ? (
-              <div className="flex flex-col gap-4">
-                <div>
-                  <div className="mb-1 flex justify-between text-xs font-medium text-ui-ink">
-                    <span>Overall Personalized Fit</span>
-                    <span>{job.match.score}%</span>
-                  </div>
-                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-ui-linen">
-                    <div
-                      className={`h-full rounded-full ${barTone(job.match.score)}`}
-                      style={{ width: `${job.match.score}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-ui-border bg-ui-canvas p-3">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-ui-muted">Skills compatibility</span>
-                      <span className="text-sm font-semibold text-ui-ink">
-                        {job.match.skillsScore}%
-                      </span>
-                    </div>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ui-linen">
-                      <div
-                        className={`h-full rounded-full ${barTone(job.match.skillsScore)}`}
-                        style={{ width: `${job.match.skillsScore}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border border-ui-border bg-ui-canvas p-3">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-ui-muted">Experience fit</span>
-                      <span className="text-sm font-semibold text-ui-ink">
-                        {job.match.experienceScore}%
-                      </span>
-                    </div>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ui-linen">
-                      <div
-                        className={`h-full rounded-full ${barTone(job.match.experienceScore)}`}
-                        style={{ width: `${job.match.experienceScore}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {job.match.adjacencyReason && (
-                  <div className="flex items-start gap-2.5 rounded-lg border border-ui-teal-soft bg-ui-teal-soft/50 p-3 text-xs text-ui-ink">
-                    <Compass className="mt-0.5 h-4 w-4 shrink-0 text-ui-teal" />
-                    <div>
-                      <p className="font-semibold text-ui-ink">Adjacent role insight</p>
-                      <p className="mt-0.5 leading-relaxed">{job.match.adjacencyReason}</p>
-                    </div>
-                  </div>
-                )}
-
-                {job.match.reasons.length > 0 && (
-                  <div>
-                    <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-muted">
-                      <Sparkles className="h-3.5 w-3.5 text-ui-teal" />
-                      <span>Why recommended</span>
-                    </p>
-                    <ul className="flex flex-col gap-1.5 text-xs text-ui-ink">
-                      {job.match.reasons.map((r) => (
-                        <li key={r} className="flex items-start gap-2">
-                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                          <span>{r}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {job.match.strengths.length > 0 && (
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                      Strengths
-                    </p>
-                    <ul className="flex flex-col gap-1 text-xs text-ui-ink">
-                      {job.match.strengths.map((s) => (
-                        <li key={s}>• {s}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {job.match.gaps.length > 0 && (
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                      Missing Requirements & Gaps
-                    </p>
-                    <ul className="flex flex-col gap-1 text-xs text-ui-ink">
-                      {job.match.gaps.map((g) => (
-                        <li key={g}>• {g}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+              <FitAnalysisContent job={job} />
             ) : (
               <div>
                 <p className="mb-3 text-xs text-ui-body">
