@@ -30,7 +30,7 @@ const COLS = [
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-lp-border bg-white">
+    <footer className="border-t border-lp-border bg-lp-surface">
       <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-8 sm:py-16">
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-5">
           <div className="col-span-2">

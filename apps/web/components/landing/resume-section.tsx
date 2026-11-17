@@ -1,12 +1,20 @@
+"use client";
+
 import { CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function LandingResume() {
   return (
-    <section id="tailoring" className="bg-white py-24 sm:py-32">
+    <section id="tailoring" className="bg-lp-surface py-24 sm:py-32">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
           {/* Left — copy */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+          >
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
               Tailoring Studio
             </p>
@@ -40,10 +48,16 @@ export function LandingResume() {
                 {" "}ApplyFocus never fabricates skills or history.
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right — mockup */}
-          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_40px_rgba(32,33,36,0.07)]">
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="overflow-hidden rounded-2xl border border-lp-border bg-lp-surface shadow-[0_4px_40px_rgba(32,33,36,0.07)]"
+          >
             <div className="flex items-center justify-between border-b border-lp-border px-5 py-3.5">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-3.5 w-3.5 text-lp-accent" />
@@ -79,7 +93,7 @@ export function LandingResume() {
                     Awaiting approval
                   </span>
                 </div>
-                <div className="mt-3 rounded-xl border border-lp-accent/20 bg-white p-4 shadow-sm">
+                <div className="mt-3 rounded-xl border border-lp-accent/20 bg-lp-surface p-4 shadow-sm">
                   <p className="font-ui text-[13px] font-semibold text-lp-ink">Software Intern · Tekvine Systems</p>
                   <p className="mt-0.5 font-ui text-[11px] text-lp-muted">2023 – 2024</p>
                   <p className="mt-3 font-ui text-[13px] leading-relaxed text-lp-ink">
@@ -100,7 +114,7 @@ export function LandingResume() {
               <strong className="font-medium text-lp-ink">Evidence-backed: </strong>
               Reframed scope to match role requirements. No new claims added.
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

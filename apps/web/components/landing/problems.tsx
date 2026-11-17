@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 const PROBLEMS = [
   {
     num: "01",
@@ -31,7 +35,13 @@ export function LandingProblems() {
     <section className="bg-lp-bg py-24 sm:py-32">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         {/* Header */}
-        <div className="mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.55 }}
+          className="mb-16"
+        >
           <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
             The problem
           </p>
@@ -41,13 +51,17 @@ export function LandingProblems() {
           <p className="mt-5 max-w-[520px] font-ui text-[17px] leading-[1.7] text-lp-body">
             These aren&apos;t personal failings. They&apos;re systemic gaps — and ApplyFocus is built to close them.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Problem cards */}
+        {/* Problem cards — staggered */}
         <div className="grid gap-px bg-lp-border sm:grid-cols-2 lg:grid-cols-3 rounded-2xl overflow-hidden border border-lp-border">
           {PROBLEMS.map((p, i) => (
-            <div
+            <motion.div
               key={p.num}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45, delay: i * 0.08 }}
               className={`bg-lp-surface p-7 sm:p-8 ${i === 4 ? "sm:col-span-2 lg:col-span-1" : ""}`}
             >
               <span className="font-mono text-[11px] font-semibold tracking-[0.18em] text-lp-accent/60">
@@ -59,7 +73,7 @@ export function LandingProblems() {
               <p className="mt-3 font-ui text-[14px] leading-[1.7] text-lp-body">
                 {p.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

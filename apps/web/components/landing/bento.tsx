@@ -1,4 +1,7 @@
+"use client";
+
 import { CheckCircle2, Minus, Circle } from "lucide-react";
+import { motion } from "framer-motion";
 
 function PreviewBadge() {
   return (
@@ -11,7 +14,7 @@ function PreviewBadge() {
 function ProfileMockup() {
   const skills = ["Python", "FastAPI", "PostgreSQL", "REST APIs", "Git"];
   return (
-    <div className="overflow-hidden rounded-xl border border-lp-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-lp-border bg-lp-surface shadow-sm">
       <div className="flex items-center justify-between border-b border-lp-border px-5 py-3.5">
         <div>
           <p className="font-ui text-[13px] font-semibold text-lp-ink">Asha Rao</p>
@@ -57,7 +60,7 @@ function DiscoverMockup() {
     { role: "Software Engineer II", co: "Vaulted Labs", loc: "Bengaluru", score: 54, scoreColor: "bg-lp-bg text-lp-body", tags: ["FastAPI"] },
   ];
   return (
-    <div className="overflow-hidden rounded-xl border border-lp-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-lp-border bg-lp-surface shadow-sm">
       <div className="flex items-center justify-between border-b border-lp-border px-5 py-3.5">
         <p className="font-ui text-[13px] font-semibold text-lp-ink">Matched opportunities</p>
         <PreviewBadge />
@@ -93,7 +96,7 @@ function FitMockup() {
     { label: "Team leadership",    status: "gap" as const, note: "Not in profile" },
   ];
   return (
-    <div className="overflow-hidden rounded-xl border border-lp-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-lp-border bg-lp-surface shadow-sm">
       <div className="flex items-center justify-between border-b border-lp-border px-5 py-3.5">
         <div>
           <p className="font-ui text-[13px] font-semibold text-lp-ink">Fit Analysis · Backend Engineer</p>
@@ -128,7 +131,7 @@ function FitMockup() {
 
 function TailorMockup() {
   return (
-    <div className="overflow-hidden rounded-xl border border-lp-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-lp-border bg-lp-surface shadow-sm">
       <div className="flex items-center justify-between border-b border-lp-border px-5 py-3.5">
         <p className="font-ui text-[13px] font-semibold text-lp-ink">Application preparation</p>
         <PreviewBadge />
@@ -147,7 +150,7 @@ function TailorMockup() {
             <p className="font-mono text-[9px] uppercase tracking-wider text-lp-accent">Suggested</p>
             <span className="rounded-full bg-amber-50 px-2 py-0.5 font-ui text-[9px] font-medium text-amber-700">Awaiting approval</span>
           </div>
-          <div className="rounded-lg border border-lp-accent/20 bg-white p-3.5 shadow-sm">
+          <div className="rounded-lg border border-lp-accent/20 bg-lp-surface p-3.5 shadow-sm">
             <p className="font-ui text-[12px] leading-relaxed text-lp-ink">
               Developed REST APIs using FastAPI and PostgreSQL,{" "}
               <span className="rounded bg-lp-accent-soft px-0.5">directly relevant to the backend platform requirements of this role.</span>
@@ -202,23 +205,33 @@ const STEPS = [
 
 export function LandingBento() {
   return (
-    <section id="how-it-works" className="bg-white py-24 sm:py-32">
+    <section id="how-it-works" className="bg-lp-surface py-24 sm:py-32">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         {/* Section header */}
-        <div className="mb-20 max-w-[640px]">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.55 }}
+          className="mb-20 max-w-[640px]"
+        >
           <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
             How it works
           </p>
           <h2 className="mt-4 font-display text-[40px] leading-[1.06] text-lp-ink sm:text-[54px]">
             From profile to prepared application, in one workspace.
           </h2>
-        </div>
+        </motion.div>
 
         {/* Steps */}
         <div className="space-y-24 sm:space-y-32">
-          {STEPS.map((step) => (
-            <div
+          {STEPS.map((step, i) => (
+            <motion.div
               key={step.num}
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.6, delay: 0.05 }}
               className={`grid items-center gap-12 lg:grid-cols-2 lg:gap-16 ${
                 step.flip ? "lg:[&>*:first-child]:order-2 lg:[&>*:last-child]:order-1" : ""
               }`}
@@ -240,7 +253,7 @@ export function LandingBento() {
 
               {/* Mockup */}
               <div>{step.mockup}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

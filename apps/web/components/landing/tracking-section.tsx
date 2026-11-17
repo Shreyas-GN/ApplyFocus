@@ -1,5 +1,8 @@
+"use client";
+
 import { CheckCircle2, FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 const STAGES = [
   { label: "Saved", count: 6, color: "bg-lp-bg text-lp-muted border border-lp-border" },
@@ -43,7 +46,13 @@ export function LandingTracking() {
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
           {/* Left — mockup */}
-          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_40px_rgba(32,33,36,0.07)]">
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+            className="overflow-hidden rounded-2xl border border-lp-border bg-lp-surface shadow-[0_4px_40px_rgba(32,33,36,0.07)]"
+          >
             {/* Stage strip */}
             <div className="grid grid-cols-3 divide-x divide-lp-border border-b border-lp-border">
               {STAGES.map((s) => (
@@ -77,10 +86,15 @@ export function LandingTracking() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Right — copy */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
               Application tracker
             </p>
@@ -113,7 +127,7 @@ export function LandingTracking() {
               Start tracking your search
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

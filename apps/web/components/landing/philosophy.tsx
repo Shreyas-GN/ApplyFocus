@@ -1,4 +1,7 @@
+"use client";
+
 import { Check, X } from "lucide-react";
+import { motion } from "framer-motion";
 
 const CONTROL_STEPS = [
   { num: "1", label: "AI suggests, you decide", desc: "Every recommendation is a proposal. Nothing changes without your explicit approval." },
@@ -14,7 +17,12 @@ export function LandingPhilosophy() {
         {/* Top — comparison */}
         <div className="grid gap-12 lg:grid-cols-[1fr_460px] lg:items-center lg:gap-20">
           {/* Left — text */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+          >
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
               The difference
             </p>
@@ -29,10 +37,16 @@ export function LandingPhilosophy() {
             <p className="mt-5 font-ui text-[15px] font-medium text-white/35">
               You make the decisions. ApplyFocus gives you the information to make them well.
             </p>
-          </div>
+          </motion.div>
 
           {/* Right — comparison cards */}
-          <div className="grid gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="grid gap-4"
+          >
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6">
               <p className="font-mono text-[9px] uppercase tracking-wider text-white/25">
                 The conventional approach
@@ -64,26 +78,38 @@ export function LandingPhilosophy() {
                 ))}
               </ul>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Bottom — candidate control strip */}
-        <div className="mt-20 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 sm:p-10">
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="mt-20 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 sm:p-10"
+        >
           <p className="mb-10 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent/60">
             Candidate control — always
           </p>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {CONTROL_STEPS.map((step) => (
-              <div key={step.num}>
+            {CONTROL_STEPS.map((step, i) => (
+              <motion.div
+                key={step.num}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+              >
                 <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-lp-accent/15 font-mono text-[11px] font-semibold text-lp-accent">
                   {step.num}
                 </span>
                 <p className="mt-4 font-ui text-[15px] font-semibold text-white">{step.label}</p>
                 <p className="mt-2 font-ui text-[13px] leading-relaxed text-white/40">{step.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
