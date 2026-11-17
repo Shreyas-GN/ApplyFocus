@@ -233,6 +233,13 @@ export function TailoringStudioPanel({
 
   async function handlePreviewPdf() {
     if (!activeDoc || !draftContent) return;
+    // Open a blank tab synchronously while still in the user-gesture call stack.
+    // Browsers block window.open() called after an await, treating it as an
+    // unsolicited popup. We navigate the tab to the PDF URL once the save succeeds,
+    // or close it if the save fails so no blank tab is left behind.
+    // Note: noopener is intentionally omitted — with it, window.open returns null
+    // in modern browsers and we cannot navigate the returned reference.
+    const tab = window.open("", "_blank");
     setPreviewingPdf(true);
     setError(null);
     try {
@@ -243,8 +250,11 @@ export function TailoringStudioPanel({
       setDocs((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
       setActiveDoc(updated);
       setDraftContent(updated.content);
-      window.open(`/api/tailor/${activeDoc.id}/pdf`, "_blank", "noopener,noreferrer");
+      if (tab) {
+        tab.location.href = `/api/tailor/${activeDoc.id}/pdf`;
+      }
     } catch (err) {
+      tab?.close();
       setError(
         err instanceof ApiError
           ? err.detail
