@@ -4,6 +4,7 @@ import { DM_Serif_Display, IBM_Plex_Mono, Instrument_Sans } from "next/font/goog
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="antialiased">
         <AuthProvider>{children}</AuthProvider>
         <Toaster position="bottom-right" theme="light" />
+        <Analytics />
       </body>
     </html>
   );
