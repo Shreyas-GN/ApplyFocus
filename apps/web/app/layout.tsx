@@ -28,37 +28,38 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://applypilot.app"),
+  metadataBase: new URL("https://applyfocus.app"),
   title: {
-    default: "ApplyPilot — Your next opportunity deserves a better approach.",
-    template: "%s | ApplyPilot",
+    default: "ApplyFocus — Know your value. Apply with confidence.",
+    template: "%s | ApplyFocus",
   },
   description:
-    "Understand your strengths. Find opportunities that fit. Build an application that reflects your best work. A personal career intelligence platform.",
+    "A candidate-first career intelligence workspace. Understand your professional profile, evaluate opportunities with evidence, and prepare applications grounded in your actual experience.",
   keywords: [
-    "career intelligence platform",
-    "job search workspace",
-    "adaptive resume",
-    "opportunity matching",
+    "career intelligence workspace",
+    "job fit analysis",
+    "candidate profile",
+    "job search",
+    "resume tailoring",
     "application tracker",
-    "ApplyPilot",
+    "ApplyFocus",
   ],
-  authors: [{ name: "ApplyPilot" }],
-  creator: "ApplyPilot",
+  authors: [{ name: "ApplyFocus" }],
+  creator: "ApplyFocus",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://applypilot.app",
-    title: "ApplyPilot — Your next opportunity deserves a better approach.",
+    url: "https://applyfocus.app",
+    title: "ApplyFocus — Know your value. Apply with confidence.",
     description:
-      "Understand your strengths. Find opportunities that fit. Build an application that reflects your best work.",
-    siteName: "ApplyPilot",
+      "Understand your professional profile, evaluate opportunities with evidence, and prepare better applications.",
+    siteName: "ApplyFocus",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ApplyPilot — Your next opportunity deserves a better approach.",
+    title: "ApplyFocus — Know your value. Apply with confidence.",
     description:
-      "Understand your strengths. Find opportunities that fit. Build an application that reflects your best work.",
+      "Understand your professional profile, evaluate opportunities with evidence, and prepare better applications.",
   },
   robots: {
     index: true,

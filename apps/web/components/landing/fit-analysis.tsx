@@ -1,182 +1,215 @@
-import { CheckCircle2, Circle, ArrowRight } from "lucide-react";
+import { CheckCircle2, Minus, Circle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-const REQUIREMENTS = [
+type FitStatus = "established" | "transferable" | "partial" | "gap";
+
+const REQUIREMENTS: {
+  req: string;
+  status: FitStatus;
+  evidence: string;
+  detail: string;
+}[] = [
   {
     req: "Python — 3+ years",
-    evidence: "Confirmed: 3 years at Tekvine Systems. Used in every documented project.",
-    state: "strong",
+    status: "established",
+    evidence: "Profile · Tekvine Systems internship",
+    detail: "3 years confirmed · used in production backend APIs",
   },
   {
     req: "FastAPI",
-    evidence: "Confirmed: listed as primary framework, 2 documented projects.",
-    state: "strong",
+    status: "established",
+    evidence: "Profile · 2 projects listed",
+    detail: "Built REST services at Tekvine · side project using FastAPI + SQLAlchemy",
   },
   {
-    req: "PostgreSQL",
-    evidence: "Confirmed: relational database work noted across 2 projects.",
-    state: "strong",
+    req: "PostgreSQL / relational databases",
+    status: "established",
+    evidence: "Profile · confirmed experience",
+    detail: "Used PostgreSQL at Tekvine · schema design and query optimisation",
   },
   {
-    req: "Microservices architecture",
-    evidence: "Partial: service-oriented work referenced but not detailed in profile.",
-    state: "partial",
+    req: "Microservices / distributed systems",
+    status: "transferable",
+    evidence: "API architecture work is transferable",
+    detail: "Worked on service separation · API contracts · not full microservices at scale",
   },
   {
-    req: "Kafka or event-driven systems",
-    evidence: "No direct evidence in profile. Transferable from async task queue work.",
-    state: "transferable",
-  },
-  {
-    req: "Team leadership",
-    evidence: "Not present in current profile. May be worth addressing in cover letter.",
-    state: "gap",
+    req: "Team leadership / mentoring",
+    status: "gap",
+    evidence: "Not in profile",
+    detail: "No leadership experience recorded — address in cover letter strategy",
   },
 ];
 
-type State = "strong" | "partial" | "transferable" | "gap";
-
-function stateStyle(state: State) {
-  const map: Record<State, string> = {
-    strong: "border-emerald-100 bg-emerald-50/50",
-    partial: "border-amber-100 bg-amber-50/40",
-    transferable: "border-sky-100 bg-sky-50/40",
-    gap: "border-lp-border bg-lp-bg",
-  };
-  return map[state];
-}
-
-function StateIcon({ state }: { state: State }) {
-  if (state === "strong") return <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />;
-  if (state === "partial") return (
-    <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 border-amber-500" />
-  );
-  if (state === "transferable") return (
-    <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 border-sky-500 bg-sky-100" />
-  );
-  return <Circle className="mt-0.5 h-4 w-4 flex-shrink-0 text-lp-muted" />;
-}
-
-function stateBadge(state: State) {
-  const map: Record<State, { label: string; style: string }> = {
-    strong: { label: "Strong match", style: "bg-emerald-50 text-emerald-700" },
-    partial: { label: "Partial evidence", style: "bg-amber-50 text-amber-700" },
-    transferable: { label: "Transferable", style: "bg-sky-50 text-sky-700" },
-    gap: { label: "Gap identified", style: "bg-lp-bg text-lp-muted border border-lp-border" },
-  };
-  return map[state];
-}
-
-function FitMockup() {
+function StatusIcon({ status }: { status: FitStatus }) {
+  if (status === "established") {
+    return (
+      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50">
+        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+      </span>
+    );
+  }
+  if (status === "transferable" || status === "partial") {
+    return (
+      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-50">
+        <Minus className="h-3.5 w-3.5 text-amber-500" />
+      </span>
+    );
+  }
   return (
-    <div className="overflow-hidden rounded-2xl border border-lp-border bg-lp-surface shadow-[0_4px_32px_rgba(32,33,36,0.07)]">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 border-b border-lp-border px-5 py-4">
-        <div>
-          <p className="font-ui text-[14px] font-semibold text-lp-ink">Backend Engineer — Northstar Systems</p>
-          <p className="font-ui text-[12px] text-lp-muted">Bengaluru · Hybrid · Full-time</p>
-        </div>
-        <span className="rounded-full border border-lp-border bg-lp-bg px-2.5 py-0.5 font-mono text-[10px] text-lp-muted">
-          Illustrative preview
-        </span>
-      </div>
+    <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-lp-bg">
+      <Circle className="h-3.5 w-3.5 text-lp-muted/50" />
+    </span>
+  );
+}
 
-      {/* Summary row */}
-      <div className="grid grid-cols-3 divide-x divide-lp-border border-b border-lp-border">
-        {[
-          { label: "Strongly met", n: "3", style: "text-emerald-700" },
-          { label: "Partial / transferable", n: "2", style: "text-amber-700" },
-          { label: "Gaps", n: "1", style: "text-lp-muted" },
-        ].map((s) => (
-          <div key={s.label} className="p-3 text-center">
-            <p className={`font-ui text-xl font-semibold ${s.style}`}>{s.n}</p>
-            <p className="mt-0.5 font-ui text-[11px] text-lp-muted">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Requirements list */}
-      <div className="p-5">
-        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-lp-muted">
-          Requirements reviewed
-        </p>
-        <div className="space-y-2">
-          {REQUIREMENTS.map((item) => {
-            const badge = stateBadge(item.state as State);
-            return (
-              <div
-                key={item.req}
-                className={`flex items-start gap-3 rounded-xl border p-3 ${stateStyle(item.state as State)}`}
-              >
-                <StateIcon state={item.state as State} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-ui text-[12px] font-semibold text-lp-ink">{item.req}</p>
-                    <span className={`rounded-full px-2 py-0.5 font-ui text-[10px] font-medium ${badge.style}`}>
-                      {badge.label}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 font-ui text-[11px] text-lp-muted">{item.evidence}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+function StatusLabel({ status }: { status: FitStatus }) {
+  const map: Record<FitStatus, { label: string; cls: string }> = {
+    established:  { label: "Established",   cls: "bg-emerald-50 text-emerald-700" },
+    transferable: { label: "Transferable",  cls: "bg-amber-50 text-amber-700" },
+    partial:      { label: "Partial",       cls: "bg-amber-50 text-amber-700" },
+    gap:          { label: "Not in profile", cls: "bg-lp-bg text-lp-muted border border-lp-border" },
+  };
+  const { label, cls } = map[status];
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wide ${cls}`}>
+      {label}
+    </span>
   );
 }
 
 export function LandingFitAnalysis() {
   return (
-    <section id="fit-analysis" className="border-t border-lp-border bg-lp-surface py-20 sm:py-28">
-      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Mockup first on desktop */}
-          <div className="order-2 lg:order-1">
-            <FitMockup />
+    <section id="fit-analysis" className="bg-lp-bg py-24 sm:py-32">
+      <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
+        {/* Header */}
+        <div className="mb-14 grid gap-6 lg:grid-cols-[1fr_380px] lg:items-end">
+          <div>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
+              Evidence-based opportunity assessment
+            </p>
+            <h2 className="mt-4 font-display text-[40px] leading-[1.06] text-lp-ink sm:text-[54px]">
+              Understand your fit before you apply — with evidence.
+            </h2>
+          </div>
+          <p className="font-ui text-[17px] leading-[1.7] text-lp-body">
+            ApplyFocus doesn&apos;t give you an unexplained score. It maps every requirement to your actual profile — and tells you exactly why each one is or isn&apos;t covered.
+          </p>
+        </div>
+
+        {/* Product demo */}
+        <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_8px_48px_rgba(32,33,36,0.08)]">
+          {/* Demo header */}
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-lp-border px-6 py-5 sm:px-8">
+            <div>
+              <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-lp-muted">
+                Fit Analysis · Asha Rao
+              </p>
+              <h3 className="mt-1 font-ui text-[18px] font-semibold text-lp-ink">
+                Backend Engineer — Northstar Systems
+              </h3>
+              <p className="font-ui text-[13px] text-lp-muted">Bengaluru · Hybrid · Seniority: Mid-level · 3–5 years experience</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="font-mono text-[28px] font-bold leading-none text-lp-ink">76%</p>
+                <p className="font-ui text-[11px] text-lp-muted">Overall fit</p>
+              </div>
+              <div className="h-14 w-px bg-lp-border" />
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <p className="font-ui text-[12px] text-lp-body">3 established</p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-amber-400" />
+                  <p className="font-ui text-[12px] text-lp-body">1 transferable</p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-lp-border" />
+                  <p className="font-ui text-[12px] text-lp-body">1 gap</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Copy */}
-          <div className="order-1 lg:order-2">
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-lp-accent">
-              Job fit analysis
-            </p>
-            <h2 className="mt-3 font-display text-[34px] leading-[1.08] text-lp-ink sm:text-[46px]">
-              Evaluate every opportunity with real evidence.
-            </h2>
-            <p className="mt-5 font-ui text-[16px] leading-[1.7] text-lp-body">
-              ApplyPilot reads the job requirements and maps them against your confirmed profile — not with a percentage score, but with specific evidence.
-            </p>
-            <div className="mt-7 space-y-5">
-              {[
-                {
-                  head: "Strongly supported requirements",
-                  body: "Where your profile provides direct evidence. These are your clearest points of relevance.",
-                },
-                {
-                  head: "Transferable and partial matches",
-                  body: "Experience that relates but isn't an exact match. Worth acknowledging honestly in your application.",
-                },
-                {
-                  head: "Gaps identified",
-                  body: "Requirements with no matching evidence in your profile. ApplyPilot surfaces these so you can decide whether to address them or proceed.",
-                },
-              ].map((item) => (
-                <div key={item.head} className="border-l-2 border-lp-border pl-4">
-                  <p className="font-ui text-[14px] font-semibold text-lp-ink">{item.head}</p>
-                  <p className="mt-1 font-ui text-[13px] leading-[1.6] text-lp-body">{item.body}</p>
-                </div>
-              ))}
+          {/* Requirements table */}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
+              <thead>
+                <tr className="border-b border-lp-border bg-lp-bg">
+                  <th className="px-6 py-3 text-left font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-lp-muted sm:px-8">
+                    Requirement
+                  </th>
+                  <th className="px-4 py-3 text-left font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-lp-muted">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-lp-muted">
+                    Your evidence
+                  </th>
+                  <th className="px-6 py-3 text-left font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-lp-muted sm:px-8">
+                    Detail
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-lp-border/60">
+                {REQUIREMENTS.map((r) => (
+                  <tr key={r.req} className="group transition-colors hover:bg-lp-bg/40">
+                    <td className="px-6 py-4 sm:px-8">
+                      <div className="flex items-center gap-3">
+                        <StatusIcon status={r.status} />
+                        <p className={`font-ui text-[13px] font-semibold ${r.status === "gap" ? "text-lp-muted" : "text-lp-ink"}`}>
+                          {r.req}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <StatusLabel status={r.status} />
+                    </td>
+                    <td className="px-4 py-4">
+                      <p className="font-ui text-[12px] text-lp-body">{r.evidence}</p>
+                    </td>
+                    <td className="px-6 py-4 sm:px-8">
+                      <p className="font-ui text-[12px] leading-relaxed text-lp-muted max-w-[280px]">{r.detail}</p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer — strategy prompt */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-lp-border bg-lp-bg px-6 py-5 sm:px-8">
+            <div>
+              <p className="font-ui text-[14px] font-semibold text-lp-ink">
+                Application strategy available
+              </p>
+              <p className="mt-0.5 font-ui text-[13px] text-lp-muted">
+                What to emphasise, how to position your experience, and how to address the team leadership gap.
+              </p>
             </div>
             <Link
               href="/signup"
-              className="group mt-9 inline-flex items-center gap-2 font-ui text-[14px] font-semibold text-lp-accent hover:underline"
+              className="group inline-flex items-center gap-2 rounded-full bg-lp-ink px-5 py-2.5 font-ui text-[13px] font-semibold text-white transition-colors hover:bg-lp-ink/80"
             >
-              Evaluate a role for free
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              View full strategy
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
+        </div>
+
+        {/* Bottom callout row */}
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {[
+            { label: "Evidence-led", desc: "Every match status is backed by your actual profile data — not keyword coincidence." },
+            { label: "Transferable skills mapped", desc: "Adjacent skills from your experience are connected to requirements you don't directly meet." },
+            { label: "Gaps made actionable", desc: "Missing requirements become preparation tasks, not dead ends." },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl border border-lp-border bg-white px-5 py-4">
+              <p className="font-ui text-[14px] font-semibold text-lp-ink">{item.label}</p>
+              <p className="mt-1.5 font-ui text-[13px] leading-relaxed text-lp-body">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

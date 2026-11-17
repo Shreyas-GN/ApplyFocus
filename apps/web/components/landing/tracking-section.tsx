@@ -8,32 +8,50 @@ const STAGES = [
 ];
 
 const APPS = [
-  { role: "Backend Engineer", co: "Northstar Systems · Bengaluru", stage: "Interview", resume: "v2_northstar.pdf", note: "2nd round scheduled — focus on distributed systems" },
-  { role: "API Platform Engineer", co: "Cloudstride · Remote", stage: "Applied", resume: "v1_cloudstride.pdf", note: "Applied 2 days ago — follow up in 3 days" },
-  { role: "Software Engineer II", co: "Vaulted Labs · Bengaluru", stage: "Saved", resume: "—", note: "Strong match — tailor resume before applying" },
+  {
+    role: "Backend Engineer",
+    co: "Northstar Systems · Bengaluru",
+    stage: "Interview",
+    resume: "v2_northstar.pdf",
+    note: "2nd round scheduled — focus on distributed systems",
+  },
+  {
+    role: "API Platform Engineer",
+    co: "Cloudstride · Remote",
+    stage: "Applied",
+    resume: "v1_cloudstride.pdf",
+    note: "Applied 2 days ago — follow up in 3 days",
+  },
+  {
+    role: "Software Engineer II",
+    co: "Vaulted Labs · Bengaluru",
+    stage: "Saved",
+    resume: "—",
+    note: "Strong match — tailor resume before applying",
+  },
 ];
 
 const STAGE_STYLE: Record<string, string> = {
   Interview: "bg-amber-50 text-amber-700",
-  Applied: "bg-lp-accent-soft text-lp-accent",
-  Saved: "bg-lp-bg text-lp-muted border border-lp-border",
+  Applied:   "bg-lp-accent-soft text-lp-accent",
+  Saved:     "bg-lp-bg text-lp-muted border border-lp-border",
 };
 
 export function LandingTracking() {
   return (
-    <section id="tracking" className="border-t border-lp-border bg-lp-bg py-20 sm:py-28">
-      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+    <section id="tracking" className="border-t border-lp-border bg-lp-bg py-24 sm:py-32">
+      <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
+        <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
           {/* Left — mockup */}
-          <div className="overflow-hidden rounded-2xl border border-lp-border bg-lp-surface shadow-[0_4px_32px_rgba(32,33,36,0.07)]">
+          <div className="overflow-hidden rounded-2xl border border-lp-border bg-white shadow-[0_4px_40px_rgba(32,33,36,0.07)]">
             {/* Stage strip */}
             <div className="grid grid-cols-3 divide-x divide-lp-border border-b border-lp-border">
               {STAGES.map((s) => (
-                <div key={s.label} className="p-3 text-center sm:p-4">
-                  <p className={`inline-flex rounded-full px-1.5 py-0.5 font-mono text-[9px] font-medium sm:px-2 sm:text-[10px] ${s.color}`}>
+                <div key={s.label} className="p-4 text-center">
+                  <p className={`inline-flex rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold ${s.color}`}>
                     {s.label}
                   </p>
-                  <p className="mt-1 font-ui text-xl font-semibold text-lp-ink sm:text-2xl">{s.count}</p>
+                  <p className="mt-1.5 font-ui text-2xl font-bold text-lp-ink">{s.count}</p>
                 </div>
               ))}
             </div>
@@ -47,7 +65,7 @@ export function LandingTracking() {
                       <p className="font-ui text-[13px] font-semibold text-lp-ink">{app.role}</p>
                       <p className="font-ui text-[12px] text-lp-muted">{app.co}</p>
                     </div>
-                    <span className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-medium ${STAGE_STYLE[app.stage]}`}>
+                    <span className={`rounded-md px-2.5 py-0.5 font-mono text-[10px] font-semibold ${STAGE_STYLE[app.stage]}`}>
                       {app.stage}
                     </span>
                   </div>
@@ -63,20 +81,20 @@ export function LandingTracking() {
 
           {/* Right — copy */}
           <div>
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-lp-accent">
-              Application tracking
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
+              Application tracker
             </p>
-            <h2 className="mt-3 font-display text-[36px] leading-[1.08] text-lp-ink sm:text-[46px]">
+            <h2 className="mt-4 font-display text-[40px] leading-[1.06] text-lp-ink sm:text-[50px]">
               Know where every application stands.
             </h2>
-            <p className="mt-5 font-ui text-[16px] leading-[1.7] text-lp-body">
+            <p className="mt-5 font-ui text-[16px] leading-[1.75] text-lp-body">
               From the moment you save a job to the day you receive an update, your entire
-              search is organized in one place. No spreadsheets. No forgotten follow-ups.
+              search is organised in one place. No spreadsheets. No forgotten follow-ups.
             </p>
-            <ul className="mt-7 space-y-3.5">
+            <ul className="mt-7 space-y-3">
               {[
                 "Track saved and applied opportunities",
-                "Link the exact resume version used for each application",
+                "Link the exact resume version for each application",
                 "Record interview stages and outcomes",
                 "Keep company and recruiter notes",
                 "Manage follow-up reminders",

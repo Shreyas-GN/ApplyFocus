@@ -36,22 +36,22 @@
 
   /* Landing page design system tokens — Graphite & Vermilion */
   --color-lp-ink: #202124;
-  --color-lp-body: #303238;
-  --color-lp-muted: #6B7280;
+  --color-lp-body: #3D3F47;
+  --color-lp-muted: #8D8F9A;
   --color-lp-bg: #F4F1EC;
   --color-lp-surface: #FFFFFF;
-  --color-lp-surface-subtle: #FAF8F5;
-  --color-lp-border: #E2DDD7;
+  --color-lp-surface-subtle: #F4F1EC;
+  --color-lp-border: #DDDBD6;
   --color-lp-accent: #C6533B;
-  --color-lp-accent-hover: #B34730;
-  --color-lp-accent-soft: #FAEDE9;
+  --color-lp-accent-hover: #AE4530;
+  --color-lp-accent-soft: #F9EAE6;
   --color-lp-wine: #C6533B;
-  --color-lp-wine-hover: #B34730;
-  --color-lp-copper: #D8A96A;
-  --color-lp-copper-soft: #FAF0E4;
+  --color-lp-wine-hover: #AE4530;
+  --color-lp-copper: #C6533B;
+  --color-lp-copper-soft: #F9EAE6;
   --color-lp-lagoon: #202124;
   --color-lp-sand: #F4F1EC;
-  --color-lp-emerald: #2D7A5F;
+  --color-lp-emerald: #287a57;
 
   /* Authenticated App Design System — "Warm Editorial Workspace" */
   --color-ui-canvas: #F5F6F8;
