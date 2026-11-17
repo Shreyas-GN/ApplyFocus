@@ -102,29 +102,52 @@
 /* ── Dark mode token overrides ── */
 :root[data-theme="dark"] {
   --color-lp-bg:             #18191b;
-  --color-lp-surface:        #252729;
-  --color-lp-surface-subtle: #2e3135;
-  --color-lp-border:         #333638;
+  --color-lp-surface:        #232527;
+  --color-lp-surface-subtle: #2b2e31;
+  --color-lp-border:         #2f3236;
   --color-lp-ink:            #F0EDE8;
-  --color-lp-body:           #A09D98;
-  --color-lp-muted:          #5E6270;
-  --color-lp-lagoon:         #121314;
+  --color-lp-body:           #9A9690;
+  --color-lp-muted:          #585b63;
+  --color-lp-lagoon:         #111213;
   --color-lp-sand:           #18191b;
-  --color-lp-accent-soft:    #3D1A14;
-  --color-lp-accent-hover:   #C6533B;
+  --color-lp-accent-soft:    #3a1810;
+  --color-lp-accent-hover:   #d45f44;
 }
+
+/* ── Dark mode body ── */
+[data-theme="dark"] body {
+  background: #18191b;
+  color: #F0EDE8;
+}
+
+/* ── Dark mode semantic status colors (emerald / amber / red) ── */
+[data-theme="dark"] .bg-emerald-50    { background-color: rgba(16,185,129,0.09) !important; }
+[data-theme="dark"] .bg-emerald-50\/40 { background-color: rgba(16,185,129,0.06) !important; }
+[data-theme="dark"] .bg-emerald-100   { background-color: rgba(16,185,129,0.14) !important; }
+[data-theme="dark"] .text-emerald-700 { color: #34d399 !important; }
+[data-theme="dark"] .text-emerald-600 { color: #34d399 !important; }
+[data-theme="dark"] .border-emerald-100 { border-color: rgba(16,185,129,0.18) !important; }
+
+[data-theme="dark"] .bg-amber-50      { background-color: rgba(245,158,11,0.09) !important; }
+[data-theme="dark"] .bg-amber-50\/40  { background-color: rgba(245,158,11,0.06) !important; }
+[data-theme="dark"] .bg-amber-100     { background-color: rgba(245,158,11,0.14) !important; }
+[data-theme="dark"] .text-amber-700   { color: #fbbf24 !important; }
+[data-theme="dark"] .border-amber-100 { border-color: rgba(245,158,11,0.18) !important; }
 
 /* ── Smooth theme transition ── */
 .theme-transitioning *:not([data-no-transition]) {
-  transition: background-color 0.3s ease, border-color 0.25s ease, color 0.2s ease !important;
+  transition: background-color 0.28s ease, border-color 0.22s ease, color 0.18s ease,
+              box-shadow 0.28s ease !important;
 }
 
 /* ── Nav scrolled background (adapts to theme) ── */
 .nav-scrolled-bg {
-  background-color: rgba(255, 255, 255, 0.90);
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
 }
-:root[data-theme="dark"] .nav-scrolled-bg {
-  background-color: rgba(26, 28, 30, 0.92);
+[data-theme="dark"] .nav-scrolled-bg {
+  background-color: rgba(24, 25, 27, 0.94);
+  backdrop-filter: blur(20px) saturate(180%);
 }
 
 html {

@@ -4,7 +4,7 @@ import { DM_Serif_Display, IBM_Plex_Mono, Instrument_Sans } from "next/font/goog
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
-import { Toaster } from "sonner";
+import { ThemedToaster } from "@/components/themed-toaster";
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -79,7 +79,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider>
           <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
-        <Toaster position="bottom-right" theme="light" />
+        <ThemedToaster />
       </body>
     </html>
   );
