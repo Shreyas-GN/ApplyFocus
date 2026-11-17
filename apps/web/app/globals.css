@@ -38,9 +38,9 @@
   --color-lp-ink: #202124;
   --color-lp-body: #3D3F47;
   --color-lp-muted: #8D8F9A;
-  --color-lp-bg: #F4F1EC;
-  --color-lp-surface: #FFFFFF;
-  --color-lp-surface-subtle: #F4F1EC;
+  --color-lp-bg: #FFFFFF;
+  --color-lp-surface: #F8F8F8;
+  --color-lp-surface-subtle: #F4F4F4;
   --color-lp-border: #DDDBD6;
   --color-lp-accent: #C6533B;
   --color-lp-accent-hover: #AE4530;
@@ -50,7 +50,7 @@
   --color-lp-copper: #C6533B;
   --color-lp-copper-soft: #F9EAE6;
   --color-lp-lagoon: #202124;
-  --color-lp-sand: #F4F1EC;
+  --color-lp-sand: #F4F4F4;
   --color-lp-emerald: #287a57;
 
   /* Authenticated App Design System — "Warm Editorial Workspace" */
