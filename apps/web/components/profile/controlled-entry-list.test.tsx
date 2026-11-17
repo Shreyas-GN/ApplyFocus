@@ -1,101 +1,164 @@
 import { describe, expect, it, vi } from "vitest";
-import { useState } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ControlledEntryList, type ControlledEntry } from "./controlled-entry-list";
+import type { FieldConfig } from "./repeatable-section";
 
-const fields = [
-  { name: "company", label: "Company", type: "text" as const },
-  { name: "title", label: "Title", type: "text" as const },
+const fields: FieldConfig[] = [
+  { name: "name", label: "Skill", type: "text" },
+  { name: "category", label: "Category", type: "text" },
 ];
 
-// A real stateful wrapper, not just a spy standing in for onChange — the
-// list's inputs are controlled (value + onChange), so without state that
-// actually re-renders between keystrokes, each keystroke would be diffed
-// against the same stale initial value instead of the previous keystroke's
-// result. `onChangeSpy` still observes every call for assertions.
-function Wrapper({
-  initial,
-  onChangeSpy,
-}: {
-  initial: ControlledEntry[];
-  onChangeSpy: (items: ControlledEntry[]) => void;
-}) {
-  const [items, setItems] = useState(initial);
-  return (
-    <ControlledEntryList
-      items={items}
-      onChange={(next) => {
-        setItems(next);
-        onChangeSpy(next);
-      }}
-      fields={fields}
-      emptyLabel="Nothing extracted."
-      blankValues={{ company: "", title: "" }}
-    />
-  );
+const blankValues = { name: "", category: "" };
+
+function makeItems(sources: Array<"user" | "ai">): ControlledEntry[] {
+  return sources.map((source, i) => ({
+    source,
+    confidence: source === "ai" ? 0.9 : 1,
+    values: { name: `Skill ${i + 1}`, category: "" },
+  }));
 }
 
-describe("ControlledEntryList (resume parsing review)", () => {
-  it("shows an AI-suggested badge and a low-confidence warning for low-confidence AI entries", () => {
-    const items: ControlledEntry[] = [
-      { values: { company: "Acme", title: "Engineer" }, source: "ai", confidence: 0.3 },
-    ];
-    render(<Wrapper initial={items} onChangeSpy={vi.fn()} />);
+describe("ControlledEntryList — confirmation UX", () => {
+  it("shows AI-extracted badge and Confirm entry button for AI items", () => {
+    const onChange = vi.fn();
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={makeItems(["ai"])}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
 
-    expect(screen.getByText(/ai-suggested/i)).toBeInTheDocument();
-    expect(screen.getByText(/low confidence/i)).toBeInTheDocument();
+    // Both the item badge and the banner contain "AI-extracted"; at least one must exist
+    expect(screen.getAllByText(/ai-extracted/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /confirm entry/i })).toBeInTheDocument();
   });
 
-  it("does not show a low-confidence warning for high-confidence AI entries", () => {
-    const items: ControlledEntry[] = [
-      { values: { company: "Acme", title: "Engineer" }, source: "ai", confidence: 0.95 },
-    ];
-    render(<Wrapper initial={items} onChangeSpy={vi.fn()} />);
+  it("does not show Confirm entry button for user-sourced items", () => {
+    const onChange = vi.fn();
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={makeItems(["user"])}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
 
-    expect(screen.getByText(/ai-suggested/i)).toBeInTheDocument();
-    expect(screen.queryByText(/low confidence/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /confirm entry/i })).not.toBeInTheDocument();
   });
 
-  it("lets the user correct an AI-extracted field, marking it as user-sourced on change", async () => {
-    const items: ControlledEntry[] = [
-      { values: { company: "Wrong Co", title: "Engineer" }, source: "ai", confidence: 0.4 },
-    ];
+  it("shows AI count banner with Confirm all button when AI items exist", () => {
+    const onChange = vi.fn();
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={makeItems(["ai", "ai", "user"])}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
+
+    expect(screen.getByText(/2 AI-extracted entries awaiting confirmation/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /confirm all/i })).toBeInTheDocument();
+  });
+
+  it("hides banner when no AI items remain", () => {
+    const onChange = vi.fn();
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={makeItems(["user", "user"])}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
+
+    expect(screen.queryByText(/awaiting confirmation/i)).not.toBeInTheDocument();
+  });
+
+  it("clicking Confirm entry promotes that item to source user", async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
-    render(<Wrapper initial={items} onChangeSpy={onChange} />);
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={makeItems(["ai"])}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
 
-    const companyInput = screen.getByLabelText("Company");
-    await user.clear(companyInput);
-    await user.type(companyInput, "Correct Co");
+    await user.click(screen.getByRole("button", { name: /confirm entry/i }));
 
-    const lastCall = onChange.mock.calls.at(-1)?.[0] as ControlledEntry[];
-    const updatedEntry = lastCall[0];
-    if (!updatedEntry) throw new Error("onChange was not called with an entry");
-    expect(updatedEntry.values.company).toBe("Correct Co");
-    expect(updatedEntry.source).toBe("user");
+    expect(onChange).toHaveBeenCalledWith([
+      expect.objectContaining({ source: "user", confidence: 1 }),
+    ]);
   });
 
-  it("adds a new blank entry when '+ Add' is clicked", async () => {
+  it("clicking Confirm all promotes every item to source user", async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
-    render(<Wrapper initial={[]} onChangeSpy={onChange} />);
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={makeItems(["ai", "ai", "user"])}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
 
-    expect(screen.getByText(/nothing extracted/i)).toBeInTheDocument();
-    await user.click(screen.getByText("+ Add"));
+    await user.click(screen.getByRole("button", { name: /confirm all/i }));
 
-    expect(onChange).toHaveBeenCalledWith([{ values: { company: "", title: "" }, source: "user", confidence: 1 }]);
+    const result = onChange.mock.calls[0][0] as ControlledEntry[];
+    expect(result.every((item) => item.source === "user")).toBe(true);
+    expect(result).toHaveLength(3);
   });
 
-  it("removes an entry when 'Remove' is clicked", async () => {
-    const items: ControlledEntry[] = [
-      { values: { company: "Acme", title: "Engineer" }, source: "user", confidence: 1 },
-    ];
+  it("editing a field promotes that item to source user without touching others", async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
-    render(<Wrapper initial={items} onChangeSpy={onChange} />);
+    const items = makeItems(["ai", "ai"]);
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={items}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
 
-    await user.click(screen.getByText("Remove"));
-    expect(onChange).toHaveBeenCalledWith([]);
+    const inputs = screen.getAllByRole("textbox", { name: /skill/i });
+    await user.clear(inputs[0]);
+    await user.type(inputs[0], "Python");
+
+    const result = onChange.mock.calls.at(-1)![0] as ControlledEntry[];
+    expect(result[0].source).toBe("user");
+    expect(result[1].source).toBe("ai");
+  });
+
+  it("AI items remain source ai when no action is taken (no silent promotion)", () => {
+    const onChange = vi.fn();
+    render(
+      <ControlledEntryList
+        fields={fields}
+        items={makeItems(["ai", "ai"])}
+        onChange={onChange}
+        emptyLabel="No items"
+        blankValues={blankValues}
+      />,
+    );
+
+    // onChange not called on initial render — items are unmodified
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

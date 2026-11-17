@@ -146,10 +146,16 @@ function ReviewContent() {
     };
   }, [id]);
 
-  function buildPayload() {
+  function buildPayload(
+    exp = experience,
+    edu = education,
+    skl = skills,
+    proj = projects,
+    cert = certifications,
+  ) {
     return resumeParsedDataSchema.parse({
       personal: Object.fromEntries(Object.entries(personal).filter(([, v]) => v !== "")),
-      experience: experience.map((e) => ({
+      experience: exp.map((e) => ({
         company: e.values.company,
         title: e.values.title,
         location: e.values.location || undefined,
@@ -160,7 +166,7 @@ function ReviewContent() {
         confidence: e.confidence ?? 1,
         source: e.source,
       })),
-      education: education.map((e) => ({
+      education: edu.map((e) => ({
         institution: e.values.institution,
         degree: e.values.degree || undefined,
         fieldOfStudy: e.values.fieldOfStudy || undefined,
@@ -170,13 +176,13 @@ function ReviewContent() {
         confidence: e.confidence ?? 1,
         source: e.source,
       })),
-      skills: skills.map((s) => ({
+      skills: skl.map((s) => ({
         name: s.values.name,
         category: s.values.category || undefined,
         confidence: s.confidence ?? 1,
         source: s.source,
       })),
-      projects: projects.map((p) => ({
+      projects: proj.map((p) => ({
         name: p.values.name,
         description: p.values.description || undefined,
         url: p.values.url || undefined,
@@ -185,7 +191,7 @@ function ReviewContent() {
         confidence: p.confidence ?? 1,
         source: p.source,
       })),
-      certifications: certifications.map((c) => ({
+      certifications: cert.map((c) => ({
         name: c.values.name,
         issuer: c.values.issuer || undefined,
         issueDate: c.values.issueDate || undefined,
@@ -217,10 +223,33 @@ function ReviewContent() {
     setSaveError(null);
     setConfirming(true);
     try {
-      const payload = buildPayload();
+      // Reviewing and confirming the document is item-level confirmation:
+      // promote all AI-sourced entries to user-confirmed before writing.
+      const promote = <T extends ControlledEntry>(arr: T[]): T[] =>
+        arr.map((item) => ({ ...item, source: "user" as const }));
+
+      const promotedExperience = promote(experience);
+      const promotedEducation = promote(education);
+      const promotedSkills = promote(skills);
+      const promotedProjects = promote(projects);
+      const promotedCertifications = promote(certifications);
+
+      setExperience(promotedExperience);
+      setEducation(promotedEducation);
+      setSkills(promotedSkills);
+      setProjects(promotedProjects);
+      setCertifications(promotedCertifications);
+
+      const payload = buildPayload(
+        promotedExperience,
+        promotedEducation,
+        promotedSkills,
+        promotedProjects,
+        promotedCertifications,
+      );
       await api.patch(`/resumes/${id}/parsed-data`, payload);
       await api.post(`/resumes/${id}/confirm`);
-      router.push("/dashboard");
+      router.push("/profile");
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.detail : "Failed to confirm this resume.");
     } finally {
