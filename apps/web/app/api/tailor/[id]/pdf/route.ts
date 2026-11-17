@@ -42,6 +42,38 @@ function esc(s: string | null | undefined): string {
     .replace(/"/g, '&quot;');
 }
 
+const PRINT_INSTRUCTIONS_HTML = `
+<div class="print-instructions">
+  <strong>Save as PDF:</strong>
+  Open your browser menu and choose <strong>Print</strong>
+  (or press <kbd>Ctrl+P</kbd> on Windows / <kbd>⌘+P</kbd> on Mac),
+  then set the <strong>Destination</strong> to <strong>Save as PDF</strong>
+  and click <strong>Save</strong>.
+  This banner is hidden when you print.
+</div>`;
+
+const PRINT_INSTRUCTIONS_CSS = `
+  .print-instructions {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 24px;
+    font-family: Arial, sans-serif;
+    font-size: 10pt;
+    color: #1e40af;
+    line-height: 1.6;
+  }
+  kbd {
+    background: #e0e7ff;
+    border: 1px solid #a5b4fc;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 9pt;
+    font-family: monospace;
+  }
+  @media print { .print-instructions { display: none; } }`;
+
 function buildResumeHtml(
   jobTitle: string,
   company: string,
@@ -85,9 +117,11 @@ function buildResumeHtml(
   .skill-tag { background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-size: 10pt; font-family: Arial, sans-serif; }
   .meta { font-size: 9pt; color: #888; margin-top: 24px; border-top: 1px solid #eee; padding-top: 8px; }
   @media print { body { padding: 1cm; } .meta { display: none; } }
+  ${PRINT_INSTRUCTIONS_CSS}
 </style>
 </head>
 <body>
+${PRINT_INSTRUCTIONS_HTML}
 <h1>Tailored Resume</h1>
 <p class="target">Prepared for: <strong>${esc(jobTitle)}</strong> at <strong>${esc(company)}</strong></p>
 
@@ -123,9 +157,11 @@ function buildCoverLetterHtml(
   .signature { margin-top: 8px; font-weight: 600; }
   .meta { font-size: 9pt; color: #888; margin-top: 32px; border-top: 1px solid #eee; padding-top: 8px; }
   @media print { body { padding: 1cm; } .meta { display: none; } }
+  ${PRINT_INSTRUCTIONS_CSS}
 </style>
 </head>
 <body>
+${PRINT_INSTRUCTIONS_HTML}
 <h1>Cover Letter &mdash; ${esc(jobTitle)} at ${esc(company)}</h1>
 ${content.subjectLine ? `<p><strong>Subject:</strong> ${esc(content.subjectLine)}</p>` : ''}
 <p class="greeting">${esc(content.greeting ?? '')}</p>
