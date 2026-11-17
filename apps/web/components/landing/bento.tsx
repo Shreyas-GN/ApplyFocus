@@ -225,7 +225,7 @@ export function LandingBento() {
 
         {/* Steps */}
         <div className="space-y-24 sm:space-y-32">
-          {STEPS.map((step, i) => (
+          {STEPS.map((step) => (
             <motion.div
               key={step.num}
               initial={{ opacity: 0, y: 32 }}

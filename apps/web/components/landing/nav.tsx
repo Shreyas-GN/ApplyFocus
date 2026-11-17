@@ -10,11 +10,14 @@ import { useTheme } from "@/lib/theme-context";
 
 export function LandingNav() {
   const [scrolled, setScrolled] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const { theme, toggle } = useTheme();
 
   React.useEffect(() => {
-    setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -32,7 +35,7 @@ export function LandingNav() {
           className={cn(
             "flex h-14 w-full max-w-5xl items-center justify-between gap-2 rounded-full border px-4 backdrop-blur-2xl backdrop-saturate-200 transition-all duration-300 md:px-6",
             scrolled
-              ? "nav-scrolled-bg border-lp-border/60 shadow-[0_4px_24px_rgba(32,33,36,0.08)]"
+              ? "nav-scrolled-bg border-lp-border/50 shadow-[0_2px_16px_rgba(32,33,36,0.1)]"
               : "border-white/15 bg-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
           )}
         >
@@ -55,24 +58,38 @@ export function LandingNav() {
 
           {/* Actions */}
           <div className="flex items-center gap-1.5">
-            {/* Theme toggle */}
+            {/* Theme toggle — animated pill */}
             <button
               suppressHydrationWarning
               type="button"
               onClick={toggle}
-              aria-label="Toggle theme"
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
-                scrolled
-                  ? "text-lp-muted hover:bg-lp-bg hover:text-lp-ink"
-                  : "text-white/50 hover:bg-white/10 hover:text-white"
-              )}
+              aria-label={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              className="group relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lp-accent"
+              style={{
+                background: scrolled
+                  ? (mounted && theme === "dark" ? "rgba(198,83,59,0.18)" : "rgba(0,0,0,0.08)")
+                  : "rgba(255,255,255,0.14)",
+                border: scrolled
+                  ? (mounted && theme === "dark" ? "1px solid rgba(198,83,59,0.35)" : "1px solid rgba(0,0,0,0.12)")
+                  : "1px solid rgba(255,255,255,0.2)",
+              }}
             >
-              {mounted && theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
+              <span
+                suppressHydrationWarning
+                className="pointer-events-none inline-flex h-4 w-4 items-center justify-center rounded-full shadow-sm transition-transform duration-300"
+                style={{
+                  transform: mounted && theme === "dark" ? "translateX(24px)" : "translateX(2px)",
+                  background: scrolled
+                    ? (mounted && theme === "dark" ? "#C6533B" : "#202124")
+                    : "#ffffff",
+                }}
+              >
+                {mounted && theme === "dark" ? (
+                  <Sun className="h-2.5 w-2.5 text-white" />
+                ) : (
+                  <Moon className={cn("h-2.5 w-2.5", scrolled ? "text-white" : "text-lp-lagoon")} />
+                )}
+              </span>
             </button>
 
             <Link
@@ -117,9 +134,18 @@ export function LandingNav() {
                       suppressHydrationWarning
                       type="button"
                       onClick={toggle}
-                      className="flex h-8 w-8 items-center justify-center rounded-full text-lp-muted hover:bg-lp-bg hover:text-lp-ink"
+                      aria-label={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                      className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border border-lp-border/70 bg-lp-surface-subtle transition-all duration-300"
                     >
-                      {mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                      <span
+                        suppressHydrationWarning
+                        className="pointer-events-none inline-flex h-4 w-4 items-center justify-center rounded-full bg-lp-ink shadow-sm transition-transform duration-300"
+                        style={{ transform: mounted && theme === "dark" ? "translateX(24px)" : "translateX(2px)" }}
+                      >
+                        {mounted && theme === "dark"
+                          ? <Sun className="h-2.5 w-2.5 text-lp-bg" />
+                          : <Moon className="h-2.5 w-2.5 text-lp-bg" />}
+                      </span>
                     </button>
                   </div>
 

@@ -22,7 +22,7 @@ describe("Landing HomePage", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /Your next role starts with knowing yourself\./i,
+        name: /Know your value\./i,
       })
     ).toBeInTheDocument();
 
@@ -36,17 +36,17 @@ describe("Landing HomePage", () => {
 
     expect(screen.getByRole("link", { name: /See how it works/i })).toHaveAttribute(
       "href",
-      "#features"
+      "#how-it-works"
     );
 
     expect(
       screen.getByRole("heading", {
-        name: /A complete career workspace\./i,
+        name: /From profile to prepared application, in one workspace\./i,
       })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: /One profile\. A resume tailored to every opportunity\./i,
+        name: /One profile\. A resume tailored for every opportunity\./i,
       })
     ).toBeInTheDocument();
     expect(
@@ -65,10 +65,10 @@ describe("Landing HomePage", () => {
     render(<HomePage />);
 
     const secondFaq = screen.getByRole("button", {
-      name: /Who is ApplyPilot for\?/i,
+      name: /Who is ApplyFocus best suited for\?/i,
     });
-    expect(screen.queryByText(/designed for job seekers at different career stages/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/job seekers who want to be intentional/i)).not.toBeInTheDocument();
     fireEvent.click(secondFaq);
-    expect(screen.getByText(/designed for job seekers at different career stages/i)).toBeInTheDocument();
+    expect(screen.getByText(/job seekers who want to be intentional/i)).toBeInTheDocument();
   });
 });

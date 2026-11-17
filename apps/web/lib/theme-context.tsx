@@ -12,17 +12,20 @@ interface ThemeCtx {
 const Ctx = createContext<ThemeCtx>({ theme: "light", toggle: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "light";
     try {
       const stored = localStorage.getItem("af-theme") as Theme | null;
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initial: Theme = stored ?? (prefersDark ? "dark" : "light");
-      setTheme(initial);
-      document.documentElement.setAttribute("data-theme", initial);
-    } catch {}
-  }, []);
+      return stored ?? (prefersDark ? "dark" : "light");
+    } catch {
+      return "light";
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const toggle = () => {
     const next: Theme = theme === "light" ? "dark" : "light";
