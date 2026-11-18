@@ -71,6 +71,13 @@
       "when": 1794991105447,
       "tag": "0009_neon_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795021141446,
+      "tag": "0010_auth_tables",
+      "breakpoints": true
     }
   ]
 }

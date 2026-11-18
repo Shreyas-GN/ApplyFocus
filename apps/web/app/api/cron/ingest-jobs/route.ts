@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { purgeExpiredRateLimits } from '@/lib/auth/rate-limit';
+import { purgeExpiredSessions } from '@/lib/auth/session';
 import { syncPublicJobs } from '@/lib/server/jobs';
 
 export const maxDuration = 60;
@@ -12,6 +14,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Housekeeping for auth tables rides along with the existing cron.
+    await Promise.all([purgeExpiredSessions(), purgeExpiredRateLimits()]);
     const result = await syncPublicJobs();
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {

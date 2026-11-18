@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
-      NEON_AUTH_BASE_URL: https://ep-ci-placeholder.neonauth.example.com/neondb/auth
-      NEON_AUTH_COOKIE_SECRET: ci-placeholder-secret-at-least-32-characters-long
+      AUTH_SECRET: ci-placeholder-secret-at-least-32-characters-long
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:

@@ -2,18 +2,43 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
+import { api } from "@/lib/api-client";
+import { useAuth } from "@/lib/auth-context";
 
-// Neon Auth verifies the token server-side when the emailed link is opened,
-// then redirects here: with `?error=<CODE>` when the link is invalid/expired,
-// otherwise on success.
+// The emailed link carries a one-time token. We POST it (rather than verifying
+// on GET) so link-preview scanners can't consume it. Success also signs the
+// user in.
 function VerifyEmailStatus() {
   const searchParams = useSearchParams();
-  const error = searchParams.get("error");
+  const token = searchParams.get("token");
+  const { refreshUser } = useAuth();
+  const [status, setStatus] = useState<"pending" | "ok" | "error">(
+    token ? "pending" : "error"
+  );
+  const started = useRef(false);
 
-  if (error) {
+  useEffect(() => {
+    if (!token || started.current) return;
+    started.current = true;
+    void (async () => {
+      try {
+        await api.post("/auth/verify-email", { token });
+        await refreshUser();
+        setStatus("ok");
+      } catch {
+        setStatus("error");
+      }
+    })();
+  }, [token, refreshUser]);
+
+  if (status === "pending") {
+    return <p className="text-sm text-ui-muted">Verifying your email…</p>;
+  }
+
+  if (status === "error") {
     return (
       <div className="flex flex-col gap-3">
         <Alert tone="error">

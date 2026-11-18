@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { forgotPasswordSchema } from "@applypilot/validators";
-import { authClient } from "@/lib/auth/client";
+import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -27,10 +27,7 @@ export default function ForgotPasswordPage() {
     try {
       // The result is intentionally ignored: the same confirmation is shown
       // whether or not an account exists, so no account-existence signal leaks.
-      await authClient.requestPasswordReset({
-        email: result.data.email,
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      await api.post("/auth/forgot-password", { email: result.data.email });
       setSent(true);
     } catch {
       // Same response either way — no account-existence signal leaks here.
