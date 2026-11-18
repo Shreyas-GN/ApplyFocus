@@ -52,7 +52,8 @@ interface AuthErrorLike {
 function toApiError(error: AuthErrorLike, fallbackStatus: number): ApiError {
   return new ApiError(
     error.status || fallbackStatus,
-    error.message || "Something went wrong. Please try again."
+    error.message ||
+      `Sign-in service error${error.status ? ` (HTTP ${error.status})` : ""}. Check that NEON_AUTH_BASE_URL and NEON_AUTH_COOKIE_SECRET are set and this site is a trusted origin in Neon Auth.`
   );
 }
 
