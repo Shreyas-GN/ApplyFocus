@@ -5,6 +5,7 @@ import {
   EMAIL_VERIFICATION_TTL_SECONDS,
   PASSWORD_RESET_TTL_SECONDS,
 } from './constants';
+import { ensureAuthSchema } from './bootstrap';
 import { generateCsrfToken } from './csrf';
 import { sendPasswordResetEmail, sendVerificationEmail } from './email';
 import { hashPassword, verifyDummyPassword, verifyPassword } from './password';
@@ -99,6 +100,7 @@ export async function signUp(
   password: string,
   ip: string
 ): Promise<SignUpResult> {
+  await ensureAuthSchema();
   await enforce(
     `signup:ip:${ip}`,
     5,
@@ -164,6 +166,7 @@ export async function logIn(
   password: string,
   ip: string
 ): Promise<AuthResult> {
+  await ensureAuthSchema();
   const ipKey = `login:ip:${ip}`;
   const emailKey = `login:email:${email}`;
 
@@ -205,6 +208,7 @@ export async function logIn(
 }
 
 export async function verifyEmail(token: string): Promise<AuthResult> {
+  await ensureAuthSchema();
   const userId = await consumeToken(token, 'email_verification');
   if (!userId) {
     throw new HttpError(400, 'This verification link is invalid or has expired.');
@@ -221,6 +225,7 @@ export async function verifyEmail(token: string): Promise<AuthResult> {
 }
 
 export async function resendVerification(email: string, ip: string): Promise<void> {
+  await ensureAuthSchema();
   await enforce(`verify:ip:${ip}`, 10, HOUR, 'Too many requests. Try again later.');
   await enforce(`verify:email:${email}`, 5, HOUR, 'Too many requests. Try again later.');
 
@@ -232,6 +237,7 @@ export async function resendVerification(email: string, ip: string): Promise<voi
 }
 
 export async function requestPasswordReset(email: string, ip: string): Promise<void> {
+  await ensureAuthSchema();
   await enforce(`forgot:ip:${ip}`, 10, HOUR, 'Too many requests. Try again later.');
   await enforce(`forgot:email:${email}`, 5, HOUR, 'Too many requests. Try again later.');
 
@@ -247,6 +253,7 @@ export async function resetPassword(
   newPassword: string,
   ip: string
 ): Promise<void> {
+  await ensureAuthSchema();
   await enforce(`reset:ip:${ip}`, 10, HOUR, 'Too many attempts. Try again later.');
 
   const userId = await consumeToken(token, 'password_reset');

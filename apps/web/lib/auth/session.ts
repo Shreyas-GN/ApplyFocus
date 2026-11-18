@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { sessions, users } from '@/lib/db/schema';
+import { ensureAuthSchema } from './bootstrap';
 import { SESSION_COOKIE, SESSION_TTL_SECONDS } from './constants';
 import { generateCsrfToken } from './csrf';
 import { generateRawToken, hashToken } from './tokens';
@@ -52,6 +53,7 @@ export async function readSessionCookie(): Promise<string | null> {
 export async function resolveSessionToken(
   raw: string
 ): Promise<SessionUser | null> {
+  await ensureAuthSchema();
   const id = hashToken(raw);
   const [row] = await db
     .select({
