@@ -5,11 +5,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
-import { ApiError } from "./api-client";
-import { authClient } from "./auth/client";
+import { api, ApiError, setCsrfToken } from "./api-client";
 
 export interface RegisterResult {
   requiresEmailConfirmation: boolean;
@@ -26,103 +27,81 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-interface SessionUserLike {
-  id: string;
-  email?: string | null;
-  emailVerified?: boolean | null;
-  createdAt?: Date | string | null;
+interface SessionPayload {
+  user: { id: string; email: string; emailVerified: boolean };
+  csrfToken: string;
 }
 
-function toAuthUserDto(user: SessionUserLike): AuthUserDto {
-  const created = user.createdAt ? new Date(user.createdAt) : new Date();
+function toAuthUserDto(user: SessionPayload["user"]): AuthUserDto {
   return {
     id: user.id,
-    email: user.email ?? "",
-    emailVerified: Boolean(user.emailVerified),
-    createdAt: created.toISOString(),
+    email: user.email,
+    emailVerified: user.emailVerified,
+    createdAt: new Date().toISOString(),
   };
 }
 
-interface AuthErrorLike {
-  message?: string;
-  status?: number;
-  code?: string;
-}
-
-function toApiError(error: AuthErrorLike, fallbackStatus: number): ApiError {
-  return new ApiError(
-    error.status || fallbackStatus,
-    error.message || "Something went wrong. Please try again."
-  );
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data: session, isPending, refetch } = authClient.useSession();
+  const [user, setUser] = useState<AuthUserDto | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const user = useMemo(
-    () => (session?.user ? toAuthUserDto(session.user) : null),
-    [session]
-  );
+  const applySession = useCallback((payload: SessionPayload | null) => {
+    setCsrfToken(payload?.csrfToken ?? null);
+    setUser(payload ? toAuthUserDto(payload.user) : null);
+  }, []);
 
   const refreshUser = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+    try {
+      applySession(await api.get<SessionPayload>("/auth/me"));
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status !== 401) {
+        console.error("Failed to load session:", error);
+      }
+      applySession(null);
+    }
+  }, [applySession]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      await refreshUser();
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshUser]);
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const { error } = await authClient.signIn.email({ email, password });
-      if (error) {
-        throw toApiError(error, 401);
-      }
-      await refetch();
+      applySession(await api.post<SessionPayload>("/auth/login", { email, password }));
     },
-    [refetch]
+    [applySession]
   );
 
   const register = useCallback(
     async (email: string, password: string): Promise<RegisterResult> => {
-      const localPart = email.split("@")[0]?.trim();
-      const { data, error } = await authClient.signUp.email({
-        email,
-        password,
-        name: localPart || email,
-        callbackURL: `${window.location.origin}/verify-email`,
-      });
-
-      if (error) {
-        if (error.code?.startsWith("USER_ALREADY_EXISTS")) {
-          throw new ApiError(
-            409,
-            "An account with this email already exists. Try logging in."
-          );
-        }
-        throw toApiError(error, 400);
-      }
-
-      // When email verification is required Neon Auth creates the user but
-      // does not start a session (no token) until the link is opened.
-      if (data?.token) {
-        await refetch();
-        return { requiresEmailConfirmation: false };
-      }
-
+      await api.post("/auth/signup", { email, password });
+      // Accounts are activated through the emailed link, so no session yet.
       return { requiresEmailConfirmation: true };
     },
-    [refetch]
+    []
   );
 
   const logout = useCallback(async () => {
-    await authClient.signOut();
-    await refetch();
-  }, [refetch]);
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      applySession(null);
+    }
+  }, [applySession]);
 
-  return (
-    <AuthContext.Provider
-      value={{ user, loading: isPending, login, register, logout, refreshUser }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout, refreshUser }),
+    [user, loading, login, register, logout, refreshUser]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

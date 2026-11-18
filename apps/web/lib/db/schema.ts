@@ -104,8 +104,8 @@ export const profiles = pgTable(
       .default(sql`'{}'::text[]`),
     intelligenceMetadata: jsonb('intelligence_metadata'),
     notificationPreferences: jsonb('notification_preferences'),
-    // Sign-in email, mirrored from Neon Auth whenever the profile is loaded so
-    // token-authenticated clients (browser extension) can read it.
+    // Sign-in email, mirrored from the users table whenever the profile is
+    // loaded so token-authenticated clients (browser extension) can read it.
     authEmail: text('auth_email'),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .defaultNow()
@@ -546,3 +546,67 @@ export const screeningAnswers = pgTable(
     index('screening_answers_user_job_idx').on(table.userId, table.jobId),
   ]
 ).enableRLS();
+
+// 16. Auth: users (id is also the owner id used by every other table)
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    email: text('email').notNull(),
+    passwordHash: text('password_hash').notNull(),
+    emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [uniqueIndex('users_email_idx').on(table.email)]
+).enableRLS();
+
+// 17. Auth: sessions. `id` is SHA-256(raw cookie token); the raw token is
+// never stored.
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('sessions_user_id_idx').on(table.userId)]
+).enableRLS();
+
+// 18. Auth: one-time tokens for password reset and email verification.
+// `id` is SHA-256(raw emailed token).
+export const authTokenPurposeEnum = pgEnum('auth_token_purpose', [
+  'password_reset',
+  'email_verification',
+]);
+
+export const authTokens = pgTable(
+  'auth_tokens',
+  {
+    id: text('id').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    purpose: authTokenPurposeEnum('purpose').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('auth_tokens_user_id_idx').on(table.userId)]
+).enableRLS();
+
+// 19. Auth: fixed-window rate limit counters.
+export const rateLimits = pgTable('rate_limits', {
+  key: text('key').primaryKey(),
+  count: integer('count').notNull().default(0),
+  windowStart: timestamp('window_start', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+}).enableRLS();

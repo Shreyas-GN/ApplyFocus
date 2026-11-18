@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // The sign-in email is mirrored onto the profile whenever the signed-in
-    // user loads it (the extension itself has no Neon Auth session).
+    // user loads it (the extension itself has no browser session).
     const [row] = await db
       .select({ authEmail: profiles.authEmail })
       .from(profiles)

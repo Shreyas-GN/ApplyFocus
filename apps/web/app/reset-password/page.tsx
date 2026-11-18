@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { passwordSchema } from "@applypilot/validators";
-import { authClient } from "@/lib/auth/client";
+import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -34,13 +34,7 @@ function ResetPasswordForm() {
     setError(null);
     setSubmitting(true);
     try {
-      const { error: resetError } = await authClient.resetPassword({
-        newPassword: result.data,
-        token,
-      });
-      if (resetError) {
-        throw new Error(resetError.message);
-      }
+      await api.post("/auth/reset-password", { token, password: result.data });
       setDone(true);
     } catch (err: unknown) {
       setError(

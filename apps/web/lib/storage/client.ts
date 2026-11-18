@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 /**
  * Server-only client for private résumé file storage (Supabase Storage).
  *
- * This is storage only — authentication is handled entirely by Neon Auth
+ * This is storage only — authentication is handled in-house
  * (see `lib/auth`). The service key bypasses storage policies, so every
  * caller must already have authorised the user and scoped the object key.
  */

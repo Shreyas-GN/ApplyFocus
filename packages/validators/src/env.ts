@@ -2,11 +2,10 @@ import { z } from "zod";
 
 export const webEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  // Neon Auth (authentication)
-  NEON_AUTH_BASE_URL: z.string().url("NEON_AUTH_BASE_URL must be a URL"),
-  NEON_AUTH_COOKIE_SECRET: z
-    .string()
-    .min(32, "NEON_AUTH_COOKIE_SECRET must be at least 32 characters"),
+  // Authentication (in-house)
+  AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
   // Supabase Storage (private résumé files only — not used for auth)
   NEXT_PUBLIC_SUPABASE_URL: z.string().min(1, "NEXT_PUBLIC_SUPABASE_URL is required"),
   SUPABASE_SECRET_KEY: z.string().min(1, "SUPABASE_SECRET_KEY is required").optional(),

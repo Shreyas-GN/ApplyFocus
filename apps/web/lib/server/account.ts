@@ -16,9 +16,9 @@ import {
   screeningAnswers,
   skills,
   tailoredDocuments,
+  users,
   workExperiences,
 } from '@/lib/db/schema';
-import { getAuth } from '@/lib/auth/server';
 import { createStorageClient } from '@/lib/storage/client';
 import type { AuditLogDto } from '@/lib/types';
 import { listApplications } from './applications';
@@ -94,10 +94,10 @@ export async function deleteUserAccount(userId: string): Promise<void> {
     }
   }
 
-  // 2. Delete every row the user owns. Neon Auth users live outside this
-  //    database, so there is no foreign-key cascade to rely on. Child tables
-  //    (resume_parsed_data, application_events, ...) are removed explicitly
-  //    too, and the whole step is atomic and safe to retry.
+  // 2. Delete every row the user owns, including the auth user. Data tables
+  //    carry no foreign keys to `users`, so child tables are removed
+  //    explicitly; sessions and auth tokens cascade from the users row. The
+  //    whole step is atomic and safe to retry.
   await db.transaction(async (tx) => {
     await tx.delete(applicationEvents).where(eq(applicationEvents.userId, userId));
     await tx.delete(screeningAnswers).where(eq(screeningAnswers.userId, userId));
@@ -121,13 +121,6 @@ export async function deleteUserAccount(userId: string): Promise<void> {
       .set({ userId: null })
       .where(eq(auditLogs.userId, userId));
     await tx.delete(profiles).where(eq(profiles.id, userId));
+    await tx.delete(users).where(eq(users.id, userId));
   });
-
-  // 3. Delete the Neon Auth user (and end the session). Done last so a
-  //    failure here leaves a retryable, data-free account rather than
-  //    orphaned data.
-  const { error: deleteUserError } = await getAuth().deleteUser({});
-  if (deleteUserError) {
-    throw new Error(`Failed to delete account: ${deleteUserError.message}`);
-  }
 }

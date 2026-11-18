@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getUser } from '@/lib/auth/session';
+import { clearSessionCookie, getUser } from '@/lib/auth/session';
 import { deleteUserAccount } from '@/lib/server/account';
 
 const deleteAccountSchema = z.object({
@@ -24,6 +24,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteUserAccount(user.id);
+    await clearSessionCookie();
     return new NextResponse(null, { status: 204 });
   } catch (error: unknown) {
     const message =

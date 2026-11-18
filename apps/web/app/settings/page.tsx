@@ -18,7 +18,6 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tabs";
 import { ExtensionPairingCard } from "@/components/copilot/extension-pairing-card";
 import { useAuth } from "@/lib/auth-context";
-import { authClient } from "@/lib/auth/client";
 import { api, ApiError } from "@/lib/api-client";
 import { useApi } from "@/lib/use-api";
 
@@ -152,11 +151,7 @@ function SettingsContent() {
     if (!user) return;
     setResendState("sending");
     try {
-      const { error } = await authClient.sendVerificationEmail({
-        email: user.email,
-        callbackURL: `${window.location.origin}/verify-email`,
-      });
-      if (error) throw new Error(error.message);
+      await api.post("/auth/resend-verification", { email: user.email });
       setResendState("sent");
     } catch {
       setResendState("error");
@@ -167,11 +162,7 @@ function SettingsContent() {
     if (!user) return;
     setResetState("sending");
     try {
-      const { error } = await authClient.requestPasswordReset({
-        email: user.email,
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw new Error(error.message);
+      await api.post("/auth/forgot-password", { email: user.email });
       setResetState("sent");
     } catch {
       setResetState("error");
