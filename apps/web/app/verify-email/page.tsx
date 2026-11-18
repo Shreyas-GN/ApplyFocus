@@ -2,55 +2,39 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import type { EmailOtpType } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
+import { Suspense } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 
+// Neon Auth verifies the token server-side when the emailed link is opened,
+// then redirects here: with `?error=<CODE>` when the link is invalid/expired,
+// otherwise on success.
 function VerifyEmailStatus() {
   const searchParams = useSearchParams();
-  const tokenHash = searchParams.get("token_hash") ?? "";
-  const type = (searchParams.get("type") as EmailOtpType | null) ?? "signup";
-  const [state, setState] = useState<"verifying" | "success" | "error">(
-    tokenHash ? "verifying" : "error",
-  );
-  const [message, setMessage] = useState(
-    tokenHash ? "" : "This verification link is missing its token. Check your inbox for your confirmation email.",
-  );
+  const error = searchParams.get("error");
 
-  useEffect(() => {
-    if (!tokenHash) return;
-    let cancelled = false;
-    const supabase = createClient();
-    supabase.auth
-      .verifyOtp({ token_hash: tokenHash, type })
-      .then(({ error }) => {
-        if (cancelled) return;
-        if (error) {
-          setState("error");
-          setMessage(error.message);
-        } else {
-          setState("success");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tokenHash, type]);
-
-  if (state === "verifying") return <p className="text-sm text-ui-muted">Verifying your email…</p>;
-  if (state === "success") {
+  if (error) {
     return (
       <div className="flex flex-col gap-3">
-        <Alert tone="success">Your email has been verified. Thanks!</Alert>
-        <Link href="/dashboard" className="text-sm font-medium text-ui-teal hover:underline">
-          Continue to dashboard →
+        <Alert tone="error">
+          This verification link is invalid or has expired. Log in to request a new
+          confirmation email.
+        </Alert>
+        <Link href="/login" className="text-sm font-medium text-ui-teal hover:underline">
+          Go to log in →
         </Link>
       </div>
     );
   }
-  return <Alert tone="error">{message}</Alert>;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <Alert tone="success">Your email has been verified. Thanks!</Alert>
+      <Link href="/onboarding" className="text-sm font-medium text-ui-teal hover:underline">
+        Continue →
+      </Link>
+    </div>
+  );
 }
 
 export default function VerifyEmailPage() {

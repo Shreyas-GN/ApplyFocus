@@ -18,7 +18,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tabs";
 import { ExtensionPairingCard } from "@/components/copilot/extension-pairing-card";
 import { useAuth } from "@/lib/auth-context";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { api, ApiError } from "@/lib/api-client";
 import { useApi } from "@/lib/use-api";
 
@@ -152,15 +152,11 @@ function SettingsContent() {
     if (!user) return;
     setResendState("sending");
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resend({
-        type: "signup",
+      const { error } = await authClient.sendVerificationEmail({
         email: user.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-        },
+        callbackURL: `${window.location.origin}/verify-email`,
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       setResendState("sent");
     } catch {
       setResendState("error");
@@ -171,11 +167,11 @@ function SettingsContent() {
     if (!user) return;
     setResetState("sending");
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      const { error } = await authClient.requestPasswordReset({
+        email: user.email,
         redirectTo: `${window.location.origin}/reset-password`,
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       setResetState("sent");
     } catch {
       setResetState("error");

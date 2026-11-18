@@ -1,7 +1,7 @@
 
 import { db } from '@/lib/db';
 import { resumeParsedData, resumes } from '@/lib/db/schema';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createStorageClient } from '@/lib/storage/client';
 import { resolveAiClient } from './ai-provider';
 import {
   resumeParsedDataSchema,
@@ -120,7 +120,7 @@ export async function processResumeBackground(
       })
       .where(eq(resumes.id, resumeId));
 
-    const supabase = createAdminClient();
+    const supabase = createStorageClient();
     const { data: fileBlob, error: downloadError } = await supabase.storage
       .from('resumes')
       .download(resume.storageKey);

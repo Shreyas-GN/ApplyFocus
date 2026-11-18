@@ -6,14 +6,12 @@ import {
   jsonb,
   numeric,
   pgEnum,
-  pgPolicy,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { authenticatedRole, authUid, authUsers } from 'drizzle-orm/supabase';
 
 // Enums
 export const resumeProcessingStatusEnum = pgEnum('resume_processing_status', [
@@ -55,9 +53,7 @@ export const strategyStatusEnum = pgEnum('strategy_status', [
 export const profiles = pgTable(
   'profiles',
   {
-    id: uuid('id')
-      .primaryKey()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    id: uuid('id').primaryKey(),
     fullName: text('full_name'),
     phone: text('phone'),
     location: text('location'),
@@ -108,28 +104,21 @@ export const profiles = pgTable(
       .default(sql`'{}'::text[]`),
     intelligenceMetadata: jsonb('intelligence_metadata'),
     notificationPreferences: jsonb('notification_preferences'),
+    // Sign-in email, mirrored from Neon Auth whenever the profile is loaded so
+    // token-authenticated clients (browser extension) can read it.
+    authEmail: text('auth_email'),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
-  },
-  () => [
-    pgPolicy('profiles_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`id = ${authUid}`,
-      withCheck: sql`id = ${authUid}`,
-    }),
-  ]
-);
+  }
+).enableRLS();
 
 // 2. Work Experiences
 export const workExperiences = pgTable(
   'work_experiences',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     company: text('company').notNull(),
     title: text('title').notNull(),
     location: text('location'),
@@ -160,23 +149,15 @@ export const workExperiences = pgTable(
   },
   (table) => [
     index('work_experiences_user_id_idx').on(table.userId),
-    pgPolicy('work_experiences_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 3. Education Entries
 export const educationEntries = pgTable(
   'education_entries',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     institution: text('institution').notNull(),
     degree: text('degree'),
     fieldOfStudy: text('field_of_study'),
@@ -196,23 +177,15 @@ export const educationEntries = pgTable(
   },
   (table) => [
     index('education_entries_user_id_idx').on(table.userId),
-    pgPolicy('education_entries_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 4. Skills
 export const skills = pgTable(
   'skills',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     name: text('name').notNull(),
     category: text('category'),
     proficiency: text('proficiency'),
@@ -230,23 +203,15 @@ export const skills = pgTable(
       table.userId,
       sql`lower(${table.name})`
     ),
-    pgPolicy('skills_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 5. Projects
 export const projects = pgTable(
   'projects',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     name: text('name').notNull(),
     description: text('description'),
     role: text('role'),
@@ -274,23 +239,15 @@ export const projects = pgTable(
   },
   (table) => [
     index('projects_user_id_idx').on(table.userId),
-    pgPolicy('projects_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 6. Certifications
 export const certifications = pgTable(
   'certifications',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     name: text('name').notNull(),
     issuer: text('issuer'),
     issueDate: timestamp('issue_date', { withTimezone: true }),
@@ -304,23 +261,15 @@ export const certifications = pgTable(
   },
   (table) => [
     index('certifications_user_id_idx').on(table.userId),
-    pgPolicy('certifications_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 7. Resumes
 export const resumes = pgTable(
   'resumes',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     versionLabel: text('version_label').notNull(),
     originalFilename: text('original_filename').notNull(),
     mimeType: text('mime_type').notNull(),
@@ -340,14 +289,8 @@ export const resumes = pgTable(
   },
   (table) => [
     index('resumes_user_id_idx').on(table.userId),
-    pgPolicy('resumes_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 8. Resume Parsed Data
 export const resumeParsedData = pgTable(
@@ -358,9 +301,7 @@ export const resumeParsedData = pgTable(
       .notNull()
       .unique()
       .references(() => resumes.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     structuredData: jsonb('structured_data').notNull(),
     overallConfidence: numeric('overall_confidence', { precision: 4, scale: 3 }),
     reviewStatus: reviewStatusEnum('review_status')
@@ -376,23 +317,15 @@ export const resumeParsedData = pgTable(
   },
   (table) => [
     index('resume_parsed_data_user_id_idx').on(table.userId),
-    pgPolicy('resume_parsed_data_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 9. Audit Logs
 export const auditLogs = pgTable(
   'audit_logs',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id').references(() => authUsers.id, {
-      onDelete: 'set null',
-    }),
+    userId: uuid('user_id'),
     action: text('action').notNull(),
     metadata: jsonb('metadata'),
     ipAddress: text('ip_address'),
@@ -403,14 +336,8 @@ export const auditLogs = pgTable(
   },
   (table) => [
     index('audit_logs_user_id_created_at_idx').on(table.userId, table.createdAt),
-    pgPolicy('audit_logs_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 10. Jobs (Public ATS & ingested listings)
 export const jobs = pgTable(
@@ -441,22 +368,15 @@ export const jobs = pgTable(
       table.externalId
     ),
     index('jobs_company_idx').on(table.company),
-    pgPolicy('jobs_authenticated_read_policy', {
-      for: 'select',
-      to: authenticatedRole,
-      using: sql`true`,
-    }),
   ]
-);
+).enableRLS();
 
 // 11. Applications (User's tracked jobs)
 export const applications = pgTable(
   'applications',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
     company: text('company').notNull(),
     title: text('title').notNull(),
@@ -477,14 +397,8 @@ export const applications = pgTable(
   },
   (table) => [
     index('applications_user_id_idx').on(table.userId),
-    pgPolicy('applications_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 12. Application Events (Timeline log)
 export const applicationEvents = pgTable(
@@ -494,9 +408,7 @@ export const applicationEvents = pgTable(
     applicationId: uuid('application_id')
       .notNull()
       .references(() => applications.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     type: text('type').notNull(), // 'created' | 'status_change' | 'note'
     description: text('description').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -505,23 +417,15 @@ export const applicationEvents = pgTable(
   },
   (table) => [
     index('application_events_app_id_idx').on(table.applicationId),
-    pgPolicy('application_events_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 13. Tailored Documents (AI tailored resumes & cover letters)
 export const tailoredDocuments = pgTable(
   'tailored_documents',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
     applicationId: uuid('application_id').references(() => applications.id, {
       onDelete: 'set null',
@@ -541,23 +445,15 @@ export const tailoredDocuments = pgTable(
   (table) => [
     index('tailored_documents_user_id_idx').on(table.userId),
     index('tailored_documents_user_job_idx').on(table.userId, table.jobId),
-    pgPolicy('tailored_documents_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 14. Extension Sessions (Paired browser extension tokens)
 export const extensionSessions = pgTable(
   'extension_sessions',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     label: text('label').default('Chrome Extension').notNull(),
     tokenHash: text('token_hash').notNull(),
     lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
@@ -569,23 +465,15 @@ export const extensionSessions = pgTable(
   (table) => [
     index('extension_sessions_user_id_idx').on(table.userId),
     uniqueIndex('extension_sessions_token_hash_idx').on(table.tokenHash),
-    pgPolicy('extension_sessions_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 15b. Application Strategies (per user+job, persisted strategy analysis)
 export const applicationStrategies = pgTable(
   'application_strategies',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id')
       .notNull()
       .references(() => jobs.id, { onDelete: 'cascade' }),
@@ -602,23 +490,15 @@ export const applicationStrategies = pgTable(
   (table) => [
     uniqueIndex('application_strategies_user_job_idx').on(table.userId, table.jobId),
     index('application_strategies_user_id_idx').on(table.userId),
-    pgPolicy('application_strategies_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 15. Job States (Saved bookmarks & dismissed jobs per user)
 export const jobStates = pgTable(
   'job_states',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id')
       .notNull()
       .references(() => jobs.id, { onDelete: 'cascade' }),
@@ -633,23 +513,15 @@ export const jobStates = pgTable(
   (table) => [
     uniqueIndex('job_states_user_job_idx').on(table.userId, table.jobId),
     index('job_states_user_state_idx').on(table.userId, table.state),
-    pgPolicy('job_states_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();
 
 // 16. Screening Answers (Persisted AI-generated screening answers)
 export const screeningAnswers = pgTable(
   'screening_answers',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
     applicationId: uuid('application_id').references(() => applications.id, {
       onDelete: 'set null',
@@ -672,11 +544,5 @@ export const screeningAnswers = pgTable(
   (table) => [
     index('screening_answers_user_id_idx').on(table.userId),
     index('screening_answers_user_job_idx').on(table.userId, table.jobId),
-    pgPolicy('screening_answers_owner_policy', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`user_id = ${authUid}`,
-      withCheck: sql`user_id = ${authUid}`,
-    }),
   ]
-);
+).enableRLS();

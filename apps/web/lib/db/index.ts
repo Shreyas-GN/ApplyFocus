@@ -2,9 +2,11 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
+// No credentials are ever hard-coded. The placeholder only lets `next build`
+// import this module without DATABASE_URL (the client connects lazily);
+// real queries need DATABASE_URL to be set.
 const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres.nnaxrcknrbnaukyeotvq:Makememad%401122@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres';
+  process.env.DATABASE_URL || 'postgresql://localhost:5432/postgres';
 
 const globalForDb = globalThis as unknown as {
   conn: postgres.Sql | undefined;
