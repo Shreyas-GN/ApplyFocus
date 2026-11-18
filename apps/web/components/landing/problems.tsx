@@ -1,81 +1,77 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { Reveal, SectionHeader } from "./primitives";
 
 const PROBLEMS = [
   {
     num: "01",
     title: "Applying without knowing if you fit",
-    desc: "Most job descriptions don't tell you which requirements are firm and which are flexible. You submit and hope.",
+    desc: "Job descriptions rarely say which requirements are firm and which are flexible. You submit and hope.",
   },
   {
     num: "02",
     title: "Your strongest experience stays hidden",
-    desc: "Years of relevant work buried across old roles. Without a structured profile, you can't surface what matters most for each opportunity.",
+    desc: "Relevant work is buried across old roles. Without a structured profile, you cannot surface what matters for each opportunity.",
   },
   {
     num: "03",
-    title: "Every resume feels like starting from scratch",
-    desc: "Adapting your resume for each role means copying, pasting and second-guessing — with no way to know if the changes help.",
+    title: "Every resume starts from scratch",
+    desc: "Adapting a resume for each role means copying, pasting and second guessing, with no way to know if the changes help.",
   },
   {
     num: "04",
     title: "Positioning skills without guidance",
-    desc: "You have transferable skills, but connecting them to what a job description asks for requires analysis you don't have time for.",
+    desc: "You have transferable skills, but linking them to a job description takes analysis you rarely have time for.",
   },
   {
     num: "05",
-    title: "Applications scattered across tabs and notes",
-    desc: "Twenty open applications. No follow-up system. No record of which resume version you used. Everything's everywhere.",
+    title: "Applications scattered across tabs",
+    desc: "Twenty open applications, no follow up system, and no record of which resume version you used.",
   },
 ];
 
 export function LandingProblems() {
   return (
-    <section className="bg-lp-bg py-24 sm:py-32">
-      <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.55 }}
-          className="mb-16"
+    <section
+      id="problems"
+      aria-labelledby="problems-heading"
+      className="scroll-mt-24 bg-lp-bg py-20 sm:py-24"
+    >
+      <div className="mx-auto max-w-[1240px] px-4 sm:px-8">
+        <SectionHeader
+          id="problems-heading"
+          eyebrow="The problem"
+          title="The usual job search is frustrating, for good reason"
         >
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-lp-accent">
-            The problem
-          </p>
-          <h2 className="mt-4 max-w-[600px] font-display text-[40px] leading-[1.06] text-lp-ink sm:text-[54px]">
-            The conventional job search is frustrating. For good reason.
-          </h2>
-          <p className="mt-5 max-w-[520px] font-ui text-[17px] leading-[1.7] text-lp-body">
-            These aren&apos;t personal failings. They&apos;re systemic gaps — and ApplyFocus is built to close them.
-          </p>
-        </motion.div>
+          These are not personal failings. They are gaps in the process, and ApplyFocus is built to
+          close them.
+        </SectionHeader>
 
-        {/* Problem cards — staggered */}
-        <div className="grid gap-px bg-lp-border sm:grid-cols-2 lg:grid-cols-3 rounded-2xl overflow-hidden border border-lp-border">
+        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PROBLEMS.map((p, i) => (
-            <motion.div
-              key={p.num}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.45, delay: i * 0.08 }}
-              className={`bg-lp-surface p-7 sm:p-8 ${i === 4 ? "sm:col-span-2 lg:col-span-1" : ""}`}
-            >
-              <span className="font-mono text-[11px] font-semibold tracking-[0.18em] text-lp-accent/60">
-                {p.num}
-              </span>
-              <h3 className="mt-3 font-ui text-[18px] font-semibold leading-[1.3] text-lp-ink sm:text-[19px]">
-                {p.title}
-              </h3>
-              <p className="mt-3 font-ui text-[14px] leading-[1.7] text-lp-body">
-                {p.desc}
-              </p>
-            </motion.div>
+            <li key={p.num}>
+              <Reveal delay={(i % 3) * 0.08} className="h-full">
+                <article className="h-full rounded-2xl border border-lp-border bg-lp-surface p-6">
+                  <p className="caption-3 text-lp-accent-ink">{p.num}</p>
+                  <h3 className="title-1 mt-3 text-lp-ink">{p.title}</h3>
+                  <p className="body-3 mt-3 text-lp-body">{p.desc}</p>
+                </article>
+              </Reveal>
+            </li>
           ))}
-        </div>
+          <li>
+            <Reveal delay={0.16} className="h-full">
+              <article className="h-full rounded-2xl border border-lp-border bg-lp-accent-soft p-6">
+                <p className="caption-3 text-lp-accent-ink">The fix</p>
+                <h3 className="title-1 mt-3 text-lp-ink">One workspace that closes these gaps</h3>
+                <p className="body-3 mt-3 text-lp-body">
+                  A confirmed profile, evidence behind every fit score, and a tracker that remembers
+                  what you sent.
+                </p>
+              </article>
+            </Reveal>
+          </li>
+        </ul>
       </div>
     </section>
   );

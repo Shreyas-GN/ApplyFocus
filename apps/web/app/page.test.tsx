@@ -16,49 +16,43 @@ beforeAll(() => {
 });
 
 describe("Landing HomePage", () => {
-  it("renders hero positioning, primary CTAs, and all core sections", () => {
+  it("renders the hero, one primary CTA and all core sections", () => {
     render(<HomePage />);
 
     expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: /Know your value\./i,
-      })
+      screen.getByRole("heading", { level: 1, name: /Know if you fit\s+before you apply/i })
     ).toBeInTheDocument();
 
-    const signupLinks = screen.getAllByRole("link", {
-      name: /Get started — it's free/i,
-    });
+    const signupLinks = screen.getAllByRole("link", { name: /Create your free profile/i });
     expect(signupLinks.length).toBeGreaterThanOrEqual(2);
     for (const link of signupLinks) {
       expect(link).toHaveAttribute("href", "/signup");
     }
 
-    expect(screen.getByRole("link", { name: /See how it works/i })).toHaveAttribute(
-      "href",
-      "#how-it-works"
-    );
+    for (const name of [
+      /The usual job search is frustrating, for good reason/i,
+      /Fewer, better applications/i,
+      /From profile to prepared application in three steps/i,
+      /Better decisions, not more applications/i,
+      /Questions, answered plainly/i,
+    ]) {
+      expect(screen.getByRole("heading", { name })).toBeInTheDocument();
+    }
+  });
 
-    expect(
-      screen.getByRole("heading", {
-        name: /From profile to prepared application, in one workspace\./i,
-      })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", {
-        name: /One profile\. A resume tailored for every opportunity\./i,
-      })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", {
-        name: /Know where every application stands\./i,
-      })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", {
-        name: /Questions, answered plainly\./i,
-      })
-    ).toBeInTheDocument();
+  it("includes a skip link, a main landmark and the tagline reveal words", () => {
+    render(<HomePage />);
+
+    expect(screen.getByRole("link", { name: /Skip to content/i })).toHaveAttribute("href", "#main");
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-word]").length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("has no dead links", () => {
+    render(<HomePage />);
+    for (const link of screen.getAllByRole("link")) {
+      expect(link.getAttribute("href")).not.toBe("#");
+    }
   });
 
   it("supports interactive FAQ accordion", () => {
@@ -67,8 +61,10 @@ describe("Landing HomePage", () => {
     const secondFaq = screen.getByRole("button", {
       name: /Who is ApplyFocus best suited for\?/i,
     });
+    expect(secondFaq).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByText(/job seekers who want to be intentional/i)).not.toBeInTheDocument();
     fireEvent.click(secondFaq);
+    expect(secondFaq).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText(/job seekers who want to be intentional/i)).toBeInTheDocument();
   });
 });

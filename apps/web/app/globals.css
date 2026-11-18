@@ -34,24 +34,34 @@
   --font-ui: var(--font-instrument-sans), "DM Sans", system-ui, sans-serif;
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 
-  /* Landing page design system tokens — Graphite & Vermilion */
+  /* Landing page tokens (landing-page-design skill). Light values here, dark overrides below.
+     Dark backgrounds only use: #000000 #181818 #1F1F1F #272727 #313131 #131209. */
   --color-lp-ink: #202124;
   --color-lp-body: #3D3F47;
-  --color-lp-muted: #8D8F9A;
+  --color-lp-muted: #6B6E78;
   --color-lp-bg: #FFFFFF;
   --color-lp-surface: #F8F8F8;
-  --color-lp-surface-subtle: #F4F4F4;
-  --color-lp-border: #DDDBD6;
-  --color-lp-accent: #C6533B;
-  --color-lp-accent-hover: #AE4530;
+  --color-lp-surface-subtle: #F0F0F0;
+  --color-lp-border: #E1E0DC;
+  --color-lp-accent: #BC4A32;
+  --color-lp-accent-hover: #A53F29;
+  --color-lp-accent-ink: #A53F29;
   --color-lp-accent-soft: #F9EAE6;
-  --color-lp-wine: #C6533B;
-  --color-lp-wine-hover: #AE4530;
-  --color-lp-copper: #C6533B;
+  --color-lp-success: #1F7A55;
+  --color-lp-success-soft: #E4F3EB;
+  --color-lp-warning: #8A5A12;
+  --color-lp-warning-soft: #FBF0DA;
+  --color-lp-inverse: #202124;
+  --color-lp-inverse-ink: #FFFFFF;
+  --color-lp-inverse-body: #C4C4CA;
+  /* Legacy aliases still referenced by unused landing files */
+  --color-lp-wine: #BC4A32;
+  --color-lp-wine-hover: #A53F29;
+  --color-lp-copper: #BC4A32;
   --color-lp-copper-soft: #F9EAE6;
   --color-lp-lagoon: #202124;
-  --color-lp-sand: #F4F4F4;
-  --color-lp-emerald: #287a57;
+  --color-lp-sand: #F0F0F0;
+  --color-lp-emerald: #1F7A55;
 
   /* Authenticated App Design System — "Warm Editorial Workspace" */
   --color-ui-canvas: #F5F6F8;
@@ -99,25 +109,31 @@
   --radius-input: 8px;
 }
 
-/* ── Dark mode token overrides ── */
+/* ── Dark mode token overrides (backgrounds restricted to the approved palette) ── */
 :root[data-theme="dark"] {
-  --color-lp-bg:             #18191b;
-  --color-lp-surface:        #232527;
-  --color-lp-surface-subtle: #2b2e31;
-  --color-lp-border:         #2f3236;
-  --color-lp-ink:            #F0EDE8;
-  --color-lp-body:           #9A9690;
-  --color-lp-muted:          #585b63;
-  --color-lp-lagoon:         #111213;
-  --color-lp-sand:           #18191b;
-  --color-lp-accent-soft:    #3a1810;
-  --color-lp-accent-hover:   #d45f44;
+  --color-lp-bg:             #181818;
+  --color-lp-surface:        #1F1F1F;
+  --color-lp-surface-subtle: #272727;
+  --color-lp-border:         #313131;
+  --color-lp-ink:            #F5F5F5;
+  --color-lp-body:           #B8B8B8;
+  --color-lp-muted:          #8F8F8F;
+  --color-lp-accent-ink:     #F0836B;
+  --color-lp-accent-soft:    #272727;
+  --color-lp-success:        #5FD39A;
+  --color-lp-success-soft:   #313131;
+  --color-lp-warning:        #F0B95A;
+  --color-lp-warning-soft:   #313131;
+  --color-lp-inverse:        #000000;
+  --color-lp-inverse-body:   #B8B8B8;
+  --color-lp-lagoon:         #000000;
+  --color-lp-sand:           #181818;
 }
 
 /* ── Dark mode body ── */
 [data-theme="dark"] body {
-  background: #18191b;
-  color: #F0EDE8;
+  background: #181818;
+  color: #F5F5F5;
 }
 
 /* ── Dark mode semantic status colors (emerald / amber / red) ── */
@@ -138,16 +154,6 @@
 .theme-transitioning *:not([data-no-transition]) {
   transition: background-color 0.28s ease, border-color 0.22s ease, color 0.18s ease,
               box-shadow 0.28s ease !important;
-}
-
-/* ── Nav scrolled background (adapts to theme) ── */
-.nav-scrolled-bg {
-  background-color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px) saturate(180%);
-}
-[data-theme="dark"] .nav-scrolled-bg {
-  background-color: rgba(24, 25, 27, 0.94);
-  backdrop-filter: blur(20px) saturate(180%);
 }
 
 html {
@@ -172,11 +178,66 @@ body {
 }
 
 
+/* ── Landing text styles (landing-page-design B1). Every size sits on Tailwind's type scale.
+   Headings step down one scale step on small screens so they fit a 390px viewport. ── */
+@utility heading-1 { font-size: 2.25rem; line-height: 2.5rem; font-weight: 600; text-wrap: balance;
+  @media (min-width: 40rem) { font-size: 3rem; line-height: 1; }
+  @media (min-width: 64rem) { font-size: 3.75rem; line-height: 1; } }
+@utility heading-2 { font-size: 2.25rem; line-height: 2.5rem; font-weight: 600; text-wrap: balance;
+  @media (min-width: 40rem) { font-size: 3rem; line-height: 1; } }
+@utility heading-3 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 600; text-wrap: balance;
+  @media (min-width: 40rem) { font-size: 2.25rem; line-height: 2.5rem; } }
+@utility heading-4 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 600; text-wrap: balance; }
+@utility heading-5 { font-size: 1.5rem; line-height: 2rem; font-weight: 600; text-wrap: balance; }
+@utility heading-6 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; text-wrap: balance; }
+
+@utility title-1 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 500; text-wrap: pretty; }
+@utility title-2 { font-size: 1.125rem; line-height: 1.75rem; font-weight: 500; text-wrap: pretty; }
+@utility title-3 { font-size: 1rem; line-height: 1.5rem; font-weight: 500; text-wrap: pretty; }
+@utility title-4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; text-wrap: pretty; }
+@utility title-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 500; text-wrap: pretty; }
+
+@utility body-1 { font-size: 1rem; line-height: 1.5rem; font-weight: 600; text-wrap: pretty; }
+@utility body-2 { font-size: 1rem; line-height: 1.5rem; font-weight: 500; text-wrap: pretty; }
+@utility body-3 { font-size: 1rem; line-height: 1.5rem; font-weight: 400; text-wrap: pretty; }
+@utility body-4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; text-wrap: pretty; }
+@utility body-5 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; text-wrap: pretty; }
+@utility body-6 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 400; text-wrap: pretty; }
+
+@utility button-lg  { font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; }
+@utility button-md  { font-size: 1rem; line-height: 1.5rem; font-weight: 600; }
+@utility button-sm  { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+@utility button-xsm { font-size: 0.75rem; line-height: 1rem; font-weight: 600; }
+
+@utility caption-1 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; text-wrap: pretty; }
+@utility caption-2 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 400; text-wrap: pretty; }
+@utility caption-3 { font-size: 0.75rem; line-height: 1rem; font-weight: 600; text-wrap: pretty; }
+@utility caption-4 { font-size: 0.75rem; line-height: 1rem; font-weight: 500; text-wrap: pretty; }
+@utility caption-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 400; text-wrap: pretty; }
+
+/* ── Hero heading gradient: text only, never a background (B5) ── */
+.hero-gradient-text {
+  --hero-from: #000000;
+  --hero-to: #666666;
+  background-image: linear-gradient(to right, var(--hero-from), var(--hero-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+:root[data-theme="dark"] .hero-gradient-text {
+  --hero-from: #FFFFFF;
+  --hero-to: #9B9B9B;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  [data-word] {
+    opacity: 1 !important;
   }
 }
