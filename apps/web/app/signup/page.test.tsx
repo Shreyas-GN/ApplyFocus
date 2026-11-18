@@ -60,7 +60,7 @@ describe("SignupPage", () => {
   });
 
   it("shows check-your-email state without navigating when email confirmation is required", async () => {
-    registerMock.mockResolvedValueOnce({ requiresEmailConfirmation: true });
+    registerMock.mockResolvedValueOnce({ requiresEmailConfirmation: true, emailSent: true });
     const user = userEvent.setup();
     render(<SignupPage />);
 

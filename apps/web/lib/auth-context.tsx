@@ -14,6 +14,8 @@ import { api, ApiError, setCsrfToken } from "./api-client";
 
 export interface RegisterResult {
   requiresEmailConfirmation: boolean;
+  /** False when the account was created but the email could not be sent. */
+  emailSent: boolean;
 }
 
 interface AuthContextValue {
@@ -81,9 +83,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(
     async (email: string, password: string): Promise<RegisterResult> => {
-      await api.post("/auth/signup", { email, password });
+      const res = await api.post<{ emailSent?: boolean }>("/auth/signup", {
+        email,
+        password,
+      });
       // Accounts are activated through the emailed link, so no session yet.
-      return { requiresEmailConfirmation: true };
+      return {
+        requiresEmailConfirmation: true,
+        emailSent: res?.emailSent !== false,
+      };
     },
     []
   );

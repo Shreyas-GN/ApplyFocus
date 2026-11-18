@@ -42,6 +42,11 @@ export default function SignupPage() {
     try {
       const res = await register(result.data.email, result.data.password);
       if (res && res.requiresEmailConfirmation) {
+        if (!res.emailSent) {
+          setFormError(
+            "Your account was created, but we couldn't send the confirmation email. Press \"Resend\" below to try again."
+          );
+        }
         setPendingConfirmation(true);
         return;
       }
