@@ -57,6 +57,18 @@ function toApiError(error: AuthErrorLike, fallbackStatus: number): ApiError {
   );
 }
 
+// Turns anything thrown by the auth client (network failure, non-JSON reply,
+// refresh error) into an ApiError carrying a readable message.
+function toThrownApiError(err: unknown): ApiError {
+  if (err instanceof ApiError) return err;
+  console.error("[auth] request failed:", err);
+  const message =
+    err instanceof Error && err.message
+      ? err.message
+      : "Could not reach the sign-in service.";
+  return new ApiError(500, message);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, isPending, refetch } = authClient.useSession();
 
@@ -71,43 +83,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const { error } = await authClient.signIn.email({ email, password });
-      if (error) {
-        throw toApiError(error, 401);
+      try {
+        const { error } = await authClient.signIn.email({ email, password });
+        if (error) {
+          throw toApiError(error, 401);
+        }
+        await refetch();
+      } catch (err) {
+        throw toThrownApiError(err);
       }
-      await refetch();
     },
     [refetch]
   );
 
   const register = useCallback(
     async (email: string, password: string): Promise<RegisterResult> => {
-      const localPart = email.split("@")[0]?.trim();
-      const { data, error } = await authClient.signUp.email({
-        email,
-        password,
-        name: localPart || email,
-        callbackURL: `${window.location.origin}/verify-email`,
-      });
+      try {
+        const localPart = email.split("@")[0]?.trim();
+        const { data, error } = await authClient.signUp.email({
+          email,
+          password,
+          name: localPart || email,
+          callbackURL: `${window.location.origin}/verify-email`,
+        });
 
-      if (error) {
-        if (error.code?.startsWith("USER_ALREADY_EXISTS")) {
-          throw new ApiError(
-            409,
-            "An account with this email already exists. Try logging in."
-          );
+        if (error) {
+          if (error.code?.startsWith("USER_ALREADY_EXISTS")) {
+            throw new ApiError(
+              409,
+              "An account with this email already exists. Try logging in."
+            );
+          }
+          throw toApiError(error, 400);
         }
-        throw toApiError(error, 400);
-      }
 
-      // When email verification is required Neon Auth creates the user but
-      // does not start a session (no token) until the link is opened.
-      if (data?.token) {
-        await refetch();
-        return { requiresEmailConfirmation: false };
-      }
+        // When email verification is required Neon Auth creates the user but
+        // does not start a session (no token) until the link is opened.
+        if (data?.token) {
+          await refetch();
+          return { requiresEmailConfirmation: false };
+        }
 
-      return { requiresEmailConfirmation: true };
+        return { requiresEmailConfirmation: true };
+      } catch (err) {
+        throw toThrownApiError(err);
+      }
     },
     [refetch]
   );

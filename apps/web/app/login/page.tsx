@@ -72,7 +72,7 @@ export default function LoginPage() {
           /invalid login credentials/i.test(error.detail)
         ) {
           setFormError("Incorrect email or password.");
-        } else if (/email not confirmed/i.test(error.detail)) {
+        } else if (/email not (confirmed|verified)/i.test(error.detail)) {
           setFormError(
             "Please confirm your email address before logging in. Check your inbox for the verification link."
           );
