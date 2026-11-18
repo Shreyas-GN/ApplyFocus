@@ -49,6 +49,34 @@ export function dbErrorCode(error: unknown): string | undefined {
   return undefined;
 }
 
+/** A short, non-sensitive code so a failure can be identified from the UI. */
+export function classifyError(error: unknown): string {
+  const pg = dbErrorCode(error);
+  const message = String((error as { message?: unknown })?.message ?? '');
+  const causeMessage = String(
+    ((error as { cause?: { message?: unknown } })?.cause)?.message ?? ''
+  );
+  const text = `${message} ${causeMessage}`;
+  if (/AUTH_SECRET/.test(text)) return 'CONFIG_AUTH_SECRET';
+  if (pg === '42P01' || /relation ".*" does not exist/.test(text)) return 'DB_SCHEMA_MISSING';
+  if (pg === '42501') return 'DB_PERMISSION';
+  if (pg === '28P01' || pg === '28000') return 'DB_AUTH_FAILED';
+  if (
+    pg === '3D000' ||
+    pg === 'ECONNREFUSED' ||
+    pg === 'ENOTFOUND' ||
+    pg === 'ETIMEDOUT' ||
+    pg === 'CONNECT_TIMEOUT' ||
+    pg === 'CONNECTION_CLOSED' ||
+    pg === 'CONNECTION_ENDED' ||
+    /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|CONNECT_TIMEOUT|password authentication|\bSSL\b/.test(text)
+  ) {
+    return 'DB_CONNECTION';
+  }
+  if (/argon2|ERR_DLOPEN_FAILED|MODULE_NOT_FOUND/i.test(text)) return 'PASSWORD_HASHER';
+  return 'UNKNOWN';
+}
+
 /** Maps thrown errors to the `{ detail }` shape the api-client expects. */
 export function errorResponse(error: unknown): NextResponse {
   if (error instanceof HttpError) {
@@ -66,5 +94,9 @@ export function errorResponse(error: unknown): NextResponse {
   } else {
     console.error('[auth] Unhandled route error:', error);
   }
-  return NextResponse.json({ detail: 'Something went wrong.' }, { status: 500 });
+  const code = classifyError(error);
+  return NextResponse.json(
+    { detail: `Something went wrong. (Error code: ${code})`, code },
+    { status: 500 }
+  );
 }
