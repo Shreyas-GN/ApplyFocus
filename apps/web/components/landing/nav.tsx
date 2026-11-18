@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Wordmark } from "@/components/brand/logo";
+import { LogoTile } from "@/components/brand/logo";
 import { ArrowRight, Moon, Sun } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/lib/theme-context";
@@ -61,7 +61,7 @@ export function LandingNav() {
             aria-current="page"
             className={cn("flex items-center gap-2 rounded-lg pr-2", FOCUS_RING)}
           >
-            <Wordmark className="h-6 w-auto text-lp-ink" />
+            <LogoTile className="size-8" />
           </Link>
 
           <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">

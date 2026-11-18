@@ -241,3 +241,14 @@ body {
     opacity: 1 !important;
   }
 }
+
+/* ApplyFocus logo tile: dark tile on light UI, light tile on dark UI. */
+:root {
+  --logo-tile-bg: #202124;
+  --logo-tile-fg: #F4F1EC;
+}
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  --logo-tile-bg: #F4F1EC;
+  --logo-tile-fg: #202124;
+}
