@@ -17,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { Wordmark, LogoMark } from "@/components/brand/logo";
+import { LogoMark, LogoTile } from "@/components/brand/logo";
 
 interface NavItem {
   href: string;
@@ -105,7 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={onNavigate}
             className="flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-teal"
           >
-            <Wordmark className="h-6 w-auto text-ui-ink" />
+            <LogoTile className="size-8" />
           </Link>
           {onNavigate && (
             <button
