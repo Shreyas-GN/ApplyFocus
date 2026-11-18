@@ -2,184 +2,191 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ArrowRight, Moon, Sun } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowRight, Menu, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import { EASE_CLASS, FOCUS_RING, LandingButton, T_HOVER, T_MOVE } from "./primitives";
+
+const LINKS = [
+  { label: "Benefits", href: "#benefits" },
+  { label: "How it works", href: "#how-it-works" },
+  { label: "FAQ", href: "#faq" },
+];
+
+const emptySubscribe = () => () => {};
 
 export function LandingNav() {
-  const [scrolled, setScrolled] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const menuButton = React.useRef<HTMLButtonElement>(null);
   const mounted = React.useSyncExternalStore(
-    () => () => {},
+    emptySubscribe,
     () => true,
     () => false,
   );
   const { theme, toggle } = useTheme();
+  const isDark = mounted && theme === "dark";
 
+  // Lock page scroll and close on Escape while the mobile panel is open.
   React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
-  const linkClass = cn(
-    "rounded-full px-3.5 py-2 font-ui text-sm font-medium transition-colors",
-    scrolled ? "text-lp-body hover:text-lp-ink" : "text-white/75 hover:text-white"
-  );
+  const close = () => setOpen(false);
+  // Link entrance: 60ms steps, delays capped at 400ms.
+  const stagger = (i: number) => ({ transitionDelay: open ? `${Math.min(i * 60, 400)}ms` : "0ms" });
+  const itemMotion = cn(T_MOVE, open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0");
+
+  const line = "absolute left-0 h-0.5 w-5 rounded-full bg-current";
 
   return (
-    <header className="fixed top-3 left-0 right-0 z-50 px-4 sm:px-6">
-      <div className="mx-auto flex max-w-7xl items-center justify-center">
-        <div
-          className={cn(
-            "flex h-14 w-full max-w-5xl items-center justify-between gap-2 rounded-full border px-4 backdrop-blur-2xl backdrop-saturate-200 transition-all duration-300 md:px-6",
-            scrolled
-              ? "nav-scrolled-bg border-lp-border/50 shadow-[0_2px_16px_rgba(32,33,36,0.1)]"
-              : "border-white/15 bg-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
-          )}
-        >
-          {/* Logo */}
-          <Link href="/" className="group flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lp-accent">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lp-accent font-ui text-[11px] font-bold tracking-tight text-white transition-transform duration-150 group-hover:scale-105">
+    <>
+      <header className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+        <div className="flex w-fit max-w-full items-center gap-2 rounded-2xl border border-lp-border bg-lp-bg/70 p-2 shadow-sm backdrop-blur-xl">
+          <Link
+            href="/"
+            aria-current="page"
+            className={cn("flex items-center gap-2 rounded-lg pr-2", FOCUS_RING)}
+          >
+            <span className="caption-3 flex size-8 items-center justify-center rounded-lg bg-lp-accent text-white">
               AF
             </span>
-            <span className={cn("font-ui text-[16px] font-bold tracking-[-0.02em] transition-colors", scrolled ? "text-lp-ink" : "text-white")}>
-              ApplyFocus
-            </span>
+            <span className="body-1 text-lp-ink">ApplyFocus</span>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
-            <a href="#how-it-works" className={linkClass}>Product</a>
-            <a href="#how-it-works" className={linkClass}>How it works</a>
-            <a href="#faq" className={linkClass}>FAQ</a>
+          <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
+            {LINKS.map((l) => (
+              <a
+                key={l.label}
+                href={l.href}
+                className={cn(
+                  "title-4 rounded-lg px-3 py-2 text-lp-body hover:bg-lp-surface-subtle hover:text-lp-ink",
+                  T_HOVER,
+                  FOCUS_RING,
+                )}
+              >
+                {l.label}
+              </a>
+            ))}
           </nav>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1.5">
-            {/* Theme toggle — animated pill */}
-            <button
+          <button
+            suppressHydrationWarning
+            type="button"
+            onClick={toggle}
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            className={cn(
+              "relative inline-flex h-6 w-12 flex-shrink-0 items-center rounded-full border border-lp-border bg-lp-surface-subtle active:scale-[0.98]",
+              T_HOVER,
+              FOCUS_RING,
+            )}
+          >
+            <span
               suppressHydrationWarning
-              type="button"
-              onClick={toggle}
-              aria-label={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              className="group relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lp-accent"
-              style={{
-                background: scrolled
-                  ? (mounted && theme === "dark" ? "rgba(198,83,59,0.18)" : "rgba(0,0,0,0.08)")
-                  : "rgba(255,255,255,0.14)",
-                border: scrolled
-                  ? (mounted && theme === "dark" ? "1px solid rgba(198,83,59,0.35)" : "1px solid rgba(0,0,0,0.12)")
-                  : "1px solid rgba(255,255,255,0.2)",
-              }}
-            >
-              <span
-                suppressHydrationWarning
-                className="pointer-events-none inline-flex h-4 w-4 items-center justify-center rounded-full shadow-sm transition-transform duration-300"
-                style={{
-                  transform: mounted && theme === "dark" ? "translateX(24px)" : "translateX(2px)",
-                  background: scrolled
-                    ? (mounted && theme === "dark" ? "#C6533B" : "#202124")
-                    : "#ffffff",
-                }}
-              >
-                {mounted && theme === "dark" ? (
-                  <Sun className="h-2.5 w-2.5 text-white" />
-                ) : (
-                  <Moon className={cn("h-2.5 w-2.5", scrolled ? "text-white" : "text-lp-lagoon")} />
-                )}
-              </span>
-            </button>
-
-            <Link
-              href="/login"
               className={cn(
-                "hidden rounded-full px-3.5 py-2 font-ui text-sm font-medium transition-colors sm:inline-block",
-                scrolled ? "text-lp-body hover:text-lp-ink" : "text-white/75 hover:text-white"
+                "pointer-events-none flex size-4 items-center justify-center rounded-full bg-lp-ink text-lp-bg",
+                T_MOVE,
+              )}
+              style={{ transform: isDark ? "translateX(28px)" : "translateX(4px)" }}
+            >
+              {isDark ? (
+                <Sun className="size-3" weight="bold" aria-hidden="true" />
+              ) : (
+                <Moon className="size-3" weight="bold" aria-hidden="true" />
+              )}
+            </span>
+          </button>
+
+          <LandingButton href="/login" variant="secondary" size="sm" className="hidden md:inline-flex">
+            Sign in
+          </LandingButton>
+          <LandingButton href="/signup" size="sm" className="hidden sm:inline-flex">
+            Start free
+            <ArrowRight className="size-4" weight="bold" aria-hidden="true" />
+          </LandingButton>
+
+          <button
+            ref={menuButton}
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+            className={cn(
+              "flex size-10 items-center justify-center rounded-lg text-lp-ink hover:bg-lp-surface-subtle active:scale-[0.98] md:hidden",
+              T_HOVER,
+              FOCUS_RING,
+            )}
+          >
+            <span className="relative block h-4 w-5" aria-hidden="true">
+              <span
+                className={cn(line, "top-0", T_MOVE, open && "translate-y-[7px] rotate-45")}
+              />
+              <span className={cn(line, "top-[7px]", T_MOVE, open && "opacity-0")} />
+              <span
+                className={cn(line, "top-[14px]", T_MOVE, open && "-translate-y-[7px] -rotate-45")}
+              />
+            </span>
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile menu: full height panel */}
+      <div
+        id="mobile-menu"
+        inert={!open}
+        aria-hidden={!open}
+        className={cn(
+          "fixed inset-0 z-40 flex flex-col bg-lp-bg/95 px-6 pb-8 pt-24 backdrop-blur-2xl md:hidden",
+          "transition-opacity duration-500",
+          EASE_CLASS,
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+      >
+        <nav aria-label="Mobile navigation" className="flex flex-col gap-2">
+          {LINKS.map((l, i) => (
+            <a
+              key={l.label}
+              href={l.href}
+              onClick={close}
+              style={stagger(i)}
+              className={cn(
+                "heading-5 rounded-lg px-3 py-3 text-lp-ink hover:bg-lp-surface-subtle",
+                itemMotion,
+                FOCUS_RING,
               )}
             >
+              {l.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="mt-auto flex flex-col gap-3">
+          <div style={stagger(LINKS.length)} className={itemMotion}>
+            <LandingButton href="/login" variant="secondary" onClick={close} className="w-full">
               Sign in
-            </Link>
-
-            <Link
-              href="/signup"
-              className="group inline-flex items-center justify-center gap-1.5 rounded-full bg-lp-accent px-3.5 py-2 font-ui text-[13px] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-lp-accent-hover"
-            >
-              <span className="sm:hidden">Start</span>
-              <span className="hidden sm:inline">Get started — it&apos;s free</span>
-              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden="true" />
-            </Link>
-
-            {/* Mobile menu */}
-            <div className="md:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Open navigation menu"
-                    className={cn("h-8 w-8 rounded-full", scrolled ? "text-lp-ink" : "text-white")}
-                  >
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="flex w-[280px] flex-col gap-6 bg-lp-surface p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lp-accent font-ui text-[11px] font-bold text-white">AF</span>
-                      <span className="font-ui text-[16px] font-bold tracking-tight text-lp-ink">ApplyFocus</span>
-                    </div>
-                    <button
-                      suppressHydrationWarning
-                      type="button"
-                      onClick={toggle}
-                      aria-label={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                      className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border border-lp-border/70 bg-lp-surface-subtle transition-all duration-300"
-                    >
-                      <span
-                        suppressHydrationWarning
-                        className="pointer-events-none inline-flex h-4 w-4 items-center justify-center rounded-full bg-lp-ink shadow-sm transition-transform duration-300"
-                        style={{ transform: mounted && theme === "dark" ? "translateX(24px)" : "translateX(2px)" }}
-                      >
-                        {mounted && theme === "dark"
-                          ? <Sun className="h-2.5 w-2.5 text-lp-bg" />
-                          : <Moon className="h-2.5 w-2.5 text-lp-bg" />}
-                      </span>
-                    </button>
-                  </div>
-
-                  <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
-                    {[
-                      { label: "Product", href: "#how-it-works" },
-                      { label: "How it works", href: "#how-it-works" },
-                      { label: "FAQ", href: "#faq" },
-                    ].map((item) => (
-                      <a
-                        key={item.label}
-                        href={item.href}
-                        className="rounded-lg px-3 py-2.5 font-ui text-[15px] font-medium text-lp-body transition-colors hover:bg-lp-bg hover:text-lp-ink"
-                      >
-                        {item.label}
-                      </a>
-                    ))}
-                  </nav>
-
-                  <div className="mt-auto flex flex-col gap-2.5 border-t border-lp-border pt-6">
-                    <Link href="/login" className="w-full rounded-full border border-lp-border px-4 py-2.5 text-center font-ui text-sm font-medium text-lp-ink transition-colors hover:bg-lp-bg">
-                      Sign in
-                    </Link>
-                    <Link href="/signup" className="w-full rounded-full bg-lp-accent px-4 py-2.5 text-center font-ui text-sm font-semibold text-white transition-colors hover:bg-lp-accent-hover">
-                      Get started — it&apos;s free
-                    </Link>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+            </LandingButton>
+          </div>
+          <div style={stagger(LINKS.length + 1)} className={itemMotion}>
+            <LandingButton href="/signup" onClick={close} className="w-full">
+              Create your free profile
+            </LandingButton>
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
 

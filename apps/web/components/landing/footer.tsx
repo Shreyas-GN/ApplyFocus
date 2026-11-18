@@ -1,28 +1,29 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { FOCUS_RING, T_HOVER } from "./tokens";
 
 const COLS = [
   {
     title: "Product",
     links: [
-      { href: "#how-it-works", label: "Features" },
+      { href: "#benefits", label: "Benefits" },
       { href: "#how-it-works", label: "How it works" },
-      { href: "#fit-analysis",  label: "Fit Analysis" },
-      { href: "#faq",           label: "FAQ" },
+      { href: "#faq", label: "FAQ" },
     ],
   },
   {
     title: "Company",
     links: [
-      { href: "#philosophy",              label: "About" },
+      { href: "#control", label: "Candidate control" },
       { href: "mailto:hello@applyfocus.app", label: "Contact" },
-      { href: "/privacy",                 label: "Privacy" },
-      { href: "/terms",                   label: "Terms" },
+      { href: "/privacy", label: "Privacy policy" },
+      { href: "/terms", label: "Terms of service" },
     ],
   },
   {
     title: "Account",
     links: [
-      { href: "/login",  label: "Sign in" },
+      { href: "/login", label: "Sign in" },
       { href: "/signup", label: "Create account" },
     ],
   },
@@ -31,47 +32,46 @@ const COLS = [
 export function LandingFooter() {
   return (
     <footer className="border-t border-lp-border bg-lp-surface">
-      <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-8 sm:py-16">
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-5">
+      <div className="mx-auto max-w-[1240px] px-4 py-16 sm:px-8">
+        <div className="grid grid-cols-2 gap-12 sm:grid-cols-5">
           <div className="col-span-2">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-lp-accent font-ui text-xs font-bold text-white">
+            <Link href="/" className={cn("inline-flex items-center gap-2 rounded-lg", FOCUS_RING)}>
+              <span className="caption-3 flex size-8 items-center justify-center rounded-lg bg-lp-accent text-white">
                 AF
               </span>
-              <span className="font-ui text-[17px] font-bold tracking-[-0.02em] text-lp-ink">ApplyFocus</span>
+              <span className="body-1 text-lp-ink">ApplyFocus</span>
             </Link>
-            <p className="mt-3 max-w-[220px] font-ui text-[13px] leading-relaxed text-lp-muted">
+            <p className="body-6 mt-3 max-w-[16rem] text-lp-muted">
               A more considered way to navigate your career.
-            </p>
-            <p className="mt-5 font-ui text-[12px] italic text-lp-muted/70">
-              Know your value. Apply with confidence.
             </p>
           </div>
 
           {COLS.map((col) => (
-            <div key={col.title}>
-              <p className="font-ui text-[11px] font-semibold uppercase tracking-[0.1em] text-lp-ink">
-                {col.title}
-              </p>
-              <ul className="mt-4 space-y-2.5">
+            <nav key={col.title} aria-label={col.title}>
+              <p className="caption-3 text-lp-ink">{col.title}</p>
+              <ul className="mt-4 space-y-3">
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <Link
+                    <a
                       href={l.href}
-                      className="font-ui text-[13px] text-lp-muted transition-colors hover:text-lp-ink"
+                      className={cn(
+                        "body-6 rounded-sm text-lp-muted hover:text-lp-ink",
+                        T_HOVER,
+                        FOCUS_RING,
+                      )}
                     >
                       {l.label}
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col justify-between gap-2 border-t border-lp-border pt-6 font-ui text-[12px] text-lp-muted sm:flex-row sm:items-center">
-          <p>© 2026 ApplyFocus</p>
-          <p>Better career decisions, not more applications.</p>
+        <div className="mt-12 flex flex-col justify-between gap-2 border-t border-lp-border pt-6 sm:flex-row sm:items-center">
+          <p className="caption-2 text-lp-muted">© 2026 ApplyFocus</p>
+          <p className="caption-2 text-lp-muted">Better career decisions, not more applications.</p>
         </div>
       </div>
     </footer>
