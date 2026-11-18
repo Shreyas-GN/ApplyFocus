@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Wordmark } from "@/components/brand/logo";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { loginSchema } from "@applypilot/validators";
@@ -90,10 +91,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
-            AP
-          </span>
-          <span className="text-lg font-semibold tracking-tight text-ui-ink">ApplyPilot</span>
+          <Wordmark className="h-7 w-auto text-ui-ink" />
         </Link>
         <Card>
           <h1 className="mb-1 text-xl font-semibold text-ui-ink">Welcome back</h1>

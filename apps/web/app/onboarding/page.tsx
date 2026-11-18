@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Wordmark } from "@/components/brand/logo";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { updateProfileSchema, hasAllowedResumeExtension, RESUME_MAX_FILE_SIZE_BYTES } from "@applypilot/validators";
@@ -178,10 +179,7 @@ function OnboardingWizard() {
     <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
-            AP
-          </span>
-          <span className="text-lg font-semibold tracking-tight text-ui-ink">ApplyPilot</span>
+          <Wordmark className="h-7 w-auto text-ui-ink" />
         </Link>
 
         <Card>

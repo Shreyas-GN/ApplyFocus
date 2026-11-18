@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Wordmark } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 import { FOCUS_RING, T_HOVER } from "./tokens";
 
@@ -36,10 +37,7 @@ export function LandingFooter() {
         <div className="grid grid-cols-2 gap-12 sm:grid-cols-5">
           <div className="col-span-2">
             <Link href="/" className={cn("inline-flex items-center gap-2 rounded-lg", FOCUS_RING)}>
-              <span className="caption-3 flex size-8 items-center justify-center rounded-lg bg-lp-accent text-white">
-                AF
-              </span>
-              <span className="body-1 text-lp-ink">ApplyFocus</span>
+              <Wordmark className="h-6 w-auto text-lp-ink" />
             </Link>
             <p className="body-6 mt-3 max-w-[16rem] text-lp-muted">
               A more considered way to navigate your career.
