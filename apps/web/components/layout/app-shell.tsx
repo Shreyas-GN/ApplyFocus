@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { Wordmark, LogoMark } from "@/components/brand/logo";
 
 interface NavItem {
   href: string;
@@ -104,12 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={onNavigate}
             className="flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-teal"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold tracking-tight text-white">
-              AP
-            </span>
-            <span className="text-[17px] font-semibold tracking-tight text-ui-ink">
-              ApplyPilot
-            </span>
+            <Wordmark className="h-6 w-auto text-ui-ink" />
           </Link>
           {onNavigate && (
             <button
@@ -201,7 +197,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium text-ui-muted">ApplyPilot</span>
+              <LogoMark small className="h-5 w-5 text-ui-ink" />
               <span className="text-ui-border" aria-hidden="true">/</span>
               <span className="font-medium text-ui-ink">{routeLabel}</span>
             </div>

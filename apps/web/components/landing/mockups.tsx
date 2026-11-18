@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { CheckCircle, Circle, MinusCircle } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
+import { Wordmark } from "@/components/brand/logo";
 
 /* Illustrative product screens. The names and numbers are fictional sample data. */
 
@@ -113,10 +114,7 @@ export function HeroWindow() {
         {/* Sidebar, desktop only */}
         <div className="hidden w-48 flex-shrink-0 flex-col border-r border-lp-border bg-lp-surface lg:flex">
           <div className="flex items-center gap-2 border-b border-lp-border px-4 py-3">
-            <span className="caption-3 flex size-6 items-center justify-center rounded-md bg-lp-accent text-white">
-              AF
-            </span>
-            <span className="body-4 text-lp-ink">ApplyFocus</span>
+            <Wordmark className="h-4 w-auto text-lp-ink" />
           </div>
           <div className="flex-1 p-2">
             {SIDEBAR.map((label) => (

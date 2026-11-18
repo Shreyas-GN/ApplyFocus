@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Wordmark } from "@/components/brand/logo";
 
 export default function NotFound() {
   return (
@@ -7,10 +8,7 @@ export default function NotFound() {
         href="/dashboard"
         className="flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-teal"
       >
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ui-copper text-xs font-semibold text-white">
-          AP
-        </span>
-        <span className="text-[17px] font-semibold tracking-tight text-ui-ink">ApplyPilot</span>
+        <Wordmark className="h-7 w-auto text-ui-ink" />
       </Link>
 
       <div>

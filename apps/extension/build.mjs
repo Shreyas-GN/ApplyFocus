@@ -28,5 +28,6 @@ if (watch) {
 }
 
 cpSync("manifest.json", "dist/manifest.json");
+cpSync("icons", "dist/icons", { recursive: true });
 cpSync("src/popup/popup.html", "dist/popup/popup.html");
 console.log("[extension] build complete -> dist/");
