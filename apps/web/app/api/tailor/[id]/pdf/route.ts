@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { and, eq } from 'drizzle-orm';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { db, tailoredDocuments } from '@/lib/db';
 import type { CoverLetterContent, TailoredResumeContent } from '@/lib/types';
 

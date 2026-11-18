@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { screeningQuestionSchema } from '@applypilot/validators';
-import { getUser } from '@/lib/supabase/auth';
+import { getUser } from '@/lib/auth/session';
 import { answerScreeningQuestion } from '@/lib/server/tailoring';
 
 export const maxDuration = 60;

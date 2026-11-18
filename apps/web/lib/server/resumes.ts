@@ -10,7 +10,7 @@ import {
   resumeParsedDataSchema,
   type ResumeParsedData,
 } from '@applypilot/validators';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createStorageClient } from '@/lib/storage/client';
 import { sniffFileType, mimeTypeMatchesSniffedType } from './file-signature';
 import { recordAudit } from './audit';
 import { applyParsedResumeData } from './profile';
@@ -72,7 +72,7 @@ export async function uploadResume(
   const ext = file.filename.toLowerCase().endsWith('.docx') ? 'docx' : 'pdf';
   const storageKey = `${userId}/${resumeId}.${ext}`;
 
-  const supabase = createAdminClient();
+  const supabase = createStorageClient();
   const { error: uploadError } = await supabase.storage
     .from('resumes')
     .upload(storageKey, file.buffer, {
@@ -130,7 +130,7 @@ export async function deleteResume(
 
   await db.delete(resumes).where(eq(resumes.id, resumeId));
 
-  const supabase = createAdminClient();
+  const supabase = createStorageClient();
   await supabase.storage.from('resumes').remove([resume.id]);
 
   if (resume.isPrimary) {
@@ -186,7 +186,7 @@ export async function getDownloadUrl(
     throw new Error('Resume not found.');
   }
 
-  const supabase = createAdminClient();
+  const supabase = createStorageClient();
   const { data, error } = await supabase.storage
     .from('resumes')
     .createSignedUrl(resume.storageKey, DOWNLOAD_URL_TTL_SECONDS);

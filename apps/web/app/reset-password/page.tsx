@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { passwordSchema } from "@applypilot/validators";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -12,6 +12,9 @@ import { Card } from "@/components/ui/card";
 
 function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const linkError = searchParams.get("error");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -19,6 +22,10 @@ function ResetPasswordForm() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!token || linkError) {
+      setError("This reset link is invalid or has expired. Request a new one.");
+      return;
+    }
     const result = passwordSchema.safeParse(password);
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? "Invalid password.");
@@ -27,12 +34,12 @@ function ResetPasswordForm() {
     setError(null);
     setSubmitting(true);
     try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: result.data,
+      const { error: resetError } = await authClient.resetPassword({
+        newPassword: result.data,
+        token,
       });
-      if (updateError) {
-        throw updateError;
+      if (resetError) {
+        throw new Error(resetError.message);
       }
       setDone(true);
     } catch (err: unknown) {
@@ -59,6 +66,15 @@ function ResetPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {(!token || linkError) && !error && (
+        <Alert tone="error">
+          This reset link is invalid or has expired.{" "}
+          <Link href="/forgot-password" className="font-medium underline">
+            Request a new one
+          </Link>
+          .
+        </Alert>
+      )}
       {error && <Alert tone="error">{error}</Alert>}
       <TextField
         label="New password"

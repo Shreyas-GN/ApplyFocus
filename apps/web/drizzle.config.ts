@@ -16,15 +16,17 @@ if (fs.existsSync(envLocalPath)) {
   }
 }
 
+const databaseUrl =
+  process.env.DATABASE_MIGRATION_URL || process.env.DATABASE_URL;
+
+// `drizzle-kit generate` works offline; only commands that connect
+// (migrate/push/studio) need a real URL, so fail there instead of here.
 export default defineConfig({
   schema: './lib/db/schema.ts',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url:
-      process.env.DATABASE_MIGRATION_URL ||
-      process.env.DATABASE_URL ||
-      'postgresql://postgres.nnaxrcknrbnaukyeotvq:Makememad%401122@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres',
+    url: databaseUrl ?? 'postgresql://localhost:5432/postgres',
   },
 });
 

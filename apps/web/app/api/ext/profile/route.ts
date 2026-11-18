@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { eq } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import { profiles } from '@/lib/db/schema';
 import { extCorsHeaders, extOptionsResponse } from '@/lib/server/ext-cors';
 import {
   getExtensionAutofillPayload,
@@ -23,11 +25,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const admin = createAdminClient();
-    const { data } = await admin.auth.admin.getUserById(auth.userId);
+    // The sign-in email is mirrored onto the profile whenever the signed-in
+    // user loads it (the extension itself has no Neon Auth session).
+    const [row] = await db
+      .select({ authEmail: profiles.authEmail })
+      .from(profiles)
+      .where(eq(profiles.id, auth.userId))
+      .limit(1);
     const payload = await getExtensionAutofillPayload(
       auth.userId,
-      data.user?.email ?? null
+      row?.authEmail ?? null
     );
     return NextResponse.json(payload, { headers });
   } catch (error) {

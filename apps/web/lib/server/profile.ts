@@ -53,6 +53,17 @@ export async function getProfile(
   authEmail?: string | null
 ): Promise<ProfileDto> {
   const profile = await loadProfile(userId);
+
+  // Mirror the Neon Auth email onto the profile so token-authenticated
+  // clients (the browser extension) can read it without an auth session.
+  if (authEmail && profile.authEmail !== authEmail) {
+    await db
+      .update(profiles)
+      .set({ authEmail })
+      .where(eq(profiles.id, userId));
+    profile.authEmail = authEmail;
+  }
+
   return toProfileDto(profile, authEmail);
 }
 

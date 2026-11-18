@@ -7,7 +7,7 @@ import {
   extensionSessions,
   resumes,
 } from '@/lib/db/schema';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createStorageClient } from '@/lib/storage/client';
 import type {
   ApplicationDto,
   ApplicationStatus,
@@ -182,7 +182,7 @@ export async function getExtensionAutofillPayload(
   let downloadUrl: string | null = null;
   if (primary?.storageKey) {
     try {
-      const supabase = createAdminClient();
+      const supabase = createStorageClient();
       const { data } = await supabase.storage
         .from('resumes')
         .createSignedUrl(primary.storageKey, 300);

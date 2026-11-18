@@ -1,18 +1,15 @@
 "use client";
 
 import type { AuthUserDto } from "@/lib/types";
-import type { User } from "@supabase/supabase-js";
 import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
 import { ApiError } from "./api-client";
-import { createClient } from "./supabase/client";
+import { authClient } from "./auth/client";
 
 export interface RegisterResult {
   requiresEmailConfirmation: boolean;
@@ -29,128 +26,99 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function toAuthUserDto(user: User): AuthUserDto {
+interface SessionUserLike {
+  id: string;
+  email?: string | null;
+  emailVerified?: boolean | null;
+  createdAt?: Date | string | null;
+}
+
+function toAuthUserDto(user: SessionUserLike): AuthUserDto {
+  const created = user.createdAt ? new Date(user.createdAt) : new Date();
   return {
     id: user.id,
     email: user.email ?? "",
-    emailVerified: Boolean(user.email_confirmed_at),
-    createdAt: user.created_at,
+    emailVerified: Boolean(user.emailVerified),
+    createdAt: created.toISOString(),
   };
 }
 
+interface AuthErrorLike {
+  message?: string;
+  status?: number;
+  code?: string;
+}
+
+function toApiError(error: AuthErrorLike, fallbackStatus: number): ApiError {
+  return new ApiError(
+    error.status || fallbackStatus,
+    error.message || "Something went wrong. Please try again."
+  );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUserDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = useMemo(() => createClient(), []);
+  const { data: session, isPending, refetch } = authClient.useSession();
 
-  useEffect(() => {
-    let cancelled = false;
+  const user = useMemo(
+    () => (session?.user ? toAuthUserDto(session.user) : null),
+    [session]
+  );
 
-    async function initUser() {
-      try {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        if (!cancelled && currentUser) {
-          setUser(toAuthUserDto(currentUser));
-        }
-      } catch {
-        // No valid session
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    void initUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(toAuthUserDto(session.user));
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
+  const refreshUser = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await authClient.signIn.email({ email, password });
       if (error) {
-        throw new ApiError(error.status ?? 401, error.message);
+        throw toApiError(error, 401);
       }
-      if (data.user) {
-        setUser(toAuthUserDto(data.user));
-      }
+      await refetch();
     },
-    [supabase]
+    [refetch]
   );
 
   const register = useCallback(
     async (email: string, password: string): Promise<RegisterResult> => {
-      const { data, error } = await supabase.auth.signUp({
+      const localPart = email.split("@")[0]?.trim();
+      const { data, error } = await authClient.signUp.email({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm?next=/onboarding`,
-        },
+        name: localPart || email,
+        callbackURL: `${window.location.origin}/verify-email`,
       });
+
       if (error) {
-        throw new ApiError(error.status ?? 400, error.message);
+        if (error.code?.startsWith("USER_ALREADY_EXISTS")) {
+          throw new ApiError(
+            409,
+            "An account with this email already exists. Try logging in."
+          );
+        }
+        throw toApiError(error, 400);
       }
 
-      // Supabase returns an empty identities array when email confirmation is on
-      // and an account already exists for the given email.
-      if (
-        data.user &&
-        Array.isArray(data.user.identities) &&
-        data.user.identities.length === 0
-      ) {
-        throw new ApiError(
-          409,
-          "An account with this email already exists. Try logging in."
-        );
-      }
-
-      if (data.session && data.user) {
-        setUser(toAuthUserDto(data.user));
+      // When email verification is required Neon Auth creates the user but
+      // does not start a session (no token) until the link is opened.
+      if (data?.token) {
+        await refetch();
         return { requiresEmailConfirmation: false };
       }
 
       return { requiresEmailConfirmation: true };
     },
-    [supabase]
+    [refetch]
   );
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  }, [supabase]);
-
-  const refreshUser = useCallback(async () => {
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
-    if (currentUser) {
-      setUser(toAuthUserDto(currentUser));
-    } else {
-      setUser(null);
-    }
-  }, [supabase]);
+    await authClient.signOut();
+    await refetch();
+  }, [refetch]);
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, refreshUser }}
+      value={{ user, loading: isPending, login, register, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

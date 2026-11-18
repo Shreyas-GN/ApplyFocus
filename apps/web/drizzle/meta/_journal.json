@@ -64,6 +64,13 @@
       "when": 1794834809947,
       "tag": "0008_useful_rocket_racer",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794991105447,
+      "tag": "0009_neon_auth",
+      "breakpoints": true
     }
   ]
 }

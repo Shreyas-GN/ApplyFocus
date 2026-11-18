@@ -7,7 +7,7 @@ import { useState, type FormEvent } from "react";
 import { registerSchema } from "@applypilot/validators";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -59,15 +59,11 @@ export default function SignupPage() {
     setResending(true);
     setResendMessage(null);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resend({
-        type: "signup",
+      const { error } = await authClient.sendVerificationEmail({
         email: email.trim(),
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm?next=/onboarding`,
-        },
+        callbackURL: `${window.location.origin}/verify-email`,
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       setResendMessage("Confirmation link resent. Check your inbox and spam folder.");
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Could not resend confirmation email.");
