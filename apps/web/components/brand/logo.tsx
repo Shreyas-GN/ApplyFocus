@@ -33,3 +33,25 @@ export function Wordmark(props: Omit<SVGProps<SVGSVGElement>, "children" | "view
     </svg>
   );
 }
+
+/**
+ * App-icon tile: reversed Apex A on an ink rounded square (inverts in dark mode via --logo-tile-* vars in globals.css). Use for navigation bars
+ * and anywhere a compact logo is needed. Uses the small-cut focus square (renders
+ * best at 32px and below).
+ */
+export function LogoTile({
+  small = true,
+  ...props
+}: Omit<SVGProps<SVGSVGElement>, "children" | "viewBox"> & { small?: boolean }) {
+  const sq = small ? { x: 26, y: 34, s: 12 } : { x: 28, y: 38, s: 8 };
+  return (
+    <svg viewBox="0 0 64 64" role="img" aria-label="ApplyFocus" {...props}>
+      <rect width="64" height="64" rx="14" style={{ fill: "var(--logo-tile-bg, #202124)" }} />
+      <g transform="translate(12.16 13.16) scale(.62)">
+        <path style={{ fill: "var(--logo-tile-fg, #F4F1EC)" }} d="M6 58 L26 6 H38 L17 58 Z" />
+        <path style={{ fill: "var(--logo-tile-fg, #F4F1EC)" }} d="M58 58 L38 6 H26 L47 58 Z" />
+        <rect x={sq.x} y={sq.y} width={sq.s} height={sq.s} fill={ACCENT} />
+      </g>
+    </svg>
+  );
+}
