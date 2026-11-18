@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@applypilot/validators"],
+  // Native addon: must be loaded from node_modules at runtime, not bundled.
+  serverExternalPackages: ["@node-rs/argon2"],
   async headers() {
     return [
       {
