@@ -28,13 +28,13 @@ const VARIANT_CLASSES: Record<NonNullable<ButtonProps["variant"]>, string> = {
   lilac:
     "bg-ui-teal-soft text-ui-teal border border-ui-teal/30 hover:bg-ui-teal-soft/80 disabled:opacity-50 focus-visible:outline-ui-teal",
   danger:
-    "bg-red-700 text-white hover:bg-red-800 disabled:bg-red-300 focus-visible:outline-red-600",
+    "bg-ui-error text-white hover:bg-ui-error disabled:bg-ui-error focus-visible:outline-ui-error/30",
   destructive:
-    "bg-red-700 text-white hover:bg-red-800 disabled:bg-red-300 focus-visible:outline-red-600",
+    "bg-ui-error text-white hover:bg-ui-error disabled:bg-ui-error focus-visible:outline-ui-error/30",
   ghost:
     "bg-transparent text-ui-body hover:bg-ui-linen hover:text-ui-ink disabled:text-ui-muted focus-visible:outline-ui-teal",
   outline:
-    "border border-neutral-200 bg-white hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-800 dark:hover:text-neutral-50",
+    "border border-ui-border bg-white hover:bg-ui-border hover:text-ui-ink",
   link:
     "text-ui-teal underline-offset-4 hover:underline",
 };
@@ -68,7 +68,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed",
+          "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed",
           SIZE_CLASSES[size],
           VARIANT_CLASSES[variant],
           className

@@ -27,7 +27,7 @@ async function send(message: Message): Promise<void> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM || 'ApplyPilot <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || 'ApplyFocus <onboarding@resend.dev>',
       to: [message.to],
       subject: message.subject,
       text: message.text,
@@ -57,11 +57,11 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
   const link = `${appUrl()}/verify-email?token=${encodeURIComponent(token)}`;
   await send({
     to,
-    subject: 'Confirm your ApplyPilot email',
-    text: `Confirm your email to activate your ApplyPilot account:\n\n${link}\n\nThis link expires in 24 hours. If you didn't sign up, ignore this email.`,
+    subject: 'Confirm your ApplyFocus email',
+    text: `Confirm your email to activate your ApplyFocus account:\n\n${link}\n\nThis link expires in 24 hours. If you didn't sign up, ignore this email.`,
     html: layout(
       'Confirm your email',
-      'Click below to activate your ApplyPilot account. This link expires in 24 hours.',
+      'Click below to activate your ApplyFocus account. This link expires in 24 hours.',
       link,
       'Confirm email'
     ),
@@ -72,7 +72,7 @@ export async function sendPasswordResetEmail(to: string, token: string): Promise
   const link = `${appUrl()}/reset-password?token=${encodeURIComponent(token)}`;
   await send({
     to,
-    subject: 'Reset your ApplyPilot password',
+    subject: 'Reset your ApplyFocus password',
     text: `Reset your password:\n\n${link}\n\nThis link expires in 1 hour. If you didn't request it, ignore this email.`,
     html: layout(
       'Reset your password',

@@ -485,7 +485,7 @@ export function TailoringStudioPanel({
                       <button
                         type="button"
                         onClick={() => handleDelete(doc.id)}
-                        className="shrink-0 rounded px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                        className="shrink-0 rounded px-2 py-1 text-xs font-medium text-ui-error hover:bg-ui-error-soft"
                       >
                         Delete
                       </button>
@@ -577,9 +577,9 @@ function ResumeDraftEditor({
 }) {
   return (
     <Card>
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-ui-border pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ui-copper">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ui-teal-ink">
             Tailored Resume
           </p>
           <h2 className="text-lg font-semibold text-ui-ink">
@@ -624,7 +624,7 @@ function ResumeDraftEditor({
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {content.keywordsUsed.map((kw) => (
-                  <Badge key={kw} className="bg-emerald-50 text-emerald-700">
+                  <Badge key={kw} className="bg-ui-success-soft text-ui-success">
                     {`✓ ${kw}`}
                   </Badge>
                 ))}
@@ -639,7 +639,7 @@ function ResumeDraftEditor({
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {content.missingKeywords.map((kw) => (
-                  <Badge key={kw} className="bg-amber-50 text-amber-800">
+                  <Badge key={kw} className="bg-ui-warning-soft text-ui-warning">
                     {kw}
                   </Badge>
                 ))}
@@ -692,7 +692,7 @@ function ResumeDraftEditor({
                     </p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ui-copper">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ui-teal-ink">
                       Tailored (editable)
                     </p>
                     <textarea
@@ -740,9 +740,9 @@ function CoverLetterEditor({
 }) {
   return (
     <Card>
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-ui-border pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ui-copper">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ui-teal-ink">
             Cover Letter ({doc.tone ?? "conversational"})
           </p>
           <h2 className="text-lg font-semibold text-ui-ink">

@@ -66,7 +66,7 @@ function CopilotContent() {
         actions={
           <Link
             href="/applications"
-            className="inline-flex h-9 items-center rounded-[10px] border border-ui-border bg-ui-surface px-4 text-xs font-medium text-ui-ink transition-colors hover:bg-ui-linen/70"
+            className="inline-flex h-9 items-center rounded-lg border border-ui-border bg-ui-surface px-4 text-xs font-medium text-ui-ink transition-colors hover:bg-ui-linen/70"
           >
             View Applications
           </Link>
@@ -77,7 +77,7 @@ function CopilotContent() {
       <Card>
         <CardHeader
           title="Extension Setup"
-          description="Connect Chrome to your ApplyPilot workspace in three quick steps."
+          description="Connect Chrome to your ApplyFocus workspace in three quick steps."
         />
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border border-ui-border bg-ui-canvas/70 p-4">
@@ -95,7 +95,7 @@ function CopilotContent() {
               <span>2. Pair Your Browser</span>
             </div>
             <p className="text-xs leading-relaxed text-ui-body">
-              Generate a pairing token below and paste it into the ApplyPilot extension popup along with this app URL.
+              Generate a pairing token below and paste it into the ApplyFocus extension popup along with this app URL.
             </p>
           </div>
           <div className="rounded-lg border border-ui-border bg-ui-canvas/70 p-4">
@@ -137,7 +137,7 @@ function CopilotContent() {
                 <Badge
                   className={
                     ats.status === "Supported"
-                      ? "bg-emerald-50 text-emerald-700"
+                      ? "bg-ui-success-soft text-ui-success"
                       : "bg-ui-teal-soft text-ui-teal"
                   }
                 >
@@ -150,7 +150,7 @@ function CopilotContent() {
           <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-ui-teal-soft/60 p-3 text-xs text-ui-ink">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ui-teal" />
             <p>
-              <strong>Review-before-submit guarantee:</strong> ApplyPilot populates detected form inputs and suggests answers grounded in your profile, but never clicks final submission buttons automatically.
+              <strong>Review-before-submit guarantee:</strong> ApplyFocus populates detected form inputs and suggests answers grounded in your profile, but never clicks final submission buttons automatically.
             </p>
           </div>
         </Card>
@@ -164,7 +164,7 @@ function CopilotContent() {
           {activityLoading ? (
             <div className="h-28 animate-pulse rounded bg-ui-linen" />
           ) : copilotLogs.length > 0 ? (
-            <ul className="flex max-h-64 flex-col divide-y divide-slate-100 overflow-y-auto text-xs">
+            <ul className="flex max-h-64 flex-col divide-y divide-ui-border overflow-y-auto text-xs">
               {copilotLogs.slice(0, 20).map((entry) => {
                 const host =
                   entry.metadata && typeof entry.metadata.host === "string"
@@ -191,7 +191,7 @@ function CopilotContent() {
             </div>
           )}
 
-          <div className="mt-5 border-t border-slate-100 pt-4">
+          <div className="mt-5 border-t border-ui-border pt-4">
             <div className="mb-2 flex items-center justify-between">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-muted">
                 <Sparkles className="h-3.5 w-3.5 text-ui-teal" />
@@ -204,7 +204,7 @@ function CopilotContent() {
             {appsLoading ? (
               <div className="h-12 animate-pulse rounded bg-ui-linen" />
             ) : applications && applications.length > 0 ? (
-              <ul className="flex flex-col divide-y divide-slate-100 text-xs">
+              <ul className="flex flex-col divide-y divide-ui-border text-xs">
                 {applications.slice(0, 5).map((app) => (
                   <li key={app.id} className="flex items-center justify-between gap-3 py-2">
                     <span className="min-w-0 truncate font-medium text-ui-ink">

@@ -15,11 +15,11 @@ export function PageHeader({
     <div className="flex flex-col justify-between gap-4 border-b border-ui-border pb-6 sm:flex-row sm:items-end">
       <div>
         {eyebrow && (
-          <p className="mb-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ui-copper">
+          <p className="mb-1.5 font-mono text-xs font-medium uppercase tracking-[0.08em] text-ui-teal-ink">
             {eyebrow}
           </p>
         )}
-        <h1 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.022em] text-ui-ink">
+        <h1 className="text-2xl font-semibold tracking-[-0.022em] text-ui-ink">
           {title}
         </h1>
         {description && (

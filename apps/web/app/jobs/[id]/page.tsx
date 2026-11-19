@@ -330,7 +330,7 @@ function JobDetailContent() {
               >
                 Transferable Skills
                 {job.match.transferableSkills.length > 0 && (
-                  <span className="ml-1.5 rounded-full bg-ui-linen px-1.5 py-0.5 font-mono text-[10px] text-ui-muted tabular-nums">
+                  <span className="ml-1.5 rounded-full bg-ui-linen px-1.5 py-0.5 font-mono text-xs text-ui-muted tabular-nums">
                     {job.match.transferableSkills.length}
                   </span>
                 )}
@@ -403,7 +403,7 @@ function JobDetailContent() {
                     <ul className="flex flex-col gap-1.5 text-xs text-ui-ink">
                       {job.match.reasons.map((r) => (
                         <li key={r} className="flex items-start gap-2">
-                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ui-success" />
                           <span>{r}</span>
                         </li>
                       ))}
@@ -413,7 +413,7 @@ function JobDetailContent() {
 
                 {job.match.strengths.length > 0 && (
                   <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ui-success">
                       Strengths
                     </p>
                     <ul className="flex flex-col gap-1 text-xs text-ui-ink">
@@ -426,7 +426,7 @@ function JobDetailContent() {
 
                 {job.match.gaps.length > 0 && (
                   <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ui-warning">
                       Missing Requirements & Gaps
                     </p>
                     <ul className="flex flex-col gap-1 text-xs text-ui-ink">
@@ -526,7 +526,7 @@ function JobDetailContent() {
                           key={`req-${skill}`}
                           className={
                             matched
-                              ? "bg-emerald-50 text-emerald-700"
+                              ? "bg-ui-success-soft text-ui-success"
                               : "bg-ui-linen text-ui-ink"
                           }
                         >
@@ -547,7 +547,7 @@ function JobDetailContent() {
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {job.intelligence.preferredSkills.map((skill) => (
-                      <Badge key={`pref-${skill}`} className="bg-amber-50 text-amber-800">
+                      <Badge key={`pref-${skill}`} className="bg-ui-warning-soft text-ui-warning">
                         {skill}
                       </Badge>
                     ))}

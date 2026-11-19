@@ -105,13 +105,13 @@ export function LandingStrategy() {
               Know exactly how to position yourself.
             </h2>
             <p className="mt-5 font-ui text-[16px] leading-[1.7] text-lp-body">
-              After analysing your fit, ApplyPilot builds a clear strategy for your application — what to lead with, how to frame your experience, where gaps exist, and what you should prepare.
+              After analysing your fit, ApplyFocus builds a clear strategy for your application — what to lead with, how to frame your experience, where gaps exist, and what you should prepare.
             </p>
             <div className="mt-7 space-y-5">
               {[
                 {
                   head: "Lead with what matters most",
-                  body: "ApplyPilot identifies which of your strengths are most relevant to this specific role — not a generic best-of summary.",
+                  body: "ApplyFocus identifies which of your strengths are most relevant to this specific role — not a generic best-of summary.",
                 },
                 {
                   head: "Understand your positioning",
@@ -119,7 +119,7 @@ export function LandingStrategy() {
                 },
                 {
                   head: "Face gaps honestly",
-                  body: "ApplyPilot surfaces requirements you can't support. You decide whether to address them, acknowledge them or move on to a better-matched opportunity.",
+                  body: "ApplyFocus surfaces requirements you can't support. You decide whether to address them, acknowledge them or move on to a better-matched opportunity.",
                 },
                 {
                   head: "Prepare with intention",

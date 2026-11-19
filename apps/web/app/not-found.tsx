@@ -12,10 +12,10 @@ export default function NotFound() {
       </Link>
 
       <div>
-        <p className="mb-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ui-copper">
+        <p className="mb-1 font-mono text-xs font-medium uppercase tracking-[0.08em] text-ui-teal-ink">
           404
         </p>
-        <h1 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.022em] text-ui-ink">
+        <h1 className="text-2xl font-semibold tracking-[-0.022em] text-ui-ink">
           Page not found
         </h1>
         <p className="mt-2 max-w-xs text-sm leading-relaxed text-ui-body">

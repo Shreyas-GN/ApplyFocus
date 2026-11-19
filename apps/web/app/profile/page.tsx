@@ -80,7 +80,7 @@ function ProfileContent() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="h-44 animate-pulse rounded-[14px] border border-ui-border bg-ui-linen"
+            className="h-44 animate-pulse rounded-xl border border-ui-border bg-ui-linen"
           />
         ))}
       </div>
@@ -89,16 +89,16 @@ function ProfileContent() {
 
   if ((error && !profile) || !profile) {
     return (
-      <div className="mx-auto max-w-3xl rounded-[14px] border border-red-200 bg-red-50 p-6 text-sm text-red-900">
+      <div className="mx-auto max-w-3xl rounded-xl border border-ui-error/30 bg-ui-error-soft p-6 text-sm text-ui-error">
         <p className="font-display text-xl">Couldn&apos;t load your profile</p>
-        <p className="mt-1 text-xs text-red-700">
+        <p className="mt-1 text-xs text-ui-error">
           {error ?? "Please check your session or network connection and try again."}
         </p>
         <div className="mt-4">
           <button
             type="button"
             onClick={() => refetch()}
-            className="rounded-full bg-red-700 px-4 py-2 text-xs font-medium text-white hover:bg-red-800"
+            className="rounded-full bg-ui-error px-4 py-2 text-xs font-medium text-white hover:bg-ui-error"
           >
             Try again
           </button>
@@ -236,9 +236,9 @@ function ProfileContent() {
               onClick={() => scrollToSection(section.id)}
               className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                 section.complete
-                  ? "border-ap-sage/30 bg-emerald-50 text-emerald-700"
+                  ? "border-ui-success/30 bg-ui-success-soft text-ui-success"
                   : section.aiUnverifiedCount > 0
-                    ? "border-amber-300 bg-ap-butter text-ui-ink"
+                    ? "border-ui-warning/30 bg-ui-warning-soft text-ui-ink"
                     : "border-ui-border bg-ui-surface text-ui-body"
               }`}
             >
@@ -251,8 +251,8 @@ function ProfileContent() {
       <div className="grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)] lg:items-start">
         {/* Desktop Field Guide index */}
         <aside className="hidden lg:sticky lg:top-6 lg:block">
-          <div className="rounded-[14px] border border-ui-border bg-ui-surface p-4 shadow-[0_1px_2px_rgba(30,25,21,0.04)]">
-            <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-muted">
+          <div className="rounded-xl border border-ui-border bg-ui-surface p-4 shadow-[0_1px_2px_rgba(30,25,21,0.04)]">
+            <p className="mb-3 font-mono text-xs font-medium uppercase tracking-[0.06em] text-ui-muted">
               Dossier Index
             </p>
             <nav aria-label="Dossier sections" className="space-y-1">
@@ -264,21 +264,21 @@ function ProfileContent() {
                   className="flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-ui-body transition hover:bg-ui-linen hover:text-ui-ink"
                 >
                   <span className="truncate">
-                    <span className="mr-1.5 font-mono text-[11px] text-ui-muted">
+                    <span className="mr-1.5 font-mono text-xs text-ui-muted">
                       0{idx + 1}
                     </span>
                     {section.label}
                   </span>
                   {section.complete ? (
-                    <span className="shrink-0 font-mono text-[11px] text-emerald-700">
+                    <span className="shrink-0 font-mono text-xs text-ui-success">
                       ✓
                     </span>
                   ) : section.aiUnverifiedCount > 0 ? (
-                    <span className="shrink-0 rounded-full bg-ap-butter px-1.5 py-0.5 font-mono text-[10px] text-ui-ink">
+                    <span className="shrink-0 rounded-full bg-ui-warning-soft px-1.5 py-0.5 font-mono text-xs text-ui-ink">
                       AI
                     </span>
                   ) : (
-                    <span className="shrink-0 font-mono text-[10px] text-ui-muted">
+                    <span className="shrink-0 font-mono text-xs text-ui-muted">
                       —
                     </span>
                   )}

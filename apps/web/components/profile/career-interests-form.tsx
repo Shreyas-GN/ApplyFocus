@@ -207,7 +207,7 @@ export function CareerInterestsForm({
       </div>
 
       {aiSuggestedRoles.length > 0 && (
-        <div className="mt-6 rounded-xl border border-ap-vermilion/20 bg-ui-linen/60 p-4">
+        <div className="mt-6 rounded-xl border border-ui-teal/20 bg-ui-linen/60 p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -235,7 +235,7 @@ export function CareerInterestsForm({
                       <span className="text-sm font-semibold text-ui-ink">
                         {suggestion.role}
                       </span>
-                      <span className="font-mono text-[11px] uppercase text-ui-muted">
+                      <span className="font-mono text-xs uppercase text-ui-muted">
                         {suggestion.kind === "adjacent" ? "Adjacent" : "Core fit"}
                       </span>
                     </div>
@@ -248,7 +248,7 @@ export function CareerInterestsForm({
                       onClick={() =>
                         handleAcceptSuggestion(suggestion.role, "desired")
                       }
-                      className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:opacity-90 disabled:opacity-50"
+                      className="rounded-full bg-ui-success-soft px-2.5 py-1 text-xs font-medium text-ui-success hover:opacity-90 disabled:opacity-50"
                     >
                       + Roles I want
                     </button>

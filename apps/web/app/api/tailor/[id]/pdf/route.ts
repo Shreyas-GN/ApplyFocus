@@ -54,19 +54,19 @@ const PRINT_INSTRUCTIONS_HTML = `
 
 const PRINT_INSTRUCTIONS_CSS = `
   .print-instructions {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    background: #F9EAE6;
+    border: 1px solid #E1E0DC;
     border-radius: 6px;
     padding: 10px 16px;
     margin-bottom: 24px;
     font-family: Arial, sans-serif;
     font-size: 10pt;
-    color: #1e40af;
+    color: #A53F29;
     line-height: 1.6;
   }
   kbd {
-    background: #e0e7ff;
-    border: 1px solid #a5b4fc;
+    background: #F0F0F0;
+    border: 1px solid #E1E0DC;
     border-radius: 3px;
     padding: 1px 5px;
     font-size: 9pt;
@@ -105,7 +105,7 @@ function buildResumeHtml(
 <title>Tailored Resume &mdash; ${esc(jobTitle)} at ${esc(company)}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; padding: 2cm; max-width: 800px; margin: 0 auto; }
+  body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; line-height: 1.5; color: #202124; padding: 2cm; max-width: 800px; margin: 0 auto; }
   h1 { font-size: 18pt; margin-bottom: 4px; }
   h2 { font-size: 11pt; font-weight: 600; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.05em; }
   .target { font-size: 11pt; color: #555; margin-bottom: 16px; }
@@ -114,7 +114,7 @@ function buildResumeHtml(
   .exp-header { font-weight: 600; }
   .dates { font-weight: normal; color: #666; margin-left: 8px; font-size: 10pt; }
   .skills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .skill-tag { background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-size: 10pt; font-family: Arial, sans-serif; }
+  .skill-tag { background: #F0F0F0; padding: 2px 8px; border-radius: 4px; font-size: 10pt; font-family: Arial, sans-serif; }
   .meta { font-size: 9pt; color: #888; margin-top: 24px; border-top: 1px solid #eee; padding-top: 8px; }
   @media print { body { padding: 1cm; } .meta { display: none; } }
   ${PRINT_INSTRUCTIONS_CSS}
@@ -149,7 +149,7 @@ function buildCoverLetterHtml(
 <title>Cover Letter &mdash; ${esc(jobTitle)} at ${esc(company)}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; line-height: 1.6; color: #1a1a1a; padding: 2cm; max-width: 760px; margin: 0 auto; }
+  body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; line-height: 1.6; color: #202124; padding: 2cm; max-width: 760px; margin: 0 auto; }
   h1 { font-size: 13pt; color: #555; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
   .greeting { font-weight: 600; margin: 20px 0 12px; }
   p { margin-bottom: 12px; }

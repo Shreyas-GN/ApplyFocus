@@ -187,10 +187,10 @@ function OnboardingWizard() {
           <div className="mb-6">
             <div className="mb-2 flex gap-1.5">
               <div
-                className={`h-1 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-ui-teal" : "bg-slate-200"}`}
+                className={`h-1 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-ui-teal" : "bg-ui-border"}`}
               />
               <div
-                className={`h-1 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-ui-teal" : "bg-slate-200"}`}
+                className={`h-1 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-ui-teal" : "bg-ui-border"}`}
               />
             </div>
             <p className="text-xs text-ui-muted">
@@ -381,9 +381,9 @@ function Step2Resume({
       )}
 
       {phase === "review" && resume && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
+        <div className="rounded-xl border border-ui-success/30 bg-ui-success-soft/60 p-4">
           <div className="mb-3 flex items-start gap-3">
-            <span className="mt-0.5 text-lg text-emerald-600" aria-hidden="true">
+            <span className="mt-0.5 text-lg text-ui-success" aria-hidden="true">
               ✓
             </span>
             <div>
@@ -397,7 +397,7 @@ function Step2Resume({
           </div>
           <Link
             href={`/resumes/${resume.id}/review`}
-            className="inline-flex w-full items-center justify-center rounded-[10px] bg-ui-teal px-4 py-2.5 text-sm font-medium text-white transition hover:bg-ui-teal-hover"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-ui-teal px-4 py-2.5 text-sm font-medium text-white transition hover:bg-ui-teal-hover"
           >
             Review extracted data →
           </Link>
@@ -405,13 +405,13 @@ function Step2Resume({
       )}
 
       {phase === "confirmed" && resume && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
+        <div className="rounded-xl border border-ui-success/30 bg-ui-success-soft/60 p-4">
           <div className="mb-3 flex items-start gap-3">
-            <span className="mt-0.5 text-lg text-emerald-600" aria-hidden="true">
+            <span className="mt-0.5 text-lg text-ui-success" aria-hidden="true">
               ✓
             </span>
             <div>
-              <p className="text-sm font-semibold text-emerald-700">Resume data confirmed</p>
+              <p className="text-sm font-semibold text-ui-success">Resume data confirmed</p>
               <p className="mt-0.5 text-xs text-ui-muted">{resume.versionLabel}</p>
               <p className="mt-1.5 text-xs text-ui-body">
                 Your profile is ready. Head to your dashboard to explore matched jobs.
@@ -425,16 +425,16 @@ function Step2Resume({
       )}
 
       {phase === "failed" && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-medium text-red-800">Resume parsing failed</p>
-          <p className="mt-1 text-xs text-red-700">
+        <div className="rounded-xl border border-ui-error/30 bg-ui-error-soft p-4">
+          <p className="text-sm font-medium text-ui-error">Resume parsing failed</p>
+          <p className="mt-1 text-xs text-ui-error">
             {resume?.processingError ??
               "We couldn't process this file. Try a different version or format."}
           </p>
           <button
             type="button"
             onClick={onUploadClick}
-            className="mt-3 text-sm font-medium text-red-700 underline"
+            className="mt-3 text-sm font-medium text-ui-error underline"
           >
             Try another file
           </button>

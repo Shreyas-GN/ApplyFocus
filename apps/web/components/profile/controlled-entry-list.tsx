@@ -62,7 +62,7 @@ export function ControlledEntryList({
                 {item.source === "ai" && <Badge>AI-suggested</Badge>}
                 {item.source === "ai" &&
                   (item.confidence === null || item.confidence < LOW_CONFIDENCE_THRESHOLD) && (
-                    <span className="text-xs font-medium text-amber-700">
+                    <span className="text-xs font-medium text-ui-warning">
                       Low confidence — please verify
                     </span>
                   )}
@@ -70,7 +70,7 @@ export function ControlledEntryList({
               <button
                 type="button"
                 onClick={() => removeItem(index)}
-                className="text-xs font-medium text-red-500 hover:underline"
+                className="text-xs font-medium text-ui-error hover:underline"
               >
                 Remove
               </button>

@@ -3,21 +3,21 @@ import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<string, string> = {
   uploaded: "bg-ui-linen text-ui-ink border-ui-border",
-  extracting: "bg-blue-50 text-blue-700 border-blue-200/80",
-  extracted: "bg-blue-50 text-blue-700 border-blue-200/80",
-  parsing: "bg-blue-50 text-blue-700 border-blue-200/80",
-  parsed: "bg-amber-50 text-amber-800 border-amber-200/80",
-  confirmed: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
-  pending_review: "bg-amber-50 text-amber-800 border-amber-200/80",
-  failed: "bg-red-50 text-red-700 border-red-200/80",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
+  extracting: "bg-ui-teal-soft text-ui-teal border-ui-teal/30",
+  extracted: "bg-ui-teal-soft text-ui-teal border-ui-teal/30",
+  parsing: "bg-ui-teal-soft text-ui-teal border-ui-teal/30",
+  parsed: "bg-ui-warning-soft text-ui-warning border-ui-warning/30",
+  confirmed: "bg-ui-success-soft text-ui-success border-ui-success/30",
+  pending_review: "bg-ui-warning-soft text-ui-warning border-ui-warning/30",
+  failed: "bg-ui-error-soft text-ui-error border-ui-error/30",
+  completed: "bg-ui-success-soft text-ui-success border-ui-success/30",
   queued: "bg-ui-linen text-ui-body border-ui-border",
-  processing: "bg-blue-50 text-blue-700 border-blue-200/80",
+  processing: "bg-ui-teal-soft text-ui-teal border-ui-teal/30",
   saved: "bg-ui-linen text-ui-ink border-ui-border",
-  applied: "bg-blue-50 text-blue-700 border-blue-200/80",
-  interviewing: "bg-amber-50 text-amber-800 border-amber-200/80",
-  offer: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
-  rejected: "bg-red-50 text-red-700 border-red-200/80",
+  applied: "bg-ui-teal-soft text-ui-teal border-ui-teal/30",
+  interviewing: "bg-ui-warning-soft text-ui-warning border-ui-warning/30",
+  offer: "bg-ui-success-soft text-ui-success border-ui-success/30",
+  rejected: "bg-ui-error-soft text-ui-error border-ui-error/30",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -70,13 +70,13 @@ export function Badge({
   if (variant) {
     switch (variant) {
       case "secondary":
-        styleClass = "bg-neutral-100 text-neutral-900 border-transparent dark:bg-neutral-800 dark:text-neutral-50";
+        styleClass = "bg-ui-border text-ui-ink border-transparent";
         break;
       case "destructive":
-        styleClass = "bg-red-500 text-white border-transparent hover:bg-red-500/80";
+        styleClass = "bg-ui-error text-white border-transparent hover:bg-ui-error/80";
         break;
       case "outline":
-        styleClass = "text-neutral-950 border border-neutral-200 dark:text-neutral-50 dark:border-neutral-800";
+        styleClass = "text-ui-ink border border-ui-border";
         break;
       case "default":
       default:
@@ -88,9 +88,9 @@ export function Badge({
       tone === "neutral"
         ? "bg-ui-linen text-ui-body border-ui-border"
         : tone === "success"
-          ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+          ? "bg-ui-success-soft text-ui-success border-ui-success/30"
           : tone === "warning"
-            ? "bg-amber-50 text-amber-800 border-amber-200/80"
+            ? "bg-ui-warning-soft text-ui-warning border-ui-warning/30"
             : "bg-ui-teal-soft text-ui-teal border-ui-teal-soft";
   }
 

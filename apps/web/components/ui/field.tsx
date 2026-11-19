@@ -16,13 +16,13 @@ interface FieldWrapperProps {
 function FieldWrapper({ label, htmlFor, error, hint, children }: FieldWrapperProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-[13px] font-medium text-ui-ink">
+      <label htmlFor={htmlFor} className="text-sm font-medium text-ui-ink">
         {label}
       </label>
       {children}
       {hint && !error && <p className="text-xs text-ui-muted">{hint}</p>}
       {error && (
-        <p className="text-xs text-red-700" role="alert">
+        <p className="text-xs text-ui-error" role="alert">
           {error}
         </p>
       )}
@@ -31,7 +31,7 @@ function FieldWrapper({ label, htmlFor, error, hint, children }: FieldWrapperPro
 }
 
 const BASE_INPUT_CLASSES =
-  "rounded-[10px] border bg-ui-surface px-3 py-2 text-sm text-ui-ink placeholder:text-ui-muted outline-none transition-colors focus:border-ui-teal focus:ring-2 focus:ring-ui-teal/20";
+  "rounded-lg border bg-ui-surface px-3 py-2 text-sm text-ui-ink placeholder:text-ui-muted outline-none transition-colors focus:border-ui-teal focus:ring-2 focus:ring-ui-teal/20";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -49,7 +49,7 @@ export function TextField({ label, error, hint, id, name, className = "", ...pro
         name={fieldName}
         aria-invalid={Boolean(error)}
         className={`${BASE_INPUT_CLASSES} ${
-          error ? "border-red-400" : "border-ui-border"
+          error ? "border-ui-error/30" : "border-ui-border"
         } ${className}`}
         {...props}
       />
@@ -81,7 +81,7 @@ export function TextAreaField({
         name={fieldName}
         aria-invalid={Boolean(error)}
         className={`${BASE_INPUT_CLASSES} ${
-          error ? "border-red-400" : "border-ui-border"
+          error ? "border-ui-error/30" : "border-ui-border"
         } ${className}`}
         {...props}
       />
@@ -104,7 +104,7 @@ export function SelectField({ label, error, id, name, className = "", children, 
         id={fieldId}
         name={fieldName}
         className={`${BASE_INPUT_CLASSES} ${
-          error ? "border-red-400" : "border-ui-border"
+          error ? "border-ui-error/30" : "border-ui-border"
         } ${className}`}
         {...props}
       >

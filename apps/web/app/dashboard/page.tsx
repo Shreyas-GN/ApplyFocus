@@ -170,10 +170,10 @@ function DashboardContent() {
       <header className="rounded-2xl border border-ui-border bg-ui-surface p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ui-copper">
+            <span className="font-mono text-xs font-medium uppercase tracking-[0.08em] text-ui-teal-ink">
               Job Search Command Center
             </span>
-            <h1 className="mt-1.5 text-[28px] font-semibold leading-[1.15] tracking-[-0.022em] text-ui-ink sm:text-[32px]">
+            <h1 className="mt-1.5 text-2xl font-semibold tracking-[-0.022em] text-ui-ink sm:text-3xl">
               Welcome back{firstName ? `, ${firstName}` : ""}
             </h1>
             <p className="mt-1.5 text-sm text-ui-body">{buildOverviewSummary()}</p>
@@ -185,7 +185,7 @@ function DashboardContent() {
         </div>
 
         {profileError && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-900">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ui-error/30 bg-ui-error-soft px-3.5 py-2.5 text-xs text-ui-error">
             <span>Couldn&apos;t load profile data: {profileError}</span>
             <button
               type="button"

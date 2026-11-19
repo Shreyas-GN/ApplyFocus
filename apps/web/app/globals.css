@@ -1,41 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #d9e6ff;
-  --color-brand-200: #b7cfff;
-  --color-brand-300: #8bb0ff;
-  --color-brand-400: #5f8bff;
-  --color-brand-500: #3d64f5;
-  --color-brand-600: #2c47d6;
-  --color-brand-700: #2338ad;
-  --color-brand-800: #1f2f87;
-  --color-brand-900: #1c296d;
-
-  --font-sans: var(--font-geist-sans, system-ui, -apple-system, "Segoe UI", sans-serif);
-
-  /* ApplyPilot marketing design system — "The Opportunity Field Guide" (docs/design/DESIGN.md).
-     Scoped to --ap-* tokens so the authenticated app's brand-* theme above is untouched. */
-  --color-ap-paper: #F5F6F8;
-  --color-ap-paper-deep: #ECEEF2;
-  --color-ap-surface: #FFFFFF;
-  --color-ap-surface-muted: #F5F6F8;
-  --color-ap-ink: #171A21;
-  --color-ap-body: #4B5162;
-  --color-ap-muted: #9298A8;
-  --color-ap-line: #E5E7EC;
-  --color-ap-vermilion: #355CFF;
-  --color-ap-vermilion-soft: #EBF0FF;
-  --color-ap-sage: #355CFF;
-  --color-ap-sage-soft: #EBF0FF;
-  --color-ap-butter: #D8F06A;
-
-  --font-display: var(--font-dm-serif), "Source Serif 4", Georgia, serif;
-  --font-ui: var(--font-instrument-sans), "DM Sans", system-ui, sans-serif;
-  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
-
-  /* Landing page tokens (landing-page-design skill). Light values here, dark overrides below.
+  /* ApplyFocus brand. One token set, taken from the landing page (landing-page-design skill).
+     The app, auth pages, legal pages and landing page all resolve through these values.
      Dark backgrounds only use: #000000 #181818 #1F1F1F #272727 #313131 #131209. */
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-geist-sans), system-ui, sans-serif;
+  --font-ui: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
   --color-lp-ink: #202124;
   --color-lp-body: #3D3F47;
   --color-lp-muted: #6B6E78;
@@ -51,56 +24,37 @@
   --color-lp-success-soft: #E4F3EB;
   --color-lp-warning: #8A5A12;
   --color-lp-warning-soft: #FBF0DA;
+  --color-lp-error: #A83A2C;
+  --color-lp-error-soft: #FBE9E6;
   --color-lp-inverse: #202124;
   --color-lp-inverse-ink: #FFFFFF;
   --color-lp-inverse-body: #C4C4CA;
-  /* Legacy aliases still referenced by unused landing files */
-  --color-lp-wine: #BC4A32;
-  --color-lp-wine-hover: #A53F29;
-  --color-lp-copper: #BC4A32;
-  --color-lp-copper-soft: #F9EAE6;
-  --color-lp-lagoon: #202124;
-  --color-lp-sand: #F0F0F0;
-  --color-lp-emerald: #1F7A55;
 
-  /* Authenticated App Design System — "Warm Editorial Workspace" */
-  --color-ui-canvas: #F5F6F8;
-  --color-ui-surface: #FFFFFF;
-  --color-ui-linen: #ECEEF2;
-  --color-ui-border: #E5E7EC;
-  --color-ui-ink: #171A21;
-  --color-ui-body: #4B5162;
-  --color-ui-muted: #9298A8;
+  /* App tokens alias the landing tokens so every screen shares the same brand. */
+  --color-ui-canvas: var(--color-lp-surface);
+  --color-ui-surface: var(--color-lp-bg);
+  --color-ui-linen: var(--color-lp-surface-subtle);
+  --color-ui-border: var(--color-lp-border);
+  --color-ui-ink: var(--color-lp-ink);
+  --color-ui-body: var(--color-lp-body);
+  --color-ui-muted: var(--color-lp-muted);
 
-  /* Primary — Blue */
-  --color-ui-teal: #355CFF;
-  --color-ui-teal-hover: #2448E0;
-  --color-ui-teal-soft: #EBF0FF;
+  --color-ui-teal: var(--color-lp-accent);
+  --color-ui-teal-hover: var(--color-lp-accent-hover);
+  --color-ui-teal-soft: var(--color-lp-accent-soft);
+  --color-ui-teal-ink: var(--color-lp-accent-ink);
 
-  /* Accent — Citrus (use sparingly) */
-  --color-ui-copper: #D8F06A;
-  --color-ui-copper-soft: #F5FAD9;
-
-  /* Wine aliased to blue — preserves existing bg-ui-wine callsites */
-  --color-ui-wine: #355CFF;
-  --color-ui-wine-hover: #2448E0;
-
-  /* AI / Interactive (kept intentionally — provenance badges, focus rings) */
-  --color-ui-violet: #714cb6;
-  --color-ui-lilac: #d4c7ff;
-  --color-ui-lilac-soft: #ede8ff;
-  --color-ui-lagoon: #1A2E8F;
-
-  /* Semantic */
-  --color-ui-success: #287a57;
-  --color-ui-warning: #a86a1d;
-  --color-ui-error: #b54747;
-  --color-ui-info: #386b9a;
+  --color-ui-success: var(--color-lp-success);
+  --color-ui-success-soft: var(--color-lp-success-soft);
+  --color-ui-warning: var(--color-lp-warning);
+  --color-ui-warning-soft: var(--color-lp-warning-soft);
+  --color-ui-error: var(--color-lp-error);
+  --color-ui-error-soft: var(--color-lp-error-soft);
 
   /* Elevation */
-  --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.04);
-  --shadow-panel: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-  --shadow-overlay: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-card: 0 1px 2px rgba(32,33,36,0.04), 0 1px 4px rgba(32,33,36,0.04);
+  --shadow-panel: 0 4px 16px rgba(32,33,36,0.08), 0 1px 4px rgba(32,33,36,0.04);
+  --shadow-overlay: 0 8px 32px rgba(32,33,36,0.12), 0 2px 8px rgba(32,33,36,0.06);
 
   --radius-button: 8px;
   --radius-panel: 16px;
@@ -121,34 +75,21 @@
   --color-lp-accent-ink:     #F0836B;
   --color-lp-accent-soft:    #272727;
   --color-lp-success:        #5FD39A;
-  --color-lp-success-soft:   #313131;
+  --color-lp-success-soft:   #272727;
   --color-lp-warning:        #F0B95A;
-  --color-lp-warning-soft:   #313131;
+  --color-lp-warning-soft:   #272727;
+  --color-lp-error:          #F08C7E;
+  --color-lp-error-soft:     #272727;
   --color-lp-inverse:        #000000;
   --color-lp-inverse-body:   #B8B8B8;
-  --color-lp-lagoon:         #000000;
-  --color-lp-sand:           #181818;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-panel: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-overlay: 0 8px 32px rgba(0,0,0,0.6);
 }
 
-/* ── Dark mode body ── */
-[data-theme="dark"] body {
-  background: #181818;
-  color: #F5F5F5;
-}
+/* Accent text on dark surfaces uses the lighter accent ink for contrast. */
+[data-theme="dark"] .text-ui-teal { color: var(--color-lp-accent-ink); }
 
-/* ── Dark mode semantic status colors (emerald / amber / red) ── */
-[data-theme="dark"] .bg-emerald-50    { background-color: rgba(16,185,129,0.09) !important; }
-[data-theme="dark"] .bg-emerald-50\/40 { background-color: rgba(16,185,129,0.06) !important; }
-[data-theme="dark"] .bg-emerald-100   { background-color: rgba(16,185,129,0.14) !important; }
-[data-theme="dark"] .text-emerald-700 { color: #34d399 !important; }
-[data-theme="dark"] .text-emerald-600 { color: #34d399 !important; }
-[data-theme="dark"] .border-emerald-100 { border-color: rgba(16,185,129,0.18) !important; }
-
-[data-theme="dark"] .bg-amber-50      { background-color: rgba(245,158,11,0.09) !important; }
-[data-theme="dark"] .bg-amber-50\/40  { background-color: rgba(245,158,11,0.06) !important; }
-[data-theme="dark"] .bg-amber-100     { background-color: rgba(245,158,11,0.14) !important; }
-[data-theme="dark"] .text-amber-700   { color: #fbbf24 !important; }
-[data-theme="dark"] .border-amber-100 { border-color: rgba(245,158,11,0.18) !important; }
 
 /* ── Smooth theme transition ── */
 .theme-transitioning *:not([data-no-transition]) {
@@ -162,9 +103,9 @@ html {
 }
 
 body {
-  color: #171A21;
-  background: #F5F6F8;
-  font-family: var(--font-ui);
+  color: var(--color-lp-ink);
+  background: var(--color-lp-bg);
+  font-family: var(--font-sans);
   overflow-x: hidden;
 }
 
@@ -173,7 +114,7 @@ body {
 }
 
 .bg-dot-pattern {
-  background-image: radial-gradient(#E5E7EC 1px, transparent 1px);
+  background-image: radial-gradient(var(--color-lp-border) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 

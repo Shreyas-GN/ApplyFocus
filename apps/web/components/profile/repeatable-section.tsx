@@ -223,13 +223,13 @@ export function RepeatableSection({
               key={index}
               className={`rounded-xl border p-4 ${
                 isAi
-                  ? "border-amber-300 bg-ap-butter/20"
+                  ? "border-ui-warning/30 bg-ui-warning-soft/20"
                   : "border-ui-border bg-ui-linen/35"
               }`}
             >
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ui-border/70 pb-2.5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-[11px] font-medium uppercase text-ui-muted">
+                  <span className="font-mono text-xs font-medium uppercase text-ui-muted">
                     #{index + 1}
                   </span>
                   {headerTitle && (
@@ -249,7 +249,7 @@ export function RepeatableSection({
                     <button
                       type="button"
                       onClick={() => confirmItem(index)}
-                      className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 hover:opacity-90"
+                      className="rounded-full bg-ui-success-soft px-2.5 py-0.5 text-xs font-medium text-ui-success hover:opacity-90"
                     >
                       Confirm entry
                     </button>
@@ -257,7 +257,7 @@ export function RepeatableSection({
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="text-xs font-medium text-ap-danger hover:underline"
+                    className="text-xs font-medium text-ui-error hover:underline"
                   >
                     Remove
                   </button>
@@ -278,7 +278,7 @@ export function RepeatableSection({
                           onChange={(e) =>
                             updateField(index, field.name, e.target.checked)
                           }
-                          className="h-4 w-4 rounded border-ui-border accent-ap-ink"
+                          className="h-4 w-4 rounded border-ui-border accent-ui-ink"
                         />
                         {field.label}
                       </label>
