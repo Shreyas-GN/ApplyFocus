@@ -1,35 +1,21 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { DM_Serif_Display, Geist, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ThemedToaster } from "@/components/themed-toaster";
 
-// Landing page typeface. The authenticated app keeps its own fonts below.
+// One typeface for the whole site, with Geist Mono for data and numeric UI.
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",
   display: "swap",
 });
 
-const instrumentSans = Instrument_Sans({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-instrument-sans",
-  display: "swap",
-});
-
-const dmSerifDisplay = DM_Serif_Display({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-dm-serif",
-  display: "swap",
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-ibm-plex-mono",
+  variable: "--font-geist-mono",
   display: "swap",
 });
 
@@ -77,7 +63,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${instrumentSans.variable} ${dmSerifDisplay.variable} ${ibmPlexMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable}`}>
       <head>
         {/* Anti-flash: apply stored theme before first paint */}
         <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('af-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}` }} />

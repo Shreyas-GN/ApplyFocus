@@ -12,10 +12,10 @@ interface OpportunitySnapshotProps {
 
 function matchPillClass(score: number): string {
   if (score >= 75) {
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    return "bg-ui-success-soft text-ui-success border-ui-success/30";
   }
   if (score >= 55) {
-    return "bg-amber-50 text-ui-ink border-amber-300/60";
+    return "bg-ui-warning-soft text-ui-ink border-ui-warning/30";
   }
   return "bg-ui-linen text-ui-body border-ui-border";
 }
@@ -44,12 +44,12 @@ export function OpportunitySnapshot({
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-ui-border pb-4">
         <div>
-          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-copper">
+          <span className="font-mono text-xs font-medium uppercase tracking-[0.06em] text-ui-teal-ink">
             Priority Feed · Opportunity Snapshot
           </span>
           <h2
             id="opportunity-snapshot-heading"
-            className="mt-1 text-[24px] leading-[1.2] tracking-[-0.015em] text-ui-ink"
+            className="mt-1 text-2xl tracking-[-0.015em] text-ui-ink"
           >
             Best Matching Opportunities
           </h2>
@@ -76,13 +76,13 @@ export function OpportunitySnapshot({
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+        <div className="rounded-xl border border-ui-error/30 bg-ui-error-soft p-4 text-sm text-ui-error">
           <p className="font-medium">Couldn&apos;t load job matches.</p>
-          <p className="mt-1 text-xs text-red-700">{error}</p>
+          <p className="mt-1 text-xs text-ui-error">{error}</p>
           <button
             type="button"
             onClick={onRetry}
-            className="mt-3 rounded-full bg-red-700 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-red-800"
+            className="mt-3 rounded-full bg-ui-error px-3.5 py-1.5 text-xs font-medium text-white hover:bg-ui-error"
           >
             Retry
           </button>
@@ -126,7 +126,7 @@ export function OpportunitySnapshot({
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-ui-muted">
+                      <p className="truncate font-mono text-xs font-medium uppercase tracking-[0.04em] text-ui-muted">
                         {job.company}
                         {workModeLabel ? ` · ${workModeLabel}` : ""}
                       </p>
@@ -162,7 +162,7 @@ export function OpportunitySnapshot({
                       {job.match.matchedSkills.slice(0, 4).map((skill) => (
                         <span
                           key={skill}
-                          className="rounded-full border border-ui-border bg-ui-surface px-2 py-0.5 text-[11px] font-medium text-ui-body"
+                          className="rounded-full border border-ui-border bg-ui-surface px-2 py-0.5 text-xs font-medium text-ui-body"
                         >
                           {skill}
                         </span>
@@ -220,12 +220,12 @@ export function ExploreAdjacentRoles({
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-ui-border pb-4">
         <div>
-          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-muted">
+          <span className="font-mono text-xs font-medium uppercase tracking-[0.06em] text-ui-muted">
             Beyond Conventional Titles
           </span>
           <h2
             id="adjacent-roles-heading"
-            className="mt-1 text-[22px] leading-[1.2] tracking-[-0.015em] text-ui-ink"
+            className="mt-1 text-xl tracking-[-0.015em] text-ui-ink"
           >
             Explore Adjacent Roles
           </h2>
@@ -261,7 +261,7 @@ export function ExploreAdjacentRoles({
                       >
                         {job.title}
                       </Link>
-                      <span className="rounded-full bg-ui-teal-soft px-2 py-0.5 font-mono text-[10px] font-medium text-ui-teal">
+                      <span className="rounded-full bg-ui-teal-soft px-2 py-0.5 font-mono text-xs font-medium text-ui-teal">
                         Adjacent fit
                       </span>
                     </div>
@@ -303,7 +303,7 @@ export function ExploreAdjacentRoles({
           {(savedAdjacentTracks.length > 0 || aiAdjacentTracks.length > 0) && (
             <div className="border-t border-ui-border pt-3.5">
               <div className="mb-2 flex items-center justify-between">
-                <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-muted">
+                <span className="font-mono text-xs font-medium uppercase tracking-[0.06em] text-ui-muted">
                   Adjacent Role Tracks
                 </span>
                 <Link
@@ -318,7 +318,7 @@ export function ExploreAdjacentRoles({
                   <Link
                     key={role}
                     href="/jobs?tab=adjacent"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-ui-success/30 bg-ui-success-soft px-2.5 py-1 text-xs font-medium text-ui-success"
                   >
                     ✓ {role}
                   </Link>
@@ -331,7 +331,7 @@ export function ExploreAdjacentRoles({
                     className="inline-flex items-center gap-1.5 rounded-full border border-ui-teal/25 bg-ui-teal-soft px-2.5 py-1 text-xs font-medium text-ui-teal"
                   >
                     {sug.role}
-                    <span className="font-mono text-[10px] opacity-80">
+                    <span className="font-mono text-xs opacity-80">
                       AI-suggested
                     </span>
                   </Link>

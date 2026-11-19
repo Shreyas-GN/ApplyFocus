@@ -29,20 +29,20 @@ export function ProfileIntelligenceOverview({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[14px] border border-ui-border bg-ui-surface p-5 shadow-[0_1px_2px_rgba(30,25,21,0.04)] sm:p-6">
+      <div className="rounded-xl border border-ui-border bg-ui-surface p-5 shadow-[0_1px_2px_rgba(30,25,21,0.04)] sm:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <div className="mb-1.5 flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-muted">
+              <span className="font-mono text-xs font-medium uppercase tracking-[0.06em] text-ui-muted">
                 Candidate Intelligence Profile
               </span>
               {refreshing && (
-                <span className="rounded-full bg-ui-linen px-2 py-0.5 font-mono text-[11px] text-ui-muted">
+                <span className="rounded-full bg-ui-linen px-2 py-0.5 font-mono text-xs text-ui-muted">
                   Syncing…
                 </span>
               )}
             </div>
-            <h1 className="font-display text-[28px] leading-[1.15] tracking-[-0.02em] text-ui-ink sm:text-[32px]">
+            <h1 className="font-display text-2xl tracking-[-0.02em] text-ui-ink sm:text-3xl">
               {profile.fullName?.trim()
                 ? `${profile.fullName}'s Career Dossier`
                 : "Your Candidate Intelligence Profile"}
@@ -80,13 +80,13 @@ export function ProfileIntelligenceOverview({
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-1.5 text-emerald-700">
-                <span className="h-2 w-2 rounded-full bg-ap-sage" />
+              <span className="inline-flex items-center gap-1.5 text-ui-success">
+                <span className="h-2 w-2 rounded-full bg-ui-success" />
                 User-confirmed: {intel?.confirmedItemCount ?? 0} entries
               </span>
               {unverifiedAiCount > 0 && (
                 <span className="inline-flex items-center gap-1.5 font-medium text-ui-ink">
-                  <span className="h-2 w-2 rounded-full bg-amber-400" />
+                  <span className="h-2 w-2 rounded-full bg-ui-warning" />
                   {unverifiedAiCount} AI-extracted pending review (+{aiPendingHeadroom}%)
                 </span>
               )}
@@ -102,12 +102,12 @@ export function ProfileIntelligenceOverview({
             aria-label="Confirmed profile completeness"
           >
             <div
-              className="h-full bg-ap-sage transition-all duration-300"
+              className="h-full bg-ui-success transition-all duration-300"
               style={{ width: `${confirmedPercent}%` }}
             />
             {aiPendingHeadroom > 0 && (
               <div
-                className="h-full bg-amber-300/80 transition-all duration-300"
+                className="h-full bg-ui-warning/80 transition-all duration-300"
                 style={{ width: `${aiPendingHeadroom}%` }}
                 title="Unverified AI-extracted headroom"
               />
@@ -118,9 +118,9 @@ export function ProfileIntelligenceOverview({
             <div className="mt-3 flex flex-wrap gap-1.5">
               {sections.map((section, idx) => {
                 const badgeStyle = section.complete
-                  ? "border-ap-sage/30 bg-emerald-50 text-emerald-700"
+                  ? "border-ui-success/30 bg-ui-success-soft text-ui-success"
                   : section.aiUnverifiedCount > 0
-                    ? "border-amber-300 bg-ap-butter text-ui-ink"
+                    ? "border-ui-warning/30 bg-ui-warning-soft text-ui-ink"
                     : "border-ui-border bg-ui-surface text-ui-muted hover:text-ui-ink";
                 return (
                   <button
@@ -129,14 +129,14 @@ export function ProfileIntelligenceOverview({
                     onClick={() => jumpToSection(section.id)}
                     className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition ${badgeStyle}`}
                   >
-                    <span className="font-mono text-[10px] opacity-75">
+                    <span className="font-mono text-xs opacity-75">
                       0{idx + 1}
                     </span>
                     <span>{section.label}</span>
                     {section.complete ? (
                       <span aria-hidden="true">✓</span>
                     ) : section.aiUnverifiedCount > 0 ? (
-                      <span className="font-mono text-[10px]">
+                      <span className="font-mono text-xs">
                         AI({section.aiUnverifiedCount})
                       </span>
                     ) : null}
@@ -151,7 +151,7 @@ export function ProfileIntelligenceOverview({
         {suggestions.length > 0 && (
           <div className="mt-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-muted">
+              <span className="font-mono text-xs font-medium uppercase tracking-[0.06em] text-ui-muted">
                 Actionable Next Steps
               </span>
               <span className="text-xs text-ui-muted">

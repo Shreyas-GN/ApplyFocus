@@ -501,7 +501,7 @@ function JobsContent() {
                     {(job.match.matchedSkills.length > 0 || job.skills.length > 0) && (
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {job.match.matchedSkills.slice(0, 4).map((skill) => (
-                          <Badge key={`m-${skill}`} className="bg-emerald-50 text-emerald-700">
+                          <Badge key={`m-${skill}`} className="bg-ui-success-soft text-ui-success">
                             {`✓ ${skill}`}
                           </Badge>
                         ))}
@@ -566,7 +566,7 @@ function JobsContent() {
                         onClick={() => handleDismiss(job)}
                         disabled={busyJobId === job.id}
                         title="Dismiss job from feed"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-button)] border border-ui-border bg-white text-ui-muted transition-colors hover:border-red-300 hover:text-red-500 disabled:opacity-50"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-button)] border border-ui-border bg-white text-ui-muted transition-colors hover:border-ui-error/30 hover:text-ui-error disabled:opacity-50"
                       >
                         <EyeOff className="h-3.5 w-3.5" />
                       </button>

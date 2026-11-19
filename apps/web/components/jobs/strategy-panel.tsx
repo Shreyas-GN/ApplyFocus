@@ -30,7 +30,7 @@ import { api, ApiError } from "@/lib/api-client";
 function RecommendationBadge({ recommendation }: { recommendation: StrategyRecommendation }) {
   if (recommendation === "strong_opportunity") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-ui-success-soft px-3 py-1 text-xs font-semibold text-ui-success">
         <CheckCircle2 className="h-3.5 w-3.5" />
         Strong Opportunity
       </span>
@@ -38,14 +38,14 @@ function RecommendationBadge({ recommendation }: { recommendation: StrategyRecom
   }
   if (recommendation === "worth_pursuing") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-ui-warning-soft px-3 py-1 text-xs font-semibold text-ui-warning">
         <TrendingUp className="h-3.5 w-3.5" />
         Worth Pursuing
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-ui-border px-3 py-1 text-xs font-semibold text-ui-body">
       <Shield className="h-3.5 w-3.5" />
       Lower Priority
     </span>
@@ -54,10 +54,10 @@ function RecommendationBadge({ recommendation }: { recommendation: StrategyRecom
 
 function EvidenceStrengthDot({ strength }: { strength: string }) {
   const colors: Record<string, string> = {
-    direct: "bg-emerald-500",
-    transferable: "bg-amber-400",
-    weak: "bg-orange-400",
-    none: "bg-slate-300",
+    direct: "bg-ui-success",
+    transferable: "bg-ui-warning",
+    weak: "bg-ui-warning",
+    none: "bg-ui-border",
   };
   const labels: Record<string, string> = {
     direct: "Direct match",
@@ -67,7 +67,7 @@ function EvidenceStrengthDot({ strength }: { strength: string }) {
   };
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={`h-2 w-2 rounded-full ${colors[strength] ?? "bg-slate-300"}`} />
+      <span className={`h-2 w-2 rounded-full ${colors[strength] ?? "bg-ui-border"}`} />
       <span className="text-xs text-ui-muted">{labels[strength] ?? strength}</span>
     </span>
   );
@@ -88,7 +88,7 @@ function SectionToggle({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-t border-slate-100 pt-4">
+    <div className="border-t border-ui-border pt-4">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -98,7 +98,7 @@ function SectionToggle({
           <Icon className="h-4 w-4 text-ui-muted" />
           <span className="text-sm font-semibold text-ui-ink">{title}</span>
           {count !== undefined && count > 0 && (
-            <span className="rounded-full bg-ui-linen px-1.5 py-0.5 text-[10px] font-medium text-ui-muted">
+            <span className="rounded-full bg-ui-linen px-1.5 py-0.5 text-xs font-medium text-ui-muted">
               {count}
             </span>
           )}
@@ -134,7 +134,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
           <div className="flex flex-wrap items-center gap-2.5">
             <RecommendationBadge recommendation={c.recommendation} />
             {isApproved && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ui-teal-soft px-2.5 py-0.5 text-[11px] font-medium text-ui-teal">
+              <span className="inline-flex items-center gap-1 rounded-full bg-ui-teal-soft px-2.5 py-0.5 text-xs font-medium text-ui-teal">
                 <CheckCircle2 className="h-3 w-3" />
                 Strategy Approved
               </span>
@@ -146,7 +146,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
 
       {/* Positioning */}
       <div className="rounded-xl border border-ui-teal-soft bg-ui-teal-soft/50 p-4">
-        <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-copper">
+        <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ui-teal-ink">
           <Target className="h-3.5 w-3.5" />
           Your Recommended Positioning
         </p>
@@ -159,7 +159,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
           <ul className="flex flex-col gap-2">
             {c.whyPursue.map((reason) => (
               <li key={reason} className="flex items-start gap-2 text-sm text-ui-ink">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ui-success" />
                 <span>{reason}</span>
               </li>
             ))}
@@ -178,7 +178,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
             {c.strongestExperiences.map((item) => (
               <div
                 key={item.id}
-                className="rounded-lg border border-emerald-100 bg-emerald-50/50 p-3 text-sm"
+                className="rounded-lg border border-ui-success/30 bg-ui-success-soft/50 p-3 text-sm"
               >
                 <p className="font-semibold text-ui-ink">{item.name}</p>
                 <p className="mt-0.5 text-xs text-ui-body">{item.relevanceReason}</p>
@@ -187,10 +187,10 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
             {c.bestProjects.map((item) => (
               <div
                 key={item.id}
-                className="rounded-lg border border-sky-100 bg-sky-50/50 p-3 text-sm"
+                className="rounded-lg border border-ui-teal/30 bg-ui-teal-soft/50 p-3 text-sm"
               >
                 <div className="flex items-center gap-1.5">
-                  <FolderOpen className="h-3.5 w-3.5 text-sky-600" />
+                  <FolderOpen className="h-3.5 w-3.5 text-ui-teal" />
                   <p className="font-semibold text-ui-ink">{item.name}</p>
                 </div>
                 <p className="mt-0.5 text-xs text-ui-body">{item.relevanceReason}</p>
@@ -207,7 +207,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
             {c.skillsToEmphasize.map((skill) => (
               <span
                 key={skill}
-                className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
+                className="rounded-full border border-ui-success/30 bg-ui-success-soft px-2.5 py-1 text-xs font-medium text-ui-success"
               >
                 {skill}
               </span>
@@ -242,7 +242,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
             {c.evidenceGaps.map((gap) => (
               <div
                 key={gap.requirement}
-                className="rounded-lg border border-amber-100 bg-amber-50/50 p-3"
+                className="rounded-lg border border-ui-warning/30 bg-ui-warning-soft/50 p-3"
               >
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-ui-ink">{gap.requirement}</p>
@@ -275,7 +275,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
           <ul className="flex flex-col gap-2">
             {c.screeningPrep.map((item) => (
               <li key={item} className="flex items-start gap-2 text-sm text-ui-ink">
-                <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-ui-warning" />
                 <span>{item}</span>
               </li>
             ))}
@@ -289,7 +289,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
           <ul className="flex flex-col gap-2">
             {c.potentialConcerns.map((concern) => (
               <li key={concern} className="flex items-start gap-2 text-sm text-ui-ink">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-ui-warning" />
                 <span>{concern}</span>
               </li>
             ))}
@@ -307,7 +307,7 @@ function StrategyView({ strategy, jobId, onRegenerate, onApprove, approving }: S
       </div>
 
       {/* Action bar */}
-      <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+      <div className="flex flex-wrap items-center gap-3 border-t border-ui-border pt-4">
         {!isApproved ? (
           <Button
             variant="primary"
@@ -412,7 +412,7 @@ export function StrategyPanel({ jobId }: StrategyPanelProps) {
           <div>
             <div className="flex items-center gap-2.5">
               <Sparkles className="h-5 w-5 text-ui-teal" />
-              <h2 className="text-[17px] font-semibold tracking-[-0.014em] text-ui-ink">
+              <h2 className="text-base font-semibold tracking-[-0.014em] text-ui-ink">
                 Application Strategy
               </h2>
             </div>

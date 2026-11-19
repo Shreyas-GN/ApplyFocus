@@ -61,7 +61,7 @@ export function LandingProblem() {
           <div className="grid gap-6 sm:grid-cols-3 sm:items-center sm:gap-10">
             <div className="sm:col-span-2">
               <p className="font-ui text-[16px] font-semibold text-lp-ink">
-                ApplyPilot is built to solve all of this — in one connected experience.
+                ApplyFocus is built to solve all of this — in one connected experience.
               </p>
               <p className="mt-2 font-ui text-[14px] leading-[1.65] text-lp-body">
                 Not another resume builder. Not an ATS checker. Not a job portal. A workspace that connects your professional profile to real opportunities — and helps you act on them with clarity.

@@ -322,7 +322,7 @@ function SettingsContent() {
         <Card>
           <CardHeader
             title="Notification Preferences"
-            description="Choose which reminders and job-matching notifications ApplyPilot surfaces for you."
+            description="Choose which reminders and job-matching notifications ApplyFocus surfaces for you."
           />
           {notifStatus && (
             <div className="mb-4">
@@ -371,7 +371,7 @@ function SettingsContent() {
             {activityLoading ? (
               <div className="h-20 animate-pulse rounded bg-ui-linen" />
             ) : activity && activity.length > 0 ? (
-              <ul className="flex max-h-64 flex-col divide-y divide-slate-100 overflow-y-auto text-xs">
+              <ul className="flex max-h-64 flex-col divide-y divide-ui-border overflow-y-auto text-xs">
                 {activity.slice(0, 20).map((entry) => (
                   <li key={entry.id} className="flex items-center justify-between gap-4 py-2">
                     <span className="text-ui-ink">
@@ -391,7 +391,7 @@ function SettingsContent() {
           <Card>
             <CardHeader
               title="Data Export & Account Deletion"
-              description="Download all of your data or permanently delete your ApplyPilot account."
+              description="Download all of your data or permanently delete your ApplyFocus account."
             />
             <div className="flex flex-col gap-6">
               <div>
@@ -403,8 +403,8 @@ function SettingsContent() {
                 </a>
               </div>
 
-              <form onSubmit={handleDeleteAccount} className="border-t border-slate-100 pt-4">
-                <p className="mb-2 text-sm font-semibold text-red-700">Danger zone</p>
+              <form onSubmit={handleDeleteAccount} className="border-t border-ui-border pt-4">
+                <p className="mb-2 text-sm font-semibold text-ui-error">Danger zone</p>
                 <p className="mb-3 text-xs text-ui-muted">
                   Permanently deletes your profile, stored resume files, tailored documents, tracked applications, and login account.
                 </p>

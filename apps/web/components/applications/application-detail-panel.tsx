@@ -231,7 +231,7 @@ export function ApplicationDetailPanel({
                 <Badge
                   className={
                     readiness.completedCount === readiness.totalCount
-                      ? "bg-emerald-50 text-emerald-700"
+                      ? "bg-ui-success-soft text-ui-success"
                       : "bg-ui-teal-soft text-ui-teal"
                   }
                 >
@@ -243,9 +243,9 @@ export function ApplicationDetailPanel({
                 <li className="flex items-center justify-between gap-2 text-ui-ink">
                   <span className="flex items-center gap-2">
                     {readiness.profileComplete ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 text-ui-success" />
                     ) : (
-                      <Circle className="h-4 w-4 text-slate-300" />
+                      <Circle className="h-4 w-4 text-ui-border" />
                     )}
                     <span>Candidate profile is at least 70% complete</span>
                   </span>
@@ -258,9 +258,9 @@ export function ApplicationDetailPanel({
                 <li className="flex items-center justify-between gap-2 text-ui-ink">
                   <span className="flex items-center gap-2">
                     {readiness.hasResume ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 text-ui-success" />
                     ) : (
-                      <Circle className="h-4 w-4 text-slate-300" />
+                      <Circle className="h-4 w-4 text-ui-border" />
                     )}
                     <span>Base resume uploaded</span>
                   </span>
@@ -276,9 +276,9 @@ export function ApplicationDetailPanel({
                 <li className="flex items-center justify-between gap-2 text-ui-ink">
                   <span className="flex items-center gap-2">
                     {readiness.tailoredResume ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 text-ui-success" />
                     ) : (
-                      <Circle className="h-4 w-4 text-slate-300" />
+                      <Circle className="h-4 w-4 text-ui-border" />
                     )}
                     <span>Tailored resume created for this role</span>
                   </span>
@@ -294,9 +294,9 @@ export function ApplicationDetailPanel({
                 <li className="flex items-center justify-between gap-2 text-ui-ink">
                   <span className="flex items-center gap-2">
                     {readiness.coverLetter ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 text-ui-success" />
                     ) : (
-                      <Circle className="h-4 w-4 text-slate-300" />
+                      <Circle className="h-4 w-4 text-ui-border" />
                     )}
                     <span>Cover letter drafted for this role</span>
                   </span>
@@ -388,7 +388,7 @@ export function ApplicationDetailPanel({
               <button
                 type="button"
                 onClick={() => onDelete(application.id)}
-                className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-ui-error hover:bg-ui-error-soft"
               >
                 Delete application
               </button>
@@ -413,7 +413,7 @@ export function ApplicationDetailPanel({
                   key={prompt}
                   type="button"
                   onClick={() => setQuestion(prompt)}
-                  className="rounded-full border border-ui-border bg-ui-canvas px-2.5 py-1 text-left text-[11px] text-ui-ink hover:bg-ui-linen"
+                  className="rounded-full border border-ui-border bg-ui-canvas px-2.5 py-1 text-left text-xs text-ui-ink hover:bg-ui-linen"
                 >
                   {prompt}
                 </button>
@@ -438,7 +438,7 @@ export function ApplicationDetailPanel({
             {screeningResult && (
               <div className="rounded-lg border border-ui-teal-soft bg-ui-teal-soft/40 p-3">
                 <div className="mb-1.5 flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-ui-copper">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-ui-teal-ink">
                     Suggested Answer
                   </span>
                   <button
@@ -457,7 +457,7 @@ export function ApplicationDetailPanel({
                   {screeningResult.answer}
                 </p>
                 {screeningResult.groundedFacts.length > 0 && (
-                  <p className="mt-2 text-[11px] text-ui-muted">
+                  <p className="mt-2 text-xs text-ui-muted">
                     Grounded in: {screeningResult.groundedFacts.join(" · ")}
                   </p>
                 )}

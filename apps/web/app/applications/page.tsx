@@ -237,9 +237,9 @@ function ApplicationsContent() {
       </div>
 
       {dueFollowUpsCount > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ui-warning/30 bg-ui-warning-soft/70 px-4 py-3 text-sm text-ui-warning">
           <div className="flex items-center gap-2">
-            <CalendarClock className="h-4 w-4 text-amber-700" />
+            <CalendarClock className="h-4 w-4 text-ui-warning" />
             <span>
               You have <strong>{dueFollowUpsCount}</strong> follow-up reminder
               {dueFollowUpsCount === 1 ? "" : "s"} due soon or overdue.
@@ -251,7 +251,7 @@ function ApplicationsContent() {
               setViewMode("list");
               setFilterStatus("followups");
             }}
-            className="text-xs font-semibold text-amber-900 underline"
+            className="text-xs font-semibold text-ui-warning underline"
           >
             View follow-ups
           </button>
@@ -295,13 +295,13 @@ function ApplicationsContent() {
             placeholder="https://..."
           />
           <div>
-            <label className="mb-1.5 block text-[13px] font-medium text-ui-ink">
+            <label className="mb-1.5 block text-sm font-medium text-ui-ink">
               Initial status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
-              className="w-full rounded-[10px] border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
+              className="w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
             >
               {STATUSES.map((st) => (
                 <option key={st} value={st} className="capitalize">
@@ -311,14 +311,14 @@ function ApplicationsContent() {
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-[13px] font-medium text-ui-ink">
+            <label className="mb-1.5 block text-sm font-medium text-ui-ink">
               Follow-up reminder (optional)
             </label>
             <input
               type="date"
               value={followUpDate}
               onChange={(e) => setFollowUpDate(e.target.value)}
-              className="w-full rounded-[10px] border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
+              className="w-full rounded-lg border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-ink focus:border-ui-teal focus:outline-none"
             />
           </div>
           <div className="flex justify-end gap-2 sm:col-span-2">
@@ -448,7 +448,7 @@ function ApplicationsContent() {
                                 className={
                                   app.readiness.completedCount ===
                                   app.readiness.totalCount
-                                    ? "bg-emerald-50 text-emerald-700"
+                                    ? "bg-ui-success-soft text-ui-success"
                                     : "bg-ui-teal-soft text-ui-teal"
                                 }
                               >
@@ -459,7 +459,7 @@ function ApplicationsContent() {
                               <Badge
                                 className={
                                   dueSoon
-                                    ? "bg-amber-100 text-amber-800"
+                                    ? "bg-ui-warning-soft text-ui-warning"
                                     : "bg-ui-linen text-ui-body"
                                 }
                               >
@@ -468,7 +468,7 @@ function ApplicationsContent() {
                             )}
                           </div>
 
-                          <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
+                          <div className="flex items-center justify-between gap-2 border-t border-ui-border pt-2">
                             <select
                               aria-label={`Move ${app.title} stage`}
                               value={app.status}
@@ -479,7 +479,7 @@ function ApplicationsContent() {
                                   e.target.value as ApplicationStatus
                                 )
                               }
-                              className="rounded border border-ui-border bg-white px-2 py-1 text-[11px] font-medium text-ui-ink focus:border-ui-teal focus:outline-none"
+                              className="rounded border border-ui-border bg-white px-2 py-1 text-xs font-medium text-ui-ink focus:border-ui-teal focus:outline-none"
                             >
                               {STATUSES.map((st) => (
                                 <option key={st} value={st}>
@@ -540,7 +540,7 @@ function ApplicationsContent() {
                           className={
                             app.readiness.completedCount ===
                             app.readiness.totalCount
-                              ? "bg-emerald-50 text-emerald-700"
+                              ? "bg-ui-success-soft text-ui-success"
                               : "bg-ui-teal-soft text-ui-teal"
                           }
                         >
@@ -551,7 +551,7 @@ function ApplicationsContent() {
                         <Badge
                           className={
                             dueSoon
-                              ? "bg-amber-100 text-amber-800"
+                              ? "bg-ui-warning-soft text-ui-warning"
                               : "bg-ui-linen text-ui-body"
                           }
                         >

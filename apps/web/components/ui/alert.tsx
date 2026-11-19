@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 const TONE_CLASSES: Record<string, string> = {
-  error: "bg-red-50 text-red-800 border-red-200",
-  success: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  error: "bg-ui-error-soft text-ui-error border-ui-error/30",
+  success: "bg-ui-success-soft text-ui-success border-ui-success/30",
   info: "bg-ui-teal-soft text-ui-ink border-ui-teal-soft",
-  warning: "bg-amber-50 text-amber-900 border-amber-200",
+  warning: "bg-ui-warning-soft text-ui-warning border-ui-warning/30",
 };
 
 export function Alert({

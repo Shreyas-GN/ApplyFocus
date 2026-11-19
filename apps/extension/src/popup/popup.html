@@ -6,27 +6,27 @@
     <style>
       * { box-sizing: border-box; }
       body {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family: 'Geist', system-ui, sans-serif;
         width: 340px;
         margin: 0;
         padding: 14px;
-        background: #f8fafc;
-        color: #0f172a;
+        background: #F8F8F8;
+        color: #202124;
       }
-      h1 { font-size: 15px; margin: 0 0 4px; color: #1e293b; }
-      p { font-size: 12px; color: #475569; margin: 0 0 10px; line-height: 1.4; }
+      h1 { font-size: 15px; margin: 0 0 4px; color: #202124; }
+      p { font-size: 12px; color: #3D3F47; margin: 0 0 10px; line-height: 1.4; }
       .card {
         background: #fff;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #E1E0DC;
         border-radius: 10px;
         padding: 12px;
         margin-bottom: 10px;
       }
-      label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+      label { display: block; font-size: 11px; font-weight: 600; color: #3D3F47; margin-bottom: 4px; }
       input {
         width: 100%;
         padding: 7px 9px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid #E1E0DC;
         border-radius: 7px;
         font-size: 12px;
         margin-bottom: 10px;
@@ -41,9 +41,9 @@
         cursor: pointer;
         margin-top: 6px;
       }
-      button.primary { background: #2c47d6; color: #fff; }
-      button.secondary { background: #fff; color: #334155; border: 1px solid #cbd5e1; }
-      button.danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+      button.primary { background: #BC4A32; color: #fff; }
+      button.secondary { background: #fff; color: #3D3F47; border: 1px solid #E1E0DC; }
+      button.danger { background: #FBE9E6; color: #A83A2C; border: 1px solid #E1E0DC; }
       button:disabled { opacity: 0.55; cursor: not-allowed; }
       .badge {
         display: inline-block;
@@ -51,8 +51,8 @@
         border-radius: 999px;
         font-size: 11px;
         font-weight: 600;
-        background: #eef4ff;
-        color: #2c47d6;
+        background: #F9EAE6;
+        color: #BC4A32;
       }
       .field-list {
         list-style: none;
@@ -64,11 +64,11 @@
       .field-list li {
         font-size: 11px;
         padding: 4px 0;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #F0F0F0;
       }
       .status { font-size: 12px; margin-top: 8px; }
-      .status.error { color: #b91c1c; }
-      .status.ok { color: #15803d; }
+      .status.error { color: #A83A2C; }
+      .status.ok { color: #1F7A55; }
       .hidden { display: none; }
     </style>
   </head>
@@ -111,7 +111,7 @@
         <input id="screening-question" type="text" placeholder="Why are you interested in this role?" />
         <button id="answer-screening-btn" class="secondary">Draft grounded answer</button>
         <div id="screening-result" class="hidden" style="margin-top:8px;">
-          <p id="screening-answer" style="font-size:11px;color:#1e293b;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:6px;"></p>
+          <p id="screening-answer" style="font-size:11px;color:#202124;background:#F8F8F8;padding:8px;border-radius:6px;border:1px solid #E1E0DC;margin-bottom:6px;"></p>
           <button id="copy-screening-btn" class="secondary">Copy answer</button>
         </div>
       </div>

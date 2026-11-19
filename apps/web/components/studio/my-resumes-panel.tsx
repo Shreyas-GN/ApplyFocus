@@ -111,13 +111,13 @@ export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
             ))}
           </div>
         ) : error ? (
-          <p className="text-sm text-red-600">Couldn&apos;t load your resumes.</p>
+          <p className="text-sm text-ui-error">Couldn&apos;t load your resumes.</p>
         ) : !resumes || resumes.length === 0 ? (
           <p className="text-sm text-ui-muted">
             No resumes yet. Upload one to get started — we&apos;ll do the rest.
           </p>
         ) : (
-          <ul className="flex flex-col divide-y divide-slate-100">
+          <ul className="flex flex-col divide-y divide-ui-border">
             {resumes.map((resume) => (
               <li key={resume.id} className="flex flex-wrap items-center justify-between gap-4 py-4">
                 <div className="min-w-0">
@@ -141,7 +141,7 @@ export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
                     {resume.reviewStatus === "confirmed" && <StatusBadge status="confirmed" />}
                   </div>
                   {resume.processingError && (
-                    <p className="mt-1 text-xs text-red-600">{resume.processingError}</p>
+                    <p className="mt-1 text-xs text-ui-error">{resume.processingError}</p>
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-2">

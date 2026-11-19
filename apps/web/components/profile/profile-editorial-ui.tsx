@@ -15,7 +15,7 @@ export function ProvenanceBadge({
 }) {
   if (kind === "empty") {
     return (
-      <span className="inline-flex items-center rounded-full border border-ui-border bg-ui-linen px-2.5 py-0.5 font-mono text-[11px] font-medium text-ui-muted">
+      <span className="inline-flex items-center rounded-full border border-ui-border bg-ui-linen px-2.5 py-0.5 font-mono text-xs font-medium text-ui-muted">
         Not yet added
       </span>
     );
@@ -23,7 +23,7 @@ export function ProvenanceBadge({
 
   if (kind === "user") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-emerald-700">
+      <span className="inline-flex items-center gap-1 rounded-full bg-ui-success-soft px-2.5 py-0.5 font-mono text-xs font-medium text-ui-success">
         <span aria-hidden="true">✓</span> User-confirmed
       </span>
     );
@@ -31,7 +31,7 @@ export function ProvenanceBadge({
 
   if (kind === "ai_suggested") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-ui-lilac-soft px-2.5 py-0.5 font-mono text-[11px] font-medium text-ui-violet">
+      <span className="inline-flex items-center gap-1 rounded-full bg-ui-teal-soft px-2.5 py-0.5 font-mono text-xs font-medium text-ui-teal">
         AI-suggested · unverified
       </span>
     );
@@ -43,7 +43,7 @@ export function ProvenanceBadge({
       : "";
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-ap-butter px-2.5 py-0.5 font-mono text-[11px] font-medium text-ui-ink">
+    <span className="inline-flex items-center gap-1 rounded-full bg-ui-warning-soft px-2.5 py-0.5 font-mono text-xs font-medium text-ui-ink">
       AI-extracted{pct} · verify
     </span>
   );
@@ -90,19 +90,19 @@ export function SectionFrame({
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className="scroll-mt-24 rounded-[14px] border border-ui-border bg-ui-surface p-5 shadow-[0_1px_2px_rgba(30,25,21,0.04)] sm:p-6"
+      className="scroll-mt-24 rounded-xl border border-ui-border bg-ui-surface p-5 shadow-[0_1px_2px_rgba(30,25,21,0.04)] sm:p-6"
     >
       <div className="mb-5 flex flex-col gap-3 border-b border-ui-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ui-muted">
+            <span className="font-mono text-xs font-medium uppercase tracking-[0.06em] text-ui-muted">
               {sectionNumber} · {eyebrow}
             </span>
             <ProvenanceBadge kind={provenance} />
           </div>
           <h2
             id={`${id}-heading`}
-            className="font-display text-[22px] leading-[1.2] tracking-[-0.015em] text-ui-ink"
+            className="font-display text-xl tracking-[-0.015em] text-ui-ink"
           >
             {title}
           </h2>
@@ -115,7 +115,7 @@ export function SectionFrame({
               type="button"
               onClick={confirmAction.onClick}
               disabled={confirmAction.loading}
-              className="inline-flex h-9 items-center justify-center rounded-full border border-ap-sage bg-emerald-50 px-3.5 text-xs font-medium text-emerald-700 transition hover:opacity-90 disabled:opacity-50"
+              className="inline-flex h-9 items-center justify-center rounded-full border border-ui-success bg-ui-success-soft px-3.5 text-xs font-medium text-ui-success transition hover:opacity-90 disabled:opacity-50"
             >
               {confirmAction.loading ? "Confirming…" : confirmAction.label}
             </button>
@@ -206,7 +206,7 @@ export function TagListInput({
 
   const chipTone =
     tone === "sage"
-      ? "border-ap-sage/30 bg-emerald-50 text-emerald-700"
+      ? "border-ui-success/30 bg-ui-success-soft text-ui-success"
       : tone === "vermilion"
         ? "border-ui-teal/25 bg-ui-teal-soft text-ui-teal"
         : "border-ui-border bg-ui-linen text-ui-ink";
@@ -338,7 +338,7 @@ export function BulletListInput({
                 type="button"
                 onClick={() => removeLine(index)}
                 aria-label={`Remove ${label} item ${index + 1}`}
-                className="shrink-0 rounded px-1.5 py-1 text-xs font-medium text-ap-danger hover:bg-red-50"
+                className="shrink-0 rounded px-1.5 py-1 text-xs font-medium text-ui-error hover:bg-ui-error-soft"
               >
                 Remove
               </button>

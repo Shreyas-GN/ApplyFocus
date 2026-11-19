@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
           href="/"
           className="mb-6 block text-center text-lg font-semibold text-ui-teal"
         >
-          ApplyPilot
+          ApplyFocus
         </Link>
         <Card>
           <h1 className="mb-6 text-xl font-semibold text-ui-ink">

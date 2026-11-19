@@ -115,7 +115,7 @@ export function LandingProfileSection() {
               Understand your professional value. Completely.
             </h2>
             <p className="mt-5 font-ui text-[16px] leading-[1.7] text-lp-body">
-              Upload your resume and ApplyPilot builds a structured profile from your skills, experience, projects and achievements. You see exactly what was extracted — and you confirm it before it&apos;s used in any evaluation.
+              Upload your resume and ApplyFocus builds a structured profile from your skills, experience, projects and achievements. You see exactly what was extracted — and you confirm it before it&apos;s used in any evaluation.
             </p>
             <ul className="mt-7 space-y-3.5">
               {[
@@ -135,7 +135,7 @@ export function LandingProfileSection() {
               <ShieldCheck className="h-5 w-5 flex-shrink-0 text-lp-accent" />
               <p className="font-ui text-[13px] leading-snug text-lp-body">
                 <strong className="font-semibold text-lp-ink">Your profile is your foundation.</strong>
-                {" "}ApplyPilot only uses what you&apos;ve confirmed.
+                {" "}ApplyFocus only uses what you&apos;ve confirmed.
               </p>
             </div>
           </div>

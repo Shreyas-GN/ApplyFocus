@@ -89,8 +89,8 @@ export function ExtensionPairingCard({
       </form>
 
       {pairingToken && (
-        <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm">
-          <p className="font-medium text-emerald-900">
+        <div className="mt-4 rounded-lg border border-ui-success/30 bg-ui-success-soft p-3 text-sm">
+          <p className="font-medium text-ui-success">
             Copy this pairing token now — it won&apos;t be shown again:
           </p>
           <div className="mt-2 flex items-center gap-2">
@@ -109,8 +109,8 @@ export function ExtensionPairingCard({
               {copiedToken ? "Copied" : "Copy"}
             </Button>
           </div>
-          <p className="mt-2 text-xs text-emerald-800">
-            Load <code>apps/extension/dist</code> as an unpacked extension in Chrome, then paste this token in the ApplyPilot popup.
+          <p className="mt-2 text-xs text-ui-success">
+            Load <code>apps/extension/dist</code> as an unpacked extension in Chrome, then paste this token in the ApplyFocus popup.
           </p>
         </div>
       )}
@@ -122,7 +122,7 @@ export function ExtensionPairingCard({
         {sessionsLoading ? (
           <div className="h-12 animate-pulse rounded bg-ui-linen" />
         ) : sessions && sessions.length > 0 ? (
-          <ul className="flex flex-col divide-y divide-slate-100 text-sm">
+          <ul className="flex flex-col divide-y divide-ui-border text-sm">
             {sessions.map((s) => (
               <li key={s.id} className="flex items-center justify-between gap-3 py-2.5">
                 <div>
@@ -140,7 +140,7 @@ export function ExtensionPairingCard({
                   <button
                     type="button"
                     onClick={() => handleRevokeSession(s.id)}
-                    className="rounded px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                    className="rounded px-2.5 py-1 text-xs font-medium text-ui-error hover:bg-ui-error-soft"
                   >
                     Revoke
                   </button>
