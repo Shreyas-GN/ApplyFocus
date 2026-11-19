@@ -90,8 +90,8 @@ async function sendVerification(row: typeof users.$inferSelect): Promise<void> {
   await sendVerificationEmail(row.email, token);
 }
 
-export interface SignUpResult {
-  /** False when the account exists but the confirmation email could not be sent. */
+export interface SignUpResult extends AuthResult {
+  /** False when the confirmation email could not be sent (the account still works). */
   emailSent: boolean;
 }
 
@@ -108,57 +108,37 @@ export async function signUp(
     'Too many sign-up attempts. Please try again later.'
   );
 
+  const alreadyExists = () =>
+    new HttpError(409, 'An account with this email already exists. Try logging in.');
+
   const passwordHash = await hashPassword(password);
   const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  // Never hand a session to someone who merely typed an existing address.
+  if (existing) throw alreadyExists();
 
-  let target: typeof users.$inferSelect;
-  if (existing) {
-    if (existing.emailVerifiedAt) {
-      throw new HttpError(
-        409,
-        'An account with this email already exists. Try logging in.'
-      );
-    }
-    // Unverified: the owner never proved control of this address, so a retry
-    // (e.g. after a failed confirmation email) replaces the password and
-    // re-sends the link instead of leaving the signup stuck.
-    const [updated] = await db
-      .update(users)
-      .set({ passwordHash })
-      .where(eq(users.id, existing.id))
-      .returning();
-    target = updated ?? existing;
-  } else {
-    try {
-      const [created] = await db
-        .insert(users)
-        .values({ email, passwordHash })
-        .returning();
-      if (!created) throw new Error('User insert returned no row.');
-      target = created;
-    } catch (error) {
-      if (dbErrorCode(error) === '23505') {
-        throw new HttpError(
-          409,
-          'An account with this email already exists. Try logging in.'
-        );
-      }
-      throw error;
-    }
-  }
-
+  let created: typeof users.$inferSelect | undefined;
   try {
-    await sendVerification(target);
-    return { emailSent: true };
+    [created] = await db.insert(users).values({ email, passwordHash }).returning();
   } catch (error) {
-    // The account is saved; the user can re-send from the next screen.
+    if (dbErrorCode(error) === '23505') throw alreadyExists();
+    throw error;
+  }
+  if (!created) throw new Error('User insert returned no row.');
+
+  // Confirmation is best-effort: it must never block account creation.
+  let emailSent = true;
+  try {
+    await sendVerification(created);
+  } catch (error) {
+    emailSent = false;
     console.error(
       '[auth:signup] Account created but the confirmation email failed. ' +
         'Check RESEND_API_KEY / EMAIL_FROM and that the Resend domain is verified:',
       error
     );
-    return { emailSent: false };
   }
+
+  return { ...(await startSession(created)), emailSent };
 }
 
 export async function logIn(
@@ -189,20 +169,6 @@ export async function logIn(
   }
 
   await clear(emailKey);
-
-  if (!row.emailVerifiedAt) {
-    // Correct password but unverified: send a fresh link (throttled).
-    try {
-      await enforce(`verify:email:${email}`, 5, HOUR, 'Too many emails requested.');
-      await sendVerification(row);
-    } catch (error) {
-      console.error('Could not resend verification email:', error);
-    }
-    throw new HttpError(
-      403,
-      'Please confirm your email first. We just sent you a new confirmation link.'
-    );
-  }
 
   return startSession(row);
 }

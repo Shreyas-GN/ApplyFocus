@@ -12,17 +12,11 @@ import {
 } from "react";
 import { api, ApiError, setCsrfToken } from "./api-client";
 
-export interface RegisterResult {
-  requiresEmailConfirmation: boolean;
-  /** False when the account was created but the email could not be sent. */
-  emailSent: boolean;
-}
-
 interface AuthContextValue {
   user: AuthUserDto | null;
   loading: boolean;
   login(email: string, password: string): Promise<void>;
-  register(email: string, password: string): Promise<RegisterResult | void>;
+  register(email: string, password: string): Promise<void>;
   logout(): Promise<void>;
   refreshUser(): Promise<void>;
 }
@@ -82,18 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (email: string, password: string): Promise<RegisterResult> => {
-      const res = await api.post<{ emailSent?: boolean }>("/auth/signup", {
-        email,
-        password,
-      });
-      // Accounts are activated through the emailed link, so no session yet.
-      return {
-        requiresEmailConfirmation: true,
-        emailSent: res?.emailSent !== false,
-      };
+    async (email: string, password: string) => {
+      applySession(await api.post<SessionPayload>("/auth/signup", { email, password }));
     },
-    []
+    [applySession]
   );
 
   const logout = useCallback(async () => {

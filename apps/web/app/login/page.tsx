@@ -74,7 +74,7 @@ export default function LoginPage() {
           setFormError("Incorrect email or password.");
         } else if (/email not confirmed/i.test(error.detail)) {
           setFormError(
-            "Please confirm your email address before logging in. Check your inbox for the verification link."
+            "Please confirm your email address."
           );
         } else {
           setFormError(error.detail);

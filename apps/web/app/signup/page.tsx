@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { registerSchema } from "@applypilot/validators";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -20,9 +20,6 @@ export default function SignupPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [pendingConfirmation, setPendingConfirmation] = useState(false);
-  const [resendMessage, setResendMessage] = useState<string | null>(null);
-  const [resending, setResending] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -40,81 +37,13 @@ export default function SignupPage() {
     setFieldErrors({});
     setSubmitting(true);
     try {
-      const res = await register(result.data.email, result.data.password);
-      if (res && res.requiresEmailConfirmation) {
-        if (!res.emailSent) {
-          setFormError(
-            "Your account was created, but we couldn't send the confirmation email. Press \"Resend\" below to try again."
-          );
-        }
-        setPendingConfirmation(true);
-        return;
-      }
+      await register(result.data.email, result.data.password);
       router.push("/onboarding");
     } catch (error) {
       setFormError(error instanceof ApiError ? error.detail : "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
-  }
-
-  async function handleResendConfirmation() {
-    if (!email.trim()) return;
-    setResending(true);
-    setResendMessage(null);
-    try {
-      await api.post("/auth/resend-verification", { email: email.trim() });
-      setResendMessage("Confirmation link resent. Check your inbox and spam folder.");
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Could not resend confirmation email.");
-    } finally {
-      setResending(false);
-    }
-  }
-
-  if (pendingConfirmation) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-ui-canvas px-4">
-        <div className="w-full max-w-md">
-          <Link href="/" className="mb-6 flex items-center justify-center gap-2.5">
-            <Wordmark className="h-7 w-auto text-ui-ink" />
-          </Link>
-          <Card>
-            <h1 className="mb-1 text-xl font-semibold text-ui-ink">Check your email</h1>
-            <p className="mb-4 text-sm text-ui-body">
-              We sent a confirmation link to <strong className="text-ui-ink">{email}</strong>.
-              Open the link to activate your account and continue onboarding.
-            </p>
-            {formError && (
-              <div className="mb-4">
-                <Alert tone="error">{formError}</Alert>
-              </div>
-            )}
-            {resendMessage && (
-              <div className="mb-4">
-                <Alert tone="success">{resendMessage}</Alert>
-              </div>
-            )}
-            <div className="flex flex-col gap-3">
-              <Button
-                type="button"
-                variant="secondary"
-                loading={resending}
-                onClick={handleResendConfirmation}
-              >
-                Resend confirmation email
-              </Button>
-              <Link
-                href="/login"
-                className="text-center text-sm font-medium text-ui-teal hover:underline"
-              >
-                Already confirmed? Log in →
-              </Link>
-            </div>
-          </Card>
-        </div>
-      </div>
-    );
   }
 
   return (
