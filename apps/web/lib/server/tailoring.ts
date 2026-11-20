@@ -37,6 +37,7 @@ export const tailoredResumeContentSchema = z.object({
   keywordsUsed: z.array(z.string()).default([]),
   missingKeywords: z.array(z.string()).default([]),
   rationale: z.string().default(''),
+  atsScore: z.number().optional().default(85),
 });
 
 export const coverLetterContentSchema = z.object({
@@ -61,31 +62,37 @@ export interface CreateTailoredDocumentInput {
   jobDescription?: string;
 }
 
-const RESUME_TAILOR_SYSTEM_PROMPT = `You tailor a candidate's verified profile into a targeted resume emphasis for a specific job posting.
+const RESUME_TAILOR_SYSTEM_PROMPT = `You are an elite executive resume writer and ATS optimization strategist.
+Your mission is to tailor the candidate's authentic experience into a compelling, high-converting, recruiter-ready resume specifically for the target job.
 
-STRICT NO-FABRICATION RULES:
-1. Only use companies, job titles, dates, projects, education, and skills that explicitly exist in the candidate profile JSON provided by the user.
-2. NEVER invent new employers, titles, dates, metrics, certifications, or skills not supported by the candidate profile.
-3. If an important keyword from the job posting is absent from the candidate profile, put it in "missingKeywords" instead of pretending the candidate has it.
-4. For each experience item you include, copy "company", "title", "startDate", "endDate", and "originalDescription" verbatim from the input profile, and write "tailoredDescription" by emphasizing and tightening relevant existing responsibilities.
-5. Output ONLY a single valid JSON object (no markdown fences, no commentary) matching:
+CORE PRINCIPLES:
+1. IMPACT & ACTION ORIENTATION: For every experience item, write punchy, quantifiable bullet points using the Google XYZ formula: "Accomplished [X] as measured by [Y], by doing [Z]". Use strong active power verbs (Architected, Orchestrated, Spearheaded, Accelerated, Automated, Engineered).
+2. ATS ALIGNMENT: Explicitly incorporate key technical skills, frameworks, and domain terminologies from the target job description that the candidate actually has experience with into the headline, summary, and tailored descriptions.
+3. STRICT FACTUAL ACCURACY:
+   - Only use companies, job titles, dates, projects, education, and skills that exist in the candidate profile JSON.
+   - Do NOT invent companies, credentials, degrees, or fabricate unmentioned technologies.
+   - If a crucial keyword or requirement from the job description is absent in the candidate profile, place it in "missingKeywords" so the candidate knows their gap.
+4. Calculate an estimated ATS match score (atsScore: integer from 50 to 98) representing the percentage of target job requirements covered by the candidate's background.
+
+Output ONLY a single valid JSON object (no markdown code fences, no preamble, no postscript) matching:
 {
-  "headline": "",
-  "summary": "",
-  "highlightedSkills": [""],
+  "headline": "High-impact targeted headline (e.g. Staff Full Stack Engineer | Cloud Architecture & Distributed Systems)",
+  "summary": "Compelling 3-4 sentence professional summary explicitly targeted at the role, highlighting core competencies and domain strengths.",
+  "highlightedSkills": ["Relevant Skill 1", "Relevant Skill 2"],
   "experience": [
     {
-      "company": "",
-      "title": "",
+      "company": "Company Name",
+      "title": "Title",
       "startDate": null,
       "endDate": null,
       "originalDescription": null,
-      "tailoredDescription": ""
+      "tailoredDescription": "• Spearheaded ...\\n• Architected ...\\n• Reduced ..."
     }
   ],
-  "keywordsUsed": [""],
-  "missingKeywords": [""],
-  "rationale": ""
+  "keywordsUsed": ["keyword1", "keyword2"],
+  "missingKeywords": ["gap1", "gap2"],
+  "rationale": "Strategic explanation of how this resume positioning highlights the candidate's strongest fit for this specific opening.",
+  "atsScore": 88
 }`;
 
 const COVER_LETTER_SYSTEM_PROMPT = `You write a grounded, job-specific cover letter for a candidate based strictly on their verified profile and the target job posting.
@@ -140,20 +147,27 @@ export function cleanJsonFence(raw: string): string {
 }
 
 export function buildCandidateContext(profile: ProfileDto) {
-  const summaryConfirmed = profile.intelligenceMetadata?.summarySource !== 'ai';
-  const confirmedSkills = profile.skills.filter((s) => s.source !== 'ai');
-  const confirmedExperience = profile.experience.filter((e) => e.source !== 'ai');
-  const confirmedEducation = profile.education.filter((ed) => ed.source !== 'ai');
-  const confirmedProjects = profile.projects.filter((p) => p.source !== 'ai');
+  // Use verified items if available; fall back to unverified parsed items when newly uploaded so tailoring is not empty
+  const userSkills = profile.skills.filter((s) => s.source !== 'ai');
+  const skillsToUse = userSkills.length > 0 ? userSkills : profile.skills;
+
+  const userExp = profile.experience.filter((e) => e.source !== 'ai');
+  const expToUse = userExp.length > 0 ? userExp : profile.experience;
+
+  const userEdu = profile.education.filter((ed) => ed.source !== 'ai');
+  const eduToUse = userEdu.length > 0 ? userEdu : profile.education;
+
+  const userProj = profile.projects.filter((p) => p.source !== 'ai');
+  const projToUse = userProj.length > 0 ? userProj : profile.projects;
 
   return {
     fullName: profile.fullName,
     location: profile.location,
-    headline: summaryConfirmed ? profile.headline : null,
-    summary: summaryConfirmed ? profile.summary : null,
+    headline: profile.headline,
+    summary: profile.summary,
     yearsOfExperience: profile.yearsOfExperience,
-    skills: confirmedSkills.map((s) => s.name),
-    experience: confirmedExperience.map((e) => ({
+    skills: skillsToUse.map((s) => s.name),
+    experience: expToUse.map((e) => ({
       company: e.company,
       title: e.title,
       startDate: e.startDate,
@@ -163,13 +177,13 @@ export function buildCandidateContext(profile: ProfileDto) {
       achievements: e.achievements ?? [],
       technologies: e.technologies ?? [],
     })),
-    education: confirmedEducation.map((ed) => ({
+    education: eduToUse.map((ed) => ({
       institution: ed.institution,
       degree: ed.degree,
       fieldOfStudy: ed.fieldOfStudy,
       graduationYear: ed.graduationYear ?? null,
     })),
-    projects: confirmedProjects.map((p) => ({
+    projects: projToUse.map((p) => ({
       name: p.name,
       role: p.role ?? null,
       description: p.description,
@@ -214,20 +228,50 @@ async function runClaudeJson<T>(
 export async function tailorResumeWithClaude(
   profile: ProfileDto,
   job: { company: string; title: string; description: string },
-  client?: AiMessagesClient
+  client?: AiMessagesClient,
+  atsGuidance?: string[],
+  decisionContext?: {
+    recommendationTier?: string;
+    actionPlan?: string[];
+    skillsToEmphasize?: string[];
+    claimsToAvoid?: string[];
+  }
 ): Promise<TailoredResumeContent> {
   const candidate = buildCandidateContext(profile);
   const userMessage = JSON.stringify({
     targetJob: job,
     candidateProfile: candidate,
+    atsImprovementGuidance: atsGuidance ?? [],
+    decisionContext: decisionContext ?? null,
   });
 
-  return runClaudeJson(
+  const result = await runClaudeJson(
     RESUME_TAILOR_SYSTEM_PROMPT,
     userMessage,
     tailoredResumeContentSchema,
     client
   );
+
+  return {
+    ...result,
+    contactInfo: {
+      fullName: profile.fullName,
+      email: profile.email || profile.authEmail || null,
+      phone: profile.phone,
+      location: profile.location,
+      linkedinUrl: profile.linkedinUrl,
+      githubUrl: profile.githubUrl,
+      portfolioUrl: profile.portfolioUrl,
+    },
+    education: candidate.education,
+    projects: candidate.projects,
+    certifications: profile.certifications?.map((c) => ({
+      name: c.name,
+      issuer: c.issuer ?? null,
+      issueDate: c.issueDate ?? null,
+      credentialUrl: c.credentialUrl ?? null,
+    })) ?? [],
+  };
 }
 
 export async function draftCoverLetterWithClaude(
@@ -525,12 +569,55 @@ export async function createTailoredDocument(
   const tone: CoverLetterTone | null =
     input.type === 'cover_letter' ? input.tone ?? 'conversational' : null;
 
+  let atsGuidance: string[] = [];
+  let decisionContext: {
+    recommendationTier?: string;
+    actionPlan?: string[];
+    skillsToEmphasize?: string[];
+    claimsToAvoid?: string[];
+  } | undefined = undefined;
+
+  if (resolvedJobId && input.type === 'resume') {
+    try {
+      const { listResumes } = await import('./resumes');
+      const { getOrComputeAtsAnalysis } = await import('./ats/service');
+      const { getStrategyForJob } = await import('./strategy');
+
+      const [userResumes, strategy] = await Promise.all([
+        listResumes(userId),
+        getStrategyForJob(userId, resolvedJobId),
+      ]);
+
+      const primary = userResumes.find((r) => r.isPrimary) ?? userResumes[0];
+      if (primary) {
+        const atsResult = await getOrComputeAtsAnalysis(userId, primary.id, resolvedJobId);
+        atsGuidance = atsResult.recommendations.map(
+          (r) => `${r.title}: ${r.suggestedWording ?? r.rationale}`
+        );
+      }
+
+      if (strategy?.content?.decisionEvaluation) {
+        const d = strategy.content.decisionEvaluation;
+        decisionContext = {
+          recommendationTier: d.recommendationTier,
+          actionPlan: d.actionPlan.map((a: { actionTitle: string; reason: string }) => `${a.actionTitle} (${a.reason})`),
+          skillsToEmphasize: d.skillsToEmphasize,
+          claimsToAvoid: d.positioning.claimsToAvoid,
+        };
+      }
+    } catch {
+      // Graceful fallback if no resume uploaded or db unavailable
+    }
+  }
+
   const content =
     input.type === 'resume'
       ? await tailorResumeWithClaude(
           profile,
           { company, title: jobTitle, description: jobDescription },
-          client
+          client,
+          atsGuidance,
+          decisionContext
         )
       : await draftCoverLetterWithClaude(
           profile,

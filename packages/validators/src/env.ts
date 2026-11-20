@@ -6,9 +6,14 @@ export const webEnvSchema = z.object({
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().optional(),
-  // Supabase Storage (private résumé files only — not used for auth)
-  NEXT_PUBLIC_SUPABASE_URL: z.string().min(1, "NEXT_PUBLIC_SUPABASE_URL is required"),
-  SUPABASE_SECRET_KEY: z.string().min(1, "SUPABASE_SECRET_KEY is required").optional(),
+  // Cloudflare R2 Storage (private résumé files only — not used for auth)
+  R2_ENDPOINT: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET_NAME: z.string().default("applyfocus-resumes"),
+  // Cloudflare Turnstile
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
+  TURNSTILE_SECRET_KEY: z.string().optional(),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   DATABASE_MIGRATION_URL: z.string().min(1).optional(),
   OPENROUTER_API_KEY: z.string().optional(),

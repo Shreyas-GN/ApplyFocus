@@ -93,6 +93,7 @@ async function sendVerification(row: typeof users.$inferSelect): Promise<void> {
 export interface SignUpResult {
   /** False when the account exists but the confirmation email could not be sent. */
   emailSent: boolean;
+  session?: AuthResult;
 }
 
 export async function signUp(
@@ -119,12 +120,10 @@ export async function signUp(
         'An account with this email already exists. Try logging in.'
       );
     }
-    // Unverified: the owner never proved control of this address, so a retry
-    // (e.g. after a failed confirmation email) replaces the password and
-    // re-sends the link instead of leaving the signup stuck.
+    // Update password and auto-verify account
     const [updated] = await db
       .update(users)
-      .set({ passwordHash })
+      .set({ passwordHash, emailVerifiedAt: new Date(), emailVerified: true })
       .where(eq(users.id, existing.id))
       .returning();
     target = updated ?? existing;
@@ -132,7 +131,12 @@ export async function signUp(
     try {
       const [created] = await db
         .insert(users)
-        .values({ email, passwordHash })
+        .values({
+          email,
+          passwordHash,
+          emailVerifiedAt: new Date(),
+          emailVerified: true,
+        })
         .returning();
       if (!created) throw new Error('User insert returned no row.');
       target = created;
@@ -147,18 +151,9 @@ export async function signUp(
     }
   }
 
-  try {
-    await sendVerification(target);
-    return { emailSent: true };
-  } catch (error) {
-    // The account is saved; the user can re-send from the next screen.
-    console.error(
-      '[auth:signup] Account created but the confirmation email failed. ' +
-        'Check RESEND_API_KEY / EMAIL_FROM and that the Resend domain is verified:',
-      error
-    );
-    return { emailSent: false };
-  }
+  // Auto-activate and start session immediately without email confirmation barrier
+  const session = await startSession(target);
+  return { emailSent: false, session };
 }
 
 export async function logIn(
@@ -179,7 +174,7 @@ export async function logIn(
 
   const [row] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-  const valid = row
+  const valid = row && row.passwordHash
     ? await verifyPassword(row.passwordHash, password)
     : (await verifyDummyPassword(password), false);
 
@@ -191,17 +186,11 @@ export async function logIn(
   await clear(emailKey);
 
   if (!row.emailVerifiedAt) {
-    // Correct password but unverified: send a fresh link (throttled).
-    try {
-      await enforce(`verify:email:${email}`, 5, HOUR, 'Too many emails requested.');
-      await sendVerification(row);
-    } catch (error) {
-      console.error('Could not resend verification email:', error);
-    }
-    throw new HttpError(
-      403,
-      'Please confirm your email first. We just sent you a new confirmation link.'
-    );
+    // If account was marked unverified historically, auto-verify it now
+    await db
+      .update(users)
+      .set({ emailVerifiedAt: new Date(), emailVerified: true })
+      .where(eq(users.id, row.id));
   }
 
   return startSession(row);

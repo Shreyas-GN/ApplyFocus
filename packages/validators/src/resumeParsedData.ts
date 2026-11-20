@@ -14,6 +14,13 @@ const sourceSchema = z.enum(["ai", "user"]);
 const confidenceSchema = z.number().min(0).max(1);
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 
+export const skillEvidenceCategorySchema = z.enum([
+  "USER_CONFIRMED",
+  "AI_EXTRACTED",
+  "AI_SUGGESTED",
+]);
+export type SkillEvidenceCategory = z.infer<typeof skillEvidenceCategorySchema>;
+
 export const resumeParsedPersonalSchema = z.object({
   fullName: optionalText(200),
   email: z.string().trim().toLowerCase().email().optional().or(z.literal("")),
@@ -24,6 +31,10 @@ export const resumeParsedPersonalSchema = z.object({
   portfolioUrl: optionalText(500),
   headline: optionalText(200),
   summary: optionalText(5000),
+  yearsOfExperience: z.number().min(0).max(80).nullable().optional(),
+  currentRole: optionalText(200),
+  careerDomain: optionalText(100),
+  seniorityEstimate: optionalText(50),
 });
 
 export const resumeParsedExperienceSchema = z.object({
@@ -34,6 +45,10 @@ export const resumeParsedExperienceSchema = z.object({
   endDate: optionalText(20),
   isCurrent: z.boolean().optional().default(false),
   description: optionalText(5000),
+  responsibilities: z.array(z.string().trim().max(500)).max(30).optional(),
+  achievements: z.array(z.string().trim().max(500)).max(30).optional(),
+  technologies: z.array(z.string().trim().max(100)).max(50).optional(),
+  evidenceSentences: z.array(z.string().trim().max(500)).max(20).optional(),
   confidence: confidenceSchema,
   source: sourceSchema.default("ai"),
 });
@@ -44,6 +59,7 @@ export const resumeParsedEducationSchema = z.object({
   fieldOfStudy: optionalText(200),
   startDate: optionalText(20),
   endDate: optionalText(20),
+  graduationYear: z.number().int().min(1940).max(2040).nullable().optional(),
   description: optionalText(2000),
   confidence: confidenceSchema,
   source: sourceSchema.default("ai"),
@@ -54,6 +70,10 @@ export const resumeParsedSkillSchema = z.object({
   category: optionalText(100),
   confidence: confidenceSchema,
   source: sourceSchema.default("ai"),
+  evidenceCategory: skillEvidenceCategorySchema.optional().default("AI_EXTRACTED"),
+  evidenceSentence: optionalText(500),
+  connectedExperience: optionalText(200),
+  connectedProject: optionalText(200),
 });
 
 export const resumeParsedProjectSchema = z.object({
@@ -62,6 +82,10 @@ export const resumeParsedProjectSchema = z.object({
   url: optionalText(500),
   startDate: optionalText(20),
   endDate: optionalText(20),
+  technologies: z.array(z.string().trim().max(100)).max(40).optional(),
+  responsibilities: z.array(z.string().trim().max(500)).max(30).optional(),
+  measurableOutcomes: z.array(z.string().trim().max(500)).max(20).optional(),
+  skillsDemonstrated: z.array(z.string().trim().max(100)).max(40).optional(),
   confidence: confidenceSchema,
   source: sourceSchema.default("ai"),
 });

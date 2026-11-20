@@ -43,5 +43,6 @@ infrastructure/terraform/*.tfstate
 infrastructure/terraform/*.tfstate.backup
 infrastructure/terraform/.terraform.lock.hcl
 .env*
+.neon
 .agents/
 .claude/skills/

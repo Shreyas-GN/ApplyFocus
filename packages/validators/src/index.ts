@@ -4,3 +4,5 @@ export * from "./profile";
 export * from "./resumeParsedData";
 export * from "./resumeUpload";
 export * from "./job";
+export * from "./ats";
+export * from "./decision";

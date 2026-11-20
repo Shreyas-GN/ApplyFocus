@@ -21,8 +21,8 @@ export interface RegisterResult {
 interface AuthContextValue {
   user: AuthUserDto | null;
   loading: boolean;
-  login(email: string, password: string): Promise<void>;
-  register(email: string, password: string): Promise<RegisterResult | void>;
+  login(email: string, password: string, turnstileToken?: string): Promise<void>;
+  register(email: string, password: string, turnstileToken?: string): Promise<RegisterResult | void>;
   logout(): Promise<void>;
   refreshUser(): Promise<void>;
 }
@@ -75,25 +75,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshUser]);
 
   const login = useCallback(
-    async (email: string, password: string) => {
-      applySession(await api.post<SessionPayload>("/auth/login", { email, password }));
+    async (email: string, password: string, turnstileToken?: string) => {
+      applySession(
+        await api.post<SessionPayload>("/auth/login", { email, password, turnstileToken })
+      );
     },
     [applySession]
   );
 
   const register = useCallback(
-    async (email: string, password: string): Promise<RegisterResult> => {
-      const res = await api.post<{ emailSent?: boolean }>("/auth/signup", {
+    async (email: string, password: string, turnstileToken?: string): Promise<RegisterResult> => {
+      const res = await api.post<
+        SessionPayload & { requiresEmailConfirmation?: boolean; emailSent?: boolean }
+      >("/auth/signup", {
         email,
         password,
+        turnstileToken,
       });
-      // Accounts are activated through the emailed link, so no session yet.
+
+      if (res?.user && res?.csrfToken) {
+        applySession({ user: res.user, csrfToken: res.csrfToken });
+        return {
+          requiresEmailConfirmation: false,
+          emailSent: false,
+        };
+      }
+
       return {
-        requiresEmailConfirmation: true,
+        requiresEmailConfirmation: res?.requiresEmailConfirmation ?? false,
         emailSent: res?.emailSent !== false,
       };
     },
-    []
+    [applySession]
   );
 
   const logout = useCallback(async () => {

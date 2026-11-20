@@ -1,4 +1,4 @@
-import { desc, eq, ilike, or, and, gte, count, sql } from 'drizzle-orm';
+import { desc, eq, ilike, or, and, gte, count } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   applicationEvents,
@@ -22,18 +22,35 @@ import {
   inferWorkMode,
   stripHtml,
 } from './job-matching';
+import { getOrComputeRequirementMatch } from './requirement-matching';
+import { ingestAshbyBoard } from './jobs/ashby-ingestor';
+import {
+  searchLiveMultiPlatformJobs,
+  upsertUniversalJobs,
+} from './jobs/universal-job-broker';
+import { computeAtsFingerprint } from './jobs/listing-fingerprint';
 
 export interface BoardSource {
-  provider: 'greenhouse' | 'lever';
+  provider: 'greenhouse' | 'lever' | 'ashby';
   slug: string;
   companyName: string;
 }
 
 const DEFAULT_BOARDS: BoardSource[] = [
-  { provider: 'greenhouse', slug: 'vercel', companyName: 'Vercel' },
-  { provider: 'greenhouse', slug: 'anthropic', companyName: 'Anthropic' },
+  // Global Tech
   { provider: 'greenhouse', slug: 'stripe', companyName: 'Stripe' },
+  { provider: 'greenhouse', slug: 'anthropic', companyName: 'Anthropic' },
+  { provider: 'greenhouse', slug: 'vercel', companyName: 'Vercel' },
   { provider: 'greenhouse', slug: 'figma', companyName: 'Figma' },
+  { provider: 'ashby', slug: 'openai', companyName: 'OpenAI' },
+  { provider: 'ashby', slug: 'supabase', companyName: 'Supabase' },
+  // India Tech Unicorns
+  { provider: 'greenhouse', slug: 'razorpay', companyName: 'Razorpay' },
+  { provider: 'greenhouse', slug: 'swiggy', companyName: 'Swiggy' },
+  { provider: 'greenhouse', slug: 'zomato', companyName: 'Zomato' },
+  { provider: 'greenhouse', slug: 'cred', companyName: 'CRED' },
+  { provider: 'lever', slug: 'phonepe', companyName: 'PhonePe' },
+  { provider: 'ashby', slug: 'zepto', companyName: 'Zepto' },
 ];
 
 interface GreenhouseJob {
@@ -72,6 +89,10 @@ export async function syncPublicJobs(
       } else if (board.provider === 'lever') {
         const count = await ingestLeverBoard(board.slug, board.companyName);
         totalSynced += count;
+      } else if (board.provider === 'ashby') {
+        const ashRows = await ingestAshbyBoard(board.slug, board.companyName);
+        const count = await upsertJobBatch(ashRows);
+        totalSynced += count;
       }
     } catch (error) {
       console.warn(
@@ -87,30 +108,7 @@ export async function syncPublicJobs(
 type UpsertJobRow = typeof jobs.$inferInsert;
 
 async function upsertJobBatch(rows: UpsertJobRow[]): Promise<number> {
-  if (rows.length === 0) return 0;
-  const dedupedMap = new Map<string, UpsertJobRow>();
-  for (const row of rows) {
-    dedupedMap.set(`${row.source}:${row.externalId}`, row);
-  }
-  const deduped = [...dedupedMap.values()];
-
-  await db
-    .insert(jobs)
-    .values(deduped)
-    .onConflictDoUpdate({
-      target: [jobs.source, jobs.externalId],
-      set: {
-        title: sql`excluded.title`,
-        location: sql`excluded.location`,
-        workMode: sql`excluded.work_mode`,
-        url: sql`excluded.url`,
-        description: sql`excluded.description`,
-        skills: sql`excluded.skills`,
-        postedAt: sql`excluded.posted_at`,
-      },
-    });
-
-  return deduped.length;
+  return upsertUniversalJobs(rows);
 }
 
 async function ingestGreenhouseBoard(
@@ -127,23 +125,32 @@ async function ingestGreenhouseBoard(
   }
 
   const data = (await res.json()) as { jobs?: GreenhouseJob[] };
-  const items = (data.jobs ?? []).slice(0, 20);
+  const items = (data.jobs ?? []).slice(0, 30);
   const rows: UpsertJobRow[] = items.map((item) => {
     const cleanDescription = stripHtml(item.content ?? '');
     const location = item.location?.name ?? null;
     const workMode = inferWorkMode(item.title, location, cleanDescription);
     const skills = extractJobSkills(item.title, cleanDescription);
     const postedAt = item.updated_at ? new Date(item.updated_at) : null;
+    const fingerprint = computeAtsFingerprint({
+      atsProvider: 'greenhouse',
+      boardSlug: slug,
+      postingId: String(item.id),
+    });
     return {
       source: 'greenhouse',
+      sourcePlatform: 'Greenhouse ATS',
       externalId: `${slug}:${item.id}`,
+      fingerprint,
+      status: 'active',
       company: companyName,
       title: item.title,
       location,
       workMode,
       employmentType: 'full_time',
       url: item.absolute_url,
-      description: cleanDescription.slice(0, 12000),
+      directApplyUrl: item.absolute_url,
+      description: cleanDescription.slice(0, 14000),
       skills,
       postedAt: postedAt && !Number.isNaN(postedAt.getTime()) ? postedAt : null,
     };
@@ -165,7 +172,7 @@ async function ingestLeverBoard(
     throw new Error(`Lever API returned ${res.status}`);
   }
 
-  const items = ((await res.json()) as LeverPosting[]).slice(0, 20);
+  const items = ((await res.json()) as LeverPosting[]).slice(0, 30);
   const rows: UpsertJobRow[] = items.map((item) => {
     const cleanDescription =
       item.descriptionPlain ?? stripHtml(item.description ?? '');
@@ -173,16 +180,25 @@ async function ingestLeverBoard(
     const workMode = inferWorkMode(item.text, location, cleanDescription);
     const skills = extractJobSkills(item.text, cleanDescription);
     const postedAt = item.createdAt ? new Date(item.createdAt) : null;
+    const fingerprint = computeAtsFingerprint({
+      atsProvider: 'lever',
+      boardSlug: slug,
+      postingId: String(item.id),
+    });
     return {
       source: 'lever',
+      sourcePlatform: 'Lever ATS',
       externalId: `${slug}:${item.id}`,
+      fingerprint,
+      status: 'active',
       company: companyName,
       title: item.text,
       location,
       workMode,
       employmentType: item.categories?.commitment ?? 'full_time',
       url: item.hostedUrl,
-      description: cleanDescription.slice(0, 12000),
+      directApplyUrl: item.hostedUrl,
+      description: cleanDescription.slice(0, 14000),
       skills,
       postedAt: postedAt && !Number.isNaN(postedAt.getTime()) ? postedAt : null,
     };
@@ -197,6 +213,8 @@ export interface ListJobsOptions {
   tab?: DiscoverJobsTab;
   q?: string;
   workMode?: string;
+  platform?: string;
+  status?: string;
   minScore?: number;
   freshness?: 'all' | '24h' | '7d' | '30d';
   seniority?: string;
@@ -268,11 +286,18 @@ export async function listMatchedJobs(
   if (workMode && workMode !== 'all') {
     conditions.push(eq(jobs.workMode, workMode));
   }
+  if (options.platform && options.platform !== 'all') {
+    conditions.push(ilike(jobs.sourcePlatform, `%${options.platform}%`));
+  }
   if (freshness && freshness !== 'all') {
     const now = Date.now();
     const hours = freshness === '24h' ? 24 : freshness === '7d' ? 24 * 7 : 24 * 30;
     const cutoff = new Date(now - hours * 60 * 60 * 1000);
     conditions.push(or(gte(jobs.postedAt, cutoff), gte(jobs.createdAt, cutoff)));
+  }
+  const statusFilter = options.status ?? 'active';
+  if (statusFilter !== 'all') {
+    conditions.push(eq(jobs.status, statusFilter));
   }
 
   const [jobRows, userProfile, userApps, userStates] = await Promise.all([
@@ -323,13 +348,21 @@ export async function listMatchedJobs(
     return {
       id: job.id,
       source: job.source,
+      sourcePlatform: job.sourcePlatform ?? null,
+      companyLogo: job.companyLogo ?? null,
       externalId: job.externalId,
+      fingerprint: job.fingerprint ?? null,
+      status: job.status ?? 'active',
       company: job.company,
       title: job.title,
       location: job.location,
       workMode: job.workMode,
       employmentType: job.employmentType,
       url: job.url,
+      directApplyUrl: job.directApplyUrl ?? null,
+      salaryMin: job.salaryMin ?? null,
+      salaryMax: job.salaryMax ?? null,
+      salaryCurrency: job.salaryCurrency ?? null,
       description: job.description,
       skills: job.skills,
       postedAt: job.postedAt ? job.postedAt.toISOString() : null,
@@ -357,6 +390,35 @@ export async function listMatchedJobs(
     );
   }
 
+  const isFresher =
+    userProfile?.careerStage === 'student' ||
+    userProfile?.careerStage === 'early_career' ||
+    (userProfile?.yearsOfExperience !== null &&
+      userProfile?.yearsOfExperience !== undefined &&
+      userProfile.yearsOfExperience <= 1);
+
+  if (tab === 'for_you' && isFresher) {
+    // For freshers, filter out explicit Senior/Staff/Lead/Principal roles
+    mapped = mapped.filter((j) => {
+      const isSenior = /\b(senior|sr\.?|staff|principal|lead|architect|director|vp)\b/i.test(
+        j.title
+      );
+      return !isSenior;
+    });
+  }
+
+  // Filter by salary floor if candidate specified expectedSalaryMin
+  if (userProfile?.expectedSalaryMin && userProfile.expectedSalaryMin > 0) {
+    const minFloor = userProfile.expectedSalaryMin;
+    mapped = mapped.filter((j) => {
+      // If job has a maximum salary, ensure it meets the candidate's minimum floor
+      if (j.salaryMax !== null && j.salaryMax !== undefined && j.salaryMax > 0) {
+        return j.salaryMax >= minFloor;
+      }
+      return true; // Keep jobs with undisclosed salary but prioritize verified ones
+    });
+  }
+
   if (minScore > 0) {
     mapped = mapped.filter((j) => j.match.score >= minScore);
   }
@@ -377,7 +439,7 @@ export async function getJobDetail(
   const [jobRow] = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
   if (!jobRow) return null;
 
-  const [userProfile, appRows, stateRows, tailoredCountRows] = await Promise.all([
+  const [userProfile, appRows, stateRows, tailoredCountRows, requirementMatch] = await Promise.all([
     getProfile(userId),
     db
       .select({ id: applications.id, status: applications.status })
@@ -393,6 +455,10 @@ export async function getJobDetail(
       .select({ value: count() })
       .from(tailoredDocuments)
       .where(and(eq(tailoredDocuments.userId, userId), eq(tailoredDocuments.jobId, jobId))),
+    getOrComputeRequirementMatch(userId, jobId).catch((err) => {
+      console.warn('[Jobs Detail] Failed computing requirement match:', err);
+      return null;
+    }),
   ]);
 
   const match = computeJobMatch(userProfile, jobRow);
@@ -402,13 +468,21 @@ export async function getJobDetail(
   return {
     id: jobRow.id,
     source: jobRow.source,
+    sourcePlatform: jobRow.sourcePlatform ?? null,
+    companyLogo: jobRow.companyLogo ?? null,
     externalId: jobRow.externalId,
+    fingerprint: jobRow.fingerprint ?? null,
+    status: jobRow.status ?? 'active',
     company: jobRow.company,
     title: jobRow.title,
     location: jobRow.location,
     workMode: jobRow.workMode,
     employmentType: jobRow.employmentType,
     url: jobRow.url,
+    directApplyUrl: jobRow.directApplyUrl ?? null,
+    salaryMin: jobRow.salaryMin ?? null,
+    salaryMax: jobRow.salaryMax ?? null,
+    salaryCurrency: jobRow.salaryCurrency ?? null,
     description: jobRow.description,
     skills: jobRow.skills,
     postedAt: jobRow.postedAt ? jobRow.postedAt.toISOString() : null,
@@ -419,6 +493,7 @@ export async function getJobDetail(
     applicationStatus: existingApp?.status ?? null,
     intelligence,
     tailoredDocumentsCount: Number(tailoredCountRows[0]?.value ?? 0),
+    requirementMatch: requirementMatch ?? null,
   };
 }
 
@@ -501,5 +576,26 @@ export async function clearJobState(
     .where(and(eq(jobStates.userId, userId), eq(jobStates.jobId, jobId)))
     .returning({ id: jobStates.id });
   return deleted.length > 0;
+}
+
+export async function searchAndIngestLiveJobs(
+  userId: string,
+  params: {
+    query: string;
+    location?: string;
+    countryCode?: string;
+  }
+): Promise<{ totalIngested: number; jobs: JobDto[] }> {
+  const result = await searchLiveMultiPlatformJobs({
+    query: params.query,
+    location: params.location,
+    countryCode: params.countryCode,
+  });
+
+  const matched = await listMatchedJobs(userId, {
+    q: params.query,
+  });
+
+  return { totalIngested: result.totalIngested, jobs: matched };
 }
 

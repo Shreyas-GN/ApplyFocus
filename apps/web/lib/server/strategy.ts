@@ -1,25 +1,28 @@
-import { and, desc, eq } from 'drizzle-orm';
-import { z } from 'zod';
 import { db } from '@/lib/db';
 import { applicationStrategies, jobs } from '@/lib/db/schema';
+import { calculateRequirementMatchResult } from '@/lib/requirement-matching';
 import type {
   ApplicationStrategyContent,
   ApplicationStrategyDto,
   EvidenceStrength,
   ProfileDto,
+  ProjectDto,
+  RequirementMatchResult,
   StrategyGapItem,
   StrategyRecommendation,
   WorkExperienceDto,
-  ProjectDto,
 } from '@/lib/types';
+import { and, desc, eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { resolveAiClient } from './ai-provider';
+import { recordAudit } from './audit';
 import {
   analyzeJobIntelligence,
   computeJobMatch,
 } from './job-matching';
-import { buildCandidateContext, cleanJsonFence, type ClaudeMessagesClient } from './tailoring';
-import { resolveAiClient } from './ai-provider';
 import { getProfile } from './profile';
-import { recordAudit } from './audit';
+import { extractJobRequirementsDeterministic, getOrExtractJobRequirements } from './requirement-extraction';
+import { buildCandidateContext, cleanJsonFence, type ClaudeMessagesClient } from './tailoring';
 
 // ─── Zod schema for AI strategy response ────────────────────────────────────
 
@@ -36,6 +39,10 @@ const strategyGapItemSchema = z.object({
   note: z.string().min(1),
 });
 
+import {
+  decisionEvaluationSchema
+} from '@applypilot/validators';
+
 export const applicationStrategyContentSchema = z.object({
   recommendation: z.enum(['strong_opportunity', 'worth_pursuing', 'lower_priority']),
   recommendationReason: z.string().min(1),
@@ -50,6 +57,7 @@ export const applicationStrategyContentSchema = z.object({
   screeningPrep: z.array(z.string()).default([]),
   potentialConcerns: z.array(z.string()).default([]),
   nextAction: z.string().min(1),
+  decisionEvaluation: decisionEvaluationSchema.optional(),
 });
 
 // ─── Deterministic evidence retrieval & ranking ──────────────────────────────
@@ -209,10 +217,13 @@ function inferEvidenceStrength(
 function computeStrategyRecommendation(
   matchScore: number,
   skillsScore: number,
-  hardConstraintsMet: boolean
+  hardConstraintsMet: boolean,
+  criticalGapsCount = 0,
+  mustHaveCoverage = 100
 ): StrategyRecommendation {
-  if (!hardConstraintsMet) return 'lower_priority';
-  if (matchScore >= 70 && skillsScore >= 60) return 'strong_opportunity';
+  if (!hardConstraintsMet || criticalGapsCount >= 2 || mustHaveCoverage < 45) return 'lower_priority';
+  if (criticalGapsCount === 1 || mustHaveCoverage < 65) return 'worth_pursuing';
+  if (matchScore >= 70 && skillsScore >= 60 && mustHaveCoverage >= 75) return 'strong_opportunity';
   if (matchScore >= 45 || skillsScore >= 40) return 'worth_pursuing';
   return 'lower_priority';
 }
@@ -333,7 +344,8 @@ function buildFallbackStrategy(
   rankedProjects: RankedProject[],
   matchedSkills: string[],
   missingSkills: string[],
-  gapItems: StrategyGapItem[]
+  gapItems: StrategyGapItem[],
+  requirementMatch?: RequirementMatchResult
 ): ApplicationStrategyContent {
   const confirmedExp = profile.experience.filter((e) => e.source !== 'ai');
 
@@ -347,6 +359,13 @@ function buildFallbackStrategy(
     worth_pursuing: `Your background covers key aspects of this ${job.title} role at ${job.company}. With targeted preparation, this is an achievable opportunity.`,
     lower_priority: `Your current profile has limited direct overlap with ${job.title} at ${job.company}. Consider strengthening key areas before prioritizing this application.`,
   };
+
+  const improvements =
+    requirementMatch && requirementMatch.gaps.length > 0
+      ? requirementMatch.gaps.slice(0, 3).map((g) => g.actionableImprovement)
+      : missingSkills.length > 0
+        ? [`Add context around ${missingSkills.slice(0, 3).join(', ')} if you have relevant experience.`]
+        : ['Quantify your achievements with specific metrics where possible.'];
 
   return {
     recommendation,
@@ -373,10 +392,7 @@ function buildFallbackStrategy(
     topAchievements: allAchievements.length > 0 ? allAchievements : [],
     skillsToEmphasize: matchedSkills.slice(0, 6),
     evidenceGaps: gapItems,
-    resumeImprovements:
-      missingSkills.length > 0
-        ? [`Add context around ${missingSkills.slice(0, 3).join(', ')} if you have relevant experience.`]
-        : ['Quantify your achievements with specific metrics where possible.'],
+    resumeImprovements: improvements,
     screeningPrep: [
       `Be ready to discuss your work at ${confirmedExp[0]?.company ?? 'previous roles'} in detail.`,
       `Prepare examples demonstrating your experience with ${matchedSkills.slice(0, 2).join(' and ') || 'core skills'}.`,
@@ -396,6 +412,8 @@ function buildFallbackStrategy(
 
 // ─── Main pipeline ───────────────────────────────────────────────────────────
 
+import { evaluateDecisionIntelligence } from './decision-engine';
+
 export async function buildApplicationStrategy(
   profile: ProfileDto,
   job: {
@@ -408,11 +426,39 @@ export async function buildApplicationStrategy(
     description: string;
     skills: string[];
     source: string;
+    salaryMin?: number | null;
+    salaryMax?: number | null;
+    postedAt?: Date | string | null;
+    sourcePlatform?: string | null;
   },
-  client?: ClaudeMessagesClient
+  client?: ClaudeMessagesClient,
+  atsAnalysis?: import('@/lib/types').AtsAnalysisResult | null
 ): Promise<ApplicationStrategyContent> {
-  // Step A: Requirement understanding
+  // Step A: Requirement understanding & matching
   const intelligence = analyzeJobIntelligence(job);
+  const requirements = job.id
+    ? await getOrExtractJobRequirements(job.id, job, client)
+    : extractJobRequirementsDeterministic(job);
+  const requirementMatch = calculateRequirementMatchResult(requirements, profile);
+
+  // Step A.1: Phase 5 Decision Intelligence Evaluation
+  const decisionEval = evaluateDecisionIntelligence({
+    profile,
+    job: {
+      id: job.id,
+      title: job.title,
+      company: job.company,
+      description: job.description,
+      location: job.location,
+      workMode: job.workMode,
+      salaryMin: job.salaryMin,
+      salaryMax: job.salaryMax,
+      postedAt: job.postedAt,
+      sourcePlatform: job.sourcePlatform,
+    },
+    requirementMatch,
+    atsAnalysis,
+  });
 
   // Step B: Candidate evidence retrieval & ranking
   const matchBreakdown = computeJobMatch(profile, job);
@@ -435,27 +481,41 @@ export async function buildApplicationStrategy(
     ...intelligence.requiredSkills,
     ...intelligence.preferredSkills.slice(0, 3),
   ];
-  const gapItems: StrategyGapItem[] = allRequirements
-    .filter((req) => !matchedSkills.some((m) => m.toLowerCase() === req.toLowerCase()))
-    .slice(0, 6)
-    .map((req) => {
-      const strength = inferEvidenceStrength(req, profile);
-      const transferable = transferableSkills.find(
-        (t) => t.targetSkill.toLowerCase() === req.toLowerCase()
-      );
-      return {
-        requirement: req,
-        evidenceStrength: strength,
-        note:
-          strength === 'none'
-            ? transferable
-              ? `Your ${transferable.candidateSkill} background is transferable here.`
-              : `No documented evidence. Consider whether you have undocumented experience.`
-            : strength === 'transferable'
-              ? `Found in your technologies but not as an explicit skill.`
-              : `Mentioned in your work history.`,
-      };
-    });
+  const gapItems: StrategyGapItem[] =
+    requirementMatch.gaps.length > 0
+      ? requirementMatch.gaps.slice(0, 6).map((g) => ({
+        requirement: g.requirementName,
+        evidenceStrength:
+          g.classification === 'CRITICAL_GAP'
+            ? ('none' as const)
+            : g.classification === 'EXPERIENCE_GAP'
+              ? ('weak' as const)
+              : g.transferableSkillContext
+                ? ('transferable' as const)
+                : ('none' as const),
+        note: g.actionableImprovement,
+      }))
+      : allRequirements
+        .filter((req) => !matchedSkills.some((m) => m.toLowerCase() === req.toLowerCase()))
+        .slice(0, 6)
+        .map((req) => {
+          const strength = inferEvidenceStrength(req, profile);
+          const transferable = transferableSkills.find(
+            (t) => t.targetSkill.toLowerCase() === req.toLowerCase()
+          );
+          return {
+            requirement: req,
+            evidenceStrength: strength,
+            note:
+              strength === 'none'
+                ? transferable
+                  ? `Your ${transferable.candidateSkill} background is transferable here.`
+                  : `No documented evidence. Consider whether you have undocumented experience.`
+                : strength === 'transferable'
+                  ? `Found in your technologies but not as an explicit skill.`
+                  : `Mentioned in your work history.`,
+          };
+        });
 
   // Step D: Recommendation
   const workModeMismatch =
@@ -464,41 +524,64 @@ export async function buildApplicationStrategy(
     profile.workMode !== job.workMode &&
     job.workMode !== 'remote';
   const recommendation = computeStrategyRecommendation(
-    matchBreakdown.score,
+    requirementMatch.overallScore,
     matchBreakdown.skillsScore,
-    !workModeMismatch
+    !workModeMismatch,
+    requirementMatch.criticalGapsCount,
+    requirementMatch.mustHaveCoverage
   );
 
   // Step E: Strategy compilation (AI or fallback)
   const hasAiKey = Boolean(process.env.OPENROUTER_API_KEY) || Boolean(client);
+  let finalContent: ApplicationStrategyContent;
+
   if (hasAiKey) {
     try {
-      return await generateStrategyWithAI(
+      finalContent = await generateStrategyWithAI(
         profile,
         job,
         rankedExperiences,
         rankedProjects,
-        matchBreakdown.score,
+        requirementMatch.overallScore,
         recommendation,
         gapItems,
         client
       );
     } catch (error) {
       console.error('[Strategy] AI generation failed, using fallback:', error);
+      finalContent = buildFallbackStrategy(
+        profile,
+        job,
+        requirementMatch.overallScore,
+        recommendation,
+        rankedExperiences,
+        rankedProjects,
+        matchedSkills,
+        missingSkills,
+        gapItems,
+        requirementMatch
+      );
     }
+  } else {
+    finalContent = buildFallbackStrategy(
+      profile,
+      job,
+      requirementMatch.overallScore,
+      recommendation,
+      rankedExperiences,
+      rankedProjects,
+      matchedSkills,
+      missingSkills,
+      gapItems,
+      requirementMatch
+    );
   }
 
-  return buildFallbackStrategy(
-    profile,
-    job,
-    matchBreakdown.score,
-    recommendation,
-    rankedExperiences,
-    rankedProjects,
-    matchedSkills,
-    missingSkills,
-    gapItems
-  );
+  // Attach enriched Phase 5 Decision Intelligence
+  return {
+    ...finalContent,
+    decisionEvaluation: decisionEval,
+  };
 }
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
@@ -546,7 +629,21 @@ export async function generateAndSaveStrategy(
 
   const profile = await getProfile(userId);
 
-  const content = await buildApplicationStrategy(profile, jobRow, client);
+  // Retrieve Primary Resume ATS analysis if available
+  let atsAnalysis: import('@/lib/types').AtsAnalysisResult | null = null;
+  try {
+    const { listResumes } = await import('./resumes');
+    const { getOrComputeAtsAnalysis } = await import('./ats/service');
+    const allResumes = await listResumes(userId);
+    const primaryResume = allResumes.find((r) => r.isPrimary) ?? allResumes[0];
+    if (primaryResume) {
+      atsAnalysis = await getOrComputeAtsAnalysis(userId, primaryResume.id, jobId);
+    }
+  } catch (err) {
+    console.warn('[Strategy] Could not fetch primary resume ATS analysis:', err);
+  }
+
+  const content = await buildApplicationStrategy(profile, jobRow, client, atsAnalysis);
 
   const [saved] = await db
     .insert(applicationStrategies)

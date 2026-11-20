@@ -13,7 +13,6 @@ import {
   Compass,
   ExternalLink,
   EyeOff,
-  FileText,
   Sparkles,
 } from "lucide-react";
 import type { JobDetailDto } from "@/lib/types";
@@ -24,8 +23,17 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { StrategyPanel } from "@/components/jobs/strategy-panel";
+import { RequirementMatchingBreakdown } from "@/components/jobs/requirement-matching-breakdown";
+import { AtsIntelligenceBreakdown } from "@/components/jobs/ats-intelligence-breakdown";
+import type { AtsAnalysisResult } from "@/lib/types";
 import { api, ApiError } from "@/lib/api-client";
-import { barTone, formatFreshness, scoreTone } from "@/lib/job-ui";
+import {
+  barTone,
+  formatFreshness,
+  scoreTone,
+  formatSalary,
+  getPlatformBadgeConfig,
+} from "@/lib/job-ui";
 
 export default function JobDetailPage() {
   return (
@@ -47,7 +55,27 @@ function JobDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showRawDescription, setShowRawDescription] = useState(false);
-  const [analysisTab, setAnalysisTab] = useState<"fit" | "transferable">("fit");
+  const [analysisTab, setAnalysisTab] = useState<"requirements" | "fit" | "transferable" | "ats">("requirements");
+  const [atsData, setAtsData] = useState<AtsAnalysisResult | null>(null);
+  const [atsLoading, setAtsLoading] = useState(false);
+
+  function handleSelectAtsTab() {
+    setAnalysisTab("ats");
+    if (!atsData && !atsLoading) {
+      setAtsLoading(true);
+      api
+        .get<{ analysis: AtsAnalysisResult; resumeId: string }>(`/jobs/${jobId}/ats`)
+        .then((res) => {
+          setAtsData(res.analysis);
+        })
+        .catch((err) => {
+          console.warn("Failed to load ATS analysis:", err);
+        })
+        .finally(() => {
+          setAtsLoading(false);
+        });
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -206,100 +234,122 @@ function JobDetailContent() {
 
       {/* Job Header Card */}
       <Card>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-semibold text-ui-ink">{job.title}</h1>
-              <span
-                className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold ${scoreTone(job.match.score)}`}
-              >
-                {job.match.score}% Overall Match
-              </span>
-              {job.match.isAdjacentRole && (
-                <Badge className="bg-ui-teal-soft text-ui-teal">Adjacent Role</Badge>
-              )}
-              {job.applicationStatus && <StatusBadge status={job.applicationStatus} />}
-            </div>
+        {(() => {
+          const platformConfig = getPlatformBadgeConfig(job.sourcePlatform);
+          const salaryFormatted = formatSalary(
+            job.salaryMin,
+            job.salaryMax,
+            job.salaryCurrency
+          );
+          return (
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span
+                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold shadow-2xs ${platformConfig.badgeClass}`}
+                  >
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                    {platformConfig.label}
+                  </span>
 
-            <p className="mt-2 text-sm text-ui-body">
-              <span className="font-semibold text-ui-ink">{job.company}</span>
-              {job.location ? ` · ${job.location}` : ""}
-              {job.workMode ? ` · ${job.workMode}` : ""}
-              {" · "}
-              <span>{formatFreshness(job.postedAt, job.createdAt)}</span>
-            </p>
+                  <h1 className="text-2xl font-bold text-ui-ink tracking-tight">{job.title}</h1>
+                  <span
+                    className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-bold ${scoreTone(job.requirementMatch?.overallScore ?? job.match.score)}`}
+                  >
+                    {(job.requirementMatch?.overallScore ?? job.match.score)}% Overall Match
+                  </span>
+                  {salaryFormatted && (
+                    <span className="inline-flex items-center rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold">
+                      {salaryFormatted}
+                    </span>
+                  )}
+                  {job.match.isAdjacentRole && (
+                    <Badge className="bg-ui-teal-soft text-ui-teal">Adjacent Role</Badge>
+                  )}
+                  {job.applicationStatus && <StatusBadge status={job.applicationStatus} />}
+                </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Badge className="bg-ui-linen text-ui-ink">
-                {`Level: ${job.intelligence.seniorityLevel}`}
-              </Badge>
-              {job.intelligence.expectedExperienceYears && (
-                <Badge className="bg-ui-linen text-ui-ink">
-                  {`Experience: ${job.intelligence.expectedExperienceYears}`}
-                </Badge>
-              )}
-              <Badge className="bg-ui-linen text-ui-ink">{`Source: ${job.source}`}</Badge>
-            </div>
-          </div>
+                <p className="mt-2 text-sm text-ui-body">
+                  <span className="font-semibold text-ui-ink">{job.company}</span>
+                  {job.location ? ` · ${job.location}` : ""}
+                  {job.workMode ? ` · ${job.workMode.toUpperCase()}` : ""}
+                  {" · "}
+                  <span>{formatFreshness(job.postedAt, job.createdAt)}</span>
+                </p>
 
-          {/* Consolidated 4-action bar */}
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <Link href={`/studio?tab=tailored&jobId=${job.id}`}>
-              <Button className="px-3 py-2 text-xs">
-                <FileText className="mr-1.5 inline h-3.5 w-3.5" />
-                Tailor Resume
-              </Button>
-            </Link>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Badge className="bg-ui-linen text-ui-ink">
+                    {`Level: ${job.intelligence.seniorityLevel}`}
+                  </Badge>
+                  {job.intelligence.expectedExperienceYears && (
+                    <Badge className="bg-ui-linen text-ui-ink">
+                      {`Experience: ${job.intelligence.expectedExperienceYears}`}
+                    </Badge>
+                  )}
+                  <Badge className="bg-ui-linen text-ui-ink">{`Channel: ${platformConfig.label}`}</Badge>
+                </div>
+              </div>
 
-            <Button
-              variant={isSaved ? "secondary" : "secondary"}
-              className={`px-3 py-2 text-xs ${isSaved ? "border-ui-teal text-ui-teal" : ""}`}
-              loading={busy}
-              onClick={handleToggleSave}
-            >
-              {isSaved ? (
-                <BookmarkCheck className="mr-1.5 inline h-3.5 w-3.5" />
-              ) : (
-                <Bookmark className="mr-1.5 inline h-3.5 w-3.5" />
-              )}
-              {isSaved ? "Saved" : "Save"}
-            </Button>
+              {/* Consolidated action bar */}
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <Link href={`/resumes?jobId=${job.id}`}>
+                  <Button className="px-3.5 py-2 text-xs font-semibold shadow-xs">
+                    <Sparkles className="mr-1.5 inline h-3.5 w-3.5" />
+                    Tailor Resume
+                  </Button>
+                </Link>
 
-            <a
-              href={job.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-ui-border bg-white px-3 py-2 text-xs font-medium text-ui-ink hover:bg-ui-canvas"
-            >
-              <span>Posting</span>
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-
-            {isTracked ? (
-              <Link href="/applications">
-                <Button variant="ghost" className="px-3 py-2 text-xs">
-                  In Tracker →
+                <Button
+                  variant={isSaved ? "secondary" : "secondary"}
+                  className={`px-3 py-2 text-xs ${isSaved ? "border-ui-teal text-ui-teal" : ""}`}
+                  loading={busy}
+                  onClick={handleToggleSave}
+                >
+                  {isSaved ? (
+                    <BookmarkCheck className="mr-1.5 inline h-3.5 w-3.5" />
+                  ) : (
+                    <Bookmark className="mr-1.5 inline h-3.5 w-3.5" />
+                  )}
+                  {isSaved ? "Saved" : "Save"}
                 </Button>
-              </Link>
-            ) : (
-              <Button variant="secondary" className="px-3 py-2 text-xs" loading={busy} onClick={handleMarkApplied}>
-                Mark Applied
-              </Button>
-            )}
 
-            <button
-              type="button"
-              onClick={handleDismiss}
-              disabled={busy}
-              className="inline-flex items-center gap-1 rounded-[var(--radius-button)] px-2 py-2 text-xs font-medium text-ui-muted transition-colors hover:bg-ui-linen hover:text-ui-ink disabled:opacity-50"
-            >
-              <EyeOff className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only">
-                {job.userState === "dismissed" ? "Restore" : "Dismiss"}
-              </span>
-            </button>
-          </div>
-        </div>
+                <a
+                  href={job.directApplyUrl || job.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-ui-border bg-white px-3 py-2 text-xs font-medium text-ui-ink hover:bg-ui-canvas"
+                >
+                  <span>Apply via {platformConfig.label}</span>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+
+                {isTracked ? (
+                  <Link href="/applications">
+                    <Button variant="ghost" className="px-3 py-2 text-xs">
+                      In Tracker →
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button variant="secondary" className="px-3 py-2 text-xs" loading={busy} onClick={handleMarkApplied}>
+                    Mark Applied
+                  </Button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleDismiss}
+                  disabled={busy}
+                  className="inline-flex items-center gap-1 rounded-[var(--radius-button)] px-2 py-2 text-xs font-medium text-ui-muted transition-colors hover:bg-ui-linen hover:text-ui-ink disabled:opacity-50"
+                >
+                  <EyeOff className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only">
+                    {job.userState === "dismissed" ? "Restore" : "Dismiss"}
+                  </span>
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-12">
@@ -307,24 +357,40 @@ function JobDetailContent() {
         <div className="flex flex-col gap-6 lg:col-span-5">
           <Card>
             {/* Tab switcher */}
-            <div className="mb-5 inline-flex gap-1 rounded-lg border border-ui-border bg-ui-canvas p-0.5">
+            <div className="mb-5 inline-flex flex-wrap gap-1 rounded-lg border border-ui-border bg-ui-canvas p-0.5">
+              <button
+                type="button"
+                onClick={() => setAnalysisTab("requirements")}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  analysisTab === "requirements"
+                    ? "bg-ui-surface text-ui-ink shadow-sm font-semibold"
+                    : "text-ui-body hover:text-ui-ink"
+                }`}
+              >
+                Requirement Match
+                {job.requirementMatch && (
+                  <span className="ml-1.5 rounded-full bg-ui-linen px-1.5 py-0.5 font-mono text-[11px] text-ui-ink tabular-nums">
+                    {job.requirementMatch.overallScore}%
+                  </span>
+                )}
+              </button>
               <button
                 type="button"
                 onClick={() => setAnalysisTab("fit")}
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                   analysisTab === "fit"
-                    ? "bg-ui-surface text-ui-ink shadow-sm"
+                    ? "bg-ui-surface text-ui-ink shadow-sm font-semibold"
                     : "text-ui-body hover:text-ui-ink"
                 }`}
               >
-                Fit Analysis
+                Fit Overview
               </button>
               <button
                 type="button"
                 onClick={() => setAnalysisTab("transferable")}
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                   analysisTab === "transferable"
-                    ? "bg-ui-surface text-ui-ink shadow-sm"
+                    ? "bg-ui-surface text-ui-ink shadow-sm font-semibold"
                     : "text-ui-body hover:text-ui-ink"
                 }`}
               >
@@ -335,9 +401,43 @@ function JobDetailContent() {
                   </span>
                 )}
               </button>
+              <button
+                type="button"
+                onClick={handleSelectAtsTab}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  analysisTab === "ats"
+                    ? "bg-ui-surface text-ui-ink shadow-sm font-semibold"
+                    : "text-ui-body hover:text-ui-ink"
+                }`}
+              >
+                ATS Intelligence
+                {atsData && (
+                  <span className="ml-1.5 rounded-full bg-ui-linen px-1.5 py-0.5 font-mono text-[11px] text-ui-ink tabular-nums">
+                    {atsData.overallReadiness}%
+                  </span>
+                )}
+              </button>
             </div>
 
-            {analysisTab === "fit" ? (
+            {analysisTab === "requirements" ? (
+              <RequirementMatchingBreakdown
+                matchResult={job.requirementMatch}
+                jobTitle={job.title}
+              />
+            ) : analysisTab === "ats" ? (
+              atsLoading ? (
+                <div className="flex flex-col gap-3 py-6">
+                  <div className="h-24 animate-pulse rounded-xl bg-ui-linen" />
+                  <div className="h-44 animate-pulse rounded-xl bg-ui-linen" />
+                </div>
+              ) : (
+                <AtsIntelligenceBreakdown
+                  analysis={atsData}
+                  jobId={job.id}
+                  jobTitle={job.title}
+                />
+              )
+            ) : analysisTab === "fit" ? (
               <div className="flex flex-col gap-4">
                 <div>
                   <div className="mb-1 flex justify-between text-xs font-medium text-ui-ink">

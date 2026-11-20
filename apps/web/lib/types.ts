@@ -17,6 +17,7 @@ export interface WorkExperienceDto {
   responsibilities?: string[];
   achievements?: string[];
   technologies?: string[];
+  evidenceSentences?: string[];
   source: "user" | "ai";
   confidence: number | null;
 }
@@ -35,6 +36,8 @@ export interface EducationDto {
   confidence: number | null;
 }
 
+export type SkillEvidenceCategory = "USER_CONFIRMED" | "AI_EXTRACTED" | "AI_SUGGESTED";
+
 export interface SkillDto {
   id: string;
   name: string;
@@ -42,6 +45,10 @@ export interface SkillDto {
   proficiency?: string | null;
   yearsOfExperience?: number | null;
   evidence?: string | null;
+  evidenceCategory?: SkillEvidenceCategory | null;
+  evidenceSentence?: string | null;
+  connectedExperience?: string | null;
+  connectedProject?: string | null;
   source: "user" | "ai";
   confidence: number | null;
 }
@@ -53,6 +60,8 @@ export interface ProjectDto {
   role?: string | null;
   technologies?: string[];
   contributions?: string[];
+  measurableOutcomes?: string[];
+  skillsDemonstrated?: string[];
   url: string | null;
   githubUrl?: string | null;
   liveUrl?: string | null;
@@ -199,6 +208,10 @@ export interface ResumeParsedPersonalDto {
   portfolioUrl?: string;
   headline?: string;
   summary?: string;
+  yearsOfExperience?: number | null;
+  currentRole?: string;
+  careerDomain?: string;
+  seniorityEstimate?: string;
 }
 
 export interface ResumeParsedEntryDto {
@@ -214,6 +227,10 @@ export type ResumeParsedExperienceDto = ResumeParsedEntryDto & {
   endDate?: string;
   isCurrent?: boolean;
   description?: string;
+  responsibilities?: string[];
+  achievements?: string[];
+  technologies?: string[];
+  evidenceSentences?: string[];
 };
 
 export type ResumeParsedEducationDto = ResumeParsedEntryDto & {
@@ -222,12 +239,17 @@ export type ResumeParsedEducationDto = ResumeParsedEntryDto & {
   fieldOfStudy?: string;
   startDate?: string;
   endDate?: string;
+  graduationYear?: number | null;
   description?: string;
 };
 
 export type ResumeParsedSkillDto = ResumeParsedEntryDto & {
   name: string;
   category?: string;
+  evidenceCategory?: SkillEvidenceCategory;
+  evidenceSentence?: string;
+  connectedExperience?: string;
+  connectedProject?: string;
 };
 
 export type ResumeParsedProjectDto = ResumeParsedEntryDto & {
@@ -236,6 +258,10 @@ export type ResumeParsedProjectDto = ResumeParsedEntryDto & {
   url?: string;
   startDate?: string;
   endDate?: string;
+  technologies?: string[];
+  responsibilities?: string[];
+  measurableOutcomes?: string[];
+  skillsDemonstrated?: string[];
 };
 
 export type ResumeParsedCertificationDto = ResumeParsedEntryDto & {
@@ -299,6 +325,10 @@ export interface JobMatchBreakdown {
   reasons: string[];
   isAdjacentRole: boolean;
   adjacencyReason: string | null;
+  directMatches?: string[];
+  relatedMatches?: TransferableSkillMatch[];
+  missingRequirements?: string[];
+  unsupportedSkills?: string[];
 }
 
 export interface JobIntelligenceBreakdown {
@@ -315,13 +345,21 @@ export interface JobIntelligenceBreakdown {
 export interface JobDto {
   id: string;
   source: string;
+  sourcePlatform?: string | null;
   externalId: string;
+  fingerprint?: string | null;
+  status?: string | null;
   company: string;
+  companyLogo?: string | null;
   title: string;
   location: string | null;
   workMode: string | null;
   employmentType: string | null;
   url: string;
+  directApplyUrl?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salaryCurrency?: string | null;
   description: string;
   skills: string[];
   postedAt: string | null;
@@ -332,9 +370,34 @@ export interface JobDto {
   applicationStatus: ApplicationStatus | null;
 }
 
+export type {
+  JobRequirementCategory,
+  JobRequirementImportance,
+  JobRequirement,
+  JobRequirementsExtraction,
+  RequirementMatchStatus,
+  CandidateGapClassification,
+  CandidateGapAnalysis,
+  RequirementMatch,
+  RequirementMatchResult,
+  ScoringBreakdown,
+  AtsFindingSeverity,
+  AtsFindingCategory,
+  AtsFinding,
+  RequirementResumeAlignmentStatus,
+  RequirementResumeAlignmentItem,
+  AtsRecommendationPriority,
+  AtsRecommendationCategory,
+  AtsRecommendation,
+  AtsDimensionBreakdown,
+  AtsAnalysisMetrics,
+  AtsAnalysisResult,
+} from "@applypilot/validators";
+
 export interface JobDetailDto extends JobDto {
   intelligence: JobIntelligenceBreakdown;
   tailoredDocumentsCount: number;
+  requirementMatch?: import("@applypilot/validators").RequirementMatchResult | null;
 }
 
 export interface ApplicationEventDto {
@@ -405,6 +468,35 @@ export interface TailoredResumeContent {
   keywordsUsed: string[];
   missingKeywords: string[];
   rationale: string;
+  atsScore?: number;
+  contactInfo?: {
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    location?: string | null;
+    linkedinUrl?: string | null;
+    githubUrl?: string | null;
+    portfolioUrl?: string | null;
+  };
+  education?: Array<{
+    institution: string;
+    degree: string | null;
+    fieldOfStudy: string | null;
+    graduationYear?: number | string | null;
+  }>;
+  projects?: Array<{
+    name: string;
+    role?: string | null;
+    description?: string | null;
+    technologies?: string[];
+  }>;
+  certifications?: Array<{
+    name: string;
+    issuer?: string | null;
+    issueDate?: string | null;
+    credentialUrl?: string | null;
+  }>;
+  designSettings?: import('./resume/types').ResumeDesignSettings;
 }
 
 export interface CoverLetterContent {
@@ -480,6 +572,7 @@ export interface ApplicationStrategyContent {
   screeningPrep: string[];
   potentialConcerns: string[];
   nextAction: string;
+  decisionEvaluation?: import("@applypilot/validators").DecisionEvaluation;
 }
 
 export type StrategyStatus = "ready" | "approved" | "failed";
@@ -493,4 +586,8 @@ export interface ApplicationStrategyDto {
   createdAt: string;
   updatedAt: string;
 }
+
+// ─── Phase 4 & Phase 5 Engine Exports ─────────────────────────────────────────
+export * from "@applypilot/validators";
+
 

@@ -83,6 +83,7 @@ export const workExperienceEntrySchema = z.object({
   responsibilities: stringListSchema(30, 500),
   achievements: stringListSchema(30, 500),
   technologies: stringListSchema(40, 100),
+  evidenceSentences: stringListSchema(30, 500),
   source: itemSourceSchema.optional(),
   confidence: z.number().min(0).max(1).nullable().optional(),
 });
@@ -116,6 +117,12 @@ export const skillEntrySchema = z.object({
   proficiency: skillProficiencySchema.or(z.literal("")).nullable().optional(),
   yearsOfExperience: z.number().min(0).max(60).nullable().optional(),
   evidence: z.string().trim().max(500).optional(),
+  evidenceCategory: z
+    .enum(["USER_CONFIRMED", "AI_EXTRACTED", "AI_SUGGESTED"])
+    .optional(),
+  evidenceSentence: z.string().trim().max(500).optional(),
+  connectedExperience: z.string().trim().max(200).optional(),
+  connectedProject: z.string().trim().max(200).optional(),
   source: itemSourceSchema.optional(),
   confidence: z.number().min(0).max(1).nullable().optional(),
 });
@@ -131,6 +138,8 @@ export const projectEntrySchema = z.object({
   role: z.string().trim().max(150).optional(),
   technologies: stringListSchema(40, 100),
   contributions: stringListSchema(30, 500),
+  measurableOutcomes: stringListSchema(30, 500),
+  skillsDemonstrated: stringListSchema(40, 100),
   url: urlOrEmpty,
   githubUrl: urlOrEmpty,
   liveUrl: urlOrEmpty,

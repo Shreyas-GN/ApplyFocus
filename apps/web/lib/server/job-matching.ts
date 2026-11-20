@@ -244,10 +244,27 @@ export function computeJobMatch(
     };
   }
 
-  const userSkills = profile.skills
-    .filter((s) => s.source !== 'ai')
+  const confirmedSkills = profile.skills
+    .filter((s) => s.evidenceCategory === 'USER_CONFIRMED' || s.source !== 'ai')
     .map((s) => s.name.trim())
     .filter(Boolean);
+
+  const evidenceBackedSkills = profile.skills
+    .filter(
+      (s) =>
+        s.evidenceCategory === 'AI_EXTRACTED' &&
+        (Boolean(s.evidenceSentence?.trim()) ||
+          Boolean(s.evidence?.trim()) ||
+          Boolean(s.connectedExperience?.trim()) ||
+          Boolean(s.connectedProject?.trim()))
+    )
+    .map((s) => s.name.trim())
+    .filter(Boolean);
+
+  // Eligible user skills: confirmed candidate skills + evidence-backed extracted skills
+  const userSkills = Array.from(
+    new Set([...confirmedSkills, ...evidenceBackedSkills])
+  );
   const summaryConfirmed = profile.intelligenceMetadata?.summarySource !== 'ai';
   const confirmedHeadline = summaryConfirmed ? profile.headline : null;
   const hasPreferences =
@@ -450,6 +467,37 @@ export function computeJobMatch(
     adjacencyReason = `Different title track from your usual search, but your background in ${overlapSummary} transfers strongly.`;
   }
 
+  // Experience and Project evidence enrichment
+  for (const p of profile.projects ?? []) {
+    for (const tech of p.technologies ?? []) {
+      if (jobHaystack.includes(tech.toLowerCase()) && !strengths.some((str) => str.includes(tech))) {
+        strengths.push(`Project evidence: Demonstrated ${tech} in project "${p.name}"`);
+      }
+    }
+  }
+
+  for (const exp of profile.experience ?? []) {
+    for (const tech of exp.technologies ?? []) {
+      if (jobHaystack.includes(tech.toLowerCase()) && !strengths.some((str) => str.includes(tech))) {
+        strengths.push(`Work experience evidence: Applied ${tech} at ${exp.company}`);
+      }
+    }
+  }
+
+  // Clear classification of matches
+  const directMatches = matchedSkills;
+  const relatedMatches = transferableSkills;
+  const transferableTargetSet = new Set(
+    transferableSkills.map((t) => t.targetSkill.toLowerCase())
+  );
+  const missingRequirements = missingSkills.filter(
+    (s) => !transferableTargetSet.has(s.toLowerCase())
+  );
+  const allCandidateSkills = profile.skills.map((s) => s.name.trim()).filter(Boolean);
+  const unsupportedSkills = allCandidateSkills.filter(
+    (s) => !matchedSkills.includes(s) && !jobHaystack.includes(s.toLowerCase())
+  );
+
   return {
     score: Math.max(0, Math.min(100, score)),
     skillsScore,
@@ -462,6 +510,10 @@ export function computeJobMatch(
     reasons,
     isAdjacentRole,
     adjacencyReason,
+    directMatches,
+    relatedMatches,
+    missingRequirements,
+    unsupportedSkills: unsupportedSkills.slice(0, 8),
   };
 }
 

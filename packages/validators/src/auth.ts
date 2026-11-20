@@ -13,12 +13,14 @@ export const emailSchema = z.string().trim().toLowerCase().email("Enter a valid 
 export const registerSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
+  turnstileToken: z.string().optional(),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Password is required"),
+  turnstileToken: z.string().optional(),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 

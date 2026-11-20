@@ -11,20 +11,42 @@ import { eq } from 'drizzle-orm';
 import mammoth from 'mammoth';
 import { extractText } from 'unpdf';
 
-const SYSTEM_PROMPT = `You extract structured information from resume text for a job-search product. You must follow these rules exactly:
+const SYSTEM_PROMPT = `You extract structured candidate intelligence from resume text for ApplyFocus. You must follow these rules strictly:
 
-1. Only output information that is explicitly present in the resume text. Never invent, infer, or guess an employer, job title, date, school, certification, or skill that is not written in the text.
-2. If a date is ambiguous or missing, leave it empty rather than guessing.
-3. For every entry you output, include a "confidence" number from 0 to 1 reflecting how certain you are the entry is both present and correctly transcribed from the text.
+1. Only output information that is explicitly present or directly supported in the resume text. Never invent, extrapolate, or hallucinate an employer, job title, date, school, certification, skill, or metric that is not in the text.
+2. If a date or detail is ambiguous or missing, omit it or set it to null rather than guessing.
+3. For every entry you output, include a "confidence" number from 0 to 1 reflecting how certain you are the entry is accurately transcribed from the text.
 4. Set "source" to "ai" on every entry you output.
-5. Output ONLY a single JSON object matching this exact shape, with no commentary, no markdown code fences, and no extra top-level keys:
+5. Evidence-Backed Skills:
+   - For every skill, assign an "evidenceCategory":
+     * "AI_EXTRACTED" if the skill is directly demonstrated in work experience or projects with textual evidence.
+     * "AI_SUGGESTED" if the skill is inferred as potentially relevant or only listed in a bare skills list without demonstrated context.
+   - For "evidenceSentence", quote the actual text or sentence from the resume that demonstrates the skill. Do not fabricate quotes.
+   - For "connectedExperience", specify the company name or role where demonstrated, or omit if not tied to a specific job.
+   - For "connectedProject", specify the project name where demonstrated, or omit if not tied to a project.
+   - Set "category" to one of: "languages", "frameworks", "databases", "cloud", "developer_tools", "technical", "soft_skills", "domain".
+6. Personal & Profile Intelligence:
+   - Calculate "yearsOfExperience" as an integer only when dates are reliably calculable across the timeline; otherwise omit or set to null.
+   - Set "currentRole" to the candidate's current or most recent job title.
+   - Set "careerDomain" (e.g., "Software Engineering", "Frontend Engineering", "Full-Stack Engineering", "Backend Engineering", "Data & AI", "Cloud & DevOps", "Product Management").
+   - Set "seniorityEstimate" (e.g., "Entry", "Mid-Level", "Senior", "Lead", "Executive").
+7. Work Experience:
+   - Extract "responsibilities" as an array of responsibility bullet points.
+   - Extract "achievements" as an array of outcome or impact bullet points.
+   - Extract "technologies" as an array of technologies mentioned in that role.
+   - Extract "evidenceSentences" as an array of sentences supporting demonstrated capabilities.
+8. Projects:
+   - Extract "technologies", "responsibilities", "measurableOutcomes" (metrics/outcomes where supplied in text), and "skillsDemonstrated".
+9. Education:
+   - Extract "institution", "degree", "fieldOfStudy", "graduationYear" (integer where mentioned), "startDate", "endDate", "description".
+10. Output ONLY a single JSON object matching this exact shape, with no commentary, no markdown code fences, and no extra top-level keys:
 
 {
-  "personal": {"fullName": "", "email": "", "phone": "", "location": "", "linkedinUrl": "", "githubUrl": "", "portfolioUrl": "", "headline": "", "summary": ""},
-  "experience": [{"company": "", "title": "", "location": "", "startDate": "", "endDate": "", "isCurrent": false, "description": "", "confidence": 0.0, "source": "ai"}],
-  "education": [{"institution": "", "degree": "", "fieldOfStudy": "", "startDate": "", "endDate": "", "description": "", "confidence": 0.0, "source": "ai"}],
-  "skills": [{"name": "", "category": "", "confidence": 0.0, "source": "ai"}],
-  "projects": [{"name": "", "description": "", "url": "", "startDate": "", "endDate": "", "confidence": 0.0, "source": "ai"}],
+  "personal": {"fullName": "", "email": "", "phone": "", "location": "", "linkedinUrl": "", "githubUrl": "", "portfolioUrl": "", "headline": "", "summary": "", "yearsOfExperience": 0, "currentRole": "", "careerDomain": "", "seniorityEstimate": ""},
+  "experience": [{"company": "", "title": "", "location": "", "startDate": "", "endDate": "", "isCurrent": false, "description": "", "responsibilities": [], "achievements": [], "technologies": [], "evidenceSentences": [], "confidence": 0.0, "source": "ai"}],
+  "education": [{"institution": "", "degree": "", "fieldOfStudy": "", "startDate": "", "endDate": "", "graduationYear": 2024, "description": "", "confidence": 0.0, "source": "ai"}],
+  "skills": [{"name": "", "category": "", "confidence": 0.0, "source": "ai", "evidenceCategory": "AI_EXTRACTED", "evidenceSentence": "", "connectedExperience": "", "connectedProject": ""}],
+  "projects": [{"name": "", "description": "", "url": "", "startDate": "", "endDate": "", "technologies": [], "responsibilities": [], "measurableOutcomes": [], "skillsDemonstrated": [], "confidence": 0.0, "source": "ai"}],
   "certifications": [{"name": "", "issuer": "", "issueDate": "", "expiryDate": "", "credentialUrl": "", "confidence": 0.0, "source": "ai"}],
   "overallConfidence": 0.0
 }
@@ -63,8 +85,17 @@ export async function extractTextFromBuffer(
 
 function cleanJsonFence(raw: string): string {
   const stripped = raw.trim();
-  const match = stripped.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
-  return match && match[1] ? match[1].trim() : stripped;
+  const match = stripped.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  // If no fences, find first '{' and last '}'
+  const start = stripped.indexOf('{');
+  const end = stripped.lastIndexOf('}');
+  if (start !== -1 && end !== -1 && end > start) {
+    return stripped.slice(start, end + 1);
+  }
+  return stripped;
 }
 
 export async function parseResumeWithClaude(

@@ -138,6 +138,10 @@ export const workExperiences = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
+    evidenceSentences: text('evidence_sentences')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     source: itemSourceEnum('source').default('user').notNull(),
     confidence: numeric('confidence', { precision: 4, scale: 3 }),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -193,6 +197,10 @@ export const skills = pgTable(
     evidence: text('evidence'),
     source: itemSourceEnum('source').default('user').notNull(),
     confidence: numeric('confidence', { precision: 4, scale: 3 }),
+    evidenceCategory: text('evidence_category').default('USER_CONFIRMED').notNull(),
+    evidenceSentence: text('evidence_sentence'),
+    connectedExperience: text('connected_experience'),
+    connectedProject: text('connected_project'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -203,6 +211,7 @@ export const skills = pgTable(
       table.userId,
       sql`lower(${table.name})`
     ),
+    index('skills_evidence_category_idx').on(table.evidenceCategory),
   ]
 ).enableRLS();
 
@@ -220,6 +229,14 @@ export const projects = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
     contributions: text('contributions')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    measurableOutcomes: text('measurable_outcomes')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    skillsDemonstrated: text('skills_demonstrated')
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
@@ -344,19 +361,29 @@ export const jobs = pgTable(
   'jobs',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    source: text('source').notNull(), // 'greenhouse' | 'lever' | 'manual'
+    source: text('source').notNull(), // 'greenhouse' | 'lever' | 'ashby' | 'jsearch' | 'google_jobs' | 'adzuna' | 'manual'
+    sourcePlatform: text('source_platform'), // 'Naukri.com' | 'Indeed' | 'LinkedIn' | 'Glassdoor' | 'Greenhouse' | 'Lever' | 'Ashby'
     externalId: text('external_id').notNull(),
     company: text('company').notNull(),
+    companyLogo: text('company_logo'),
     title: text('title').notNull(),
     location: text('location'),
     workMode: text('work_mode'), // 'remote' | 'hybrid' | 'onsite'
     employmentType: text('employment_type'),
     url: text('url').notNull(),
+    directApplyUrl: text('direct_apply_url'),
+    salaryMin: integer('salary_min'),
+    salaryMax: integer('salary_max'),
+    salaryCurrency: text('salary_currency'),
     description: text('description').notNull(),
     skills: text('skills')
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
+    fingerprint: text('fingerprint'),
+    status: text('status').default('active').notNull(),
+    roleTrack: text('role_track'),
+    lastLivenessCheck: timestamp('last_liveness_check', { withTimezone: true }),
     postedAt: timestamp('posted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -367,7 +394,11 @@ export const jobs = pgTable(
       table.source,
       table.externalId
     ),
+    uniqueIndex('jobs_fingerprint_idx').on(table.fingerprint),
+    index('jobs_status_idx').on(table.status),
+    index('jobs_role_track_idx').on(table.roleTrack),
     index('jobs_company_idx').on(table.company),
+    index('jobs_source_platform_idx').on(table.sourcePlatform),
   ]
 ).enableRLS();
 
@@ -547,23 +578,102 @@ export const screeningAnswers = pgTable(
   ]
 ).enableRLS();
 
-// 16. Auth: users (id is also the owner id used by every other table)
+// 16b. Job Requirements (Cached extracted structured job requirements)
+export const jobRequirements = pgTable(
+  'job_requirements',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    jobId: uuid('job_id')
+      .notNull()
+      .references(() => jobs.id, { onDelete: 'cascade' }),
+    descriptionHash: text('description_hash').notNull(),
+    requirements: jsonb('requirements').notNull(),
+    source: text('source').default('ai').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('job_requirements_job_id_idx').on(table.jobId),
+  ]
+).enableRLS();
+
+// 16c. Candidate Requirement Matches (Cached user-to-job requirement matching results)
+export const candidateRequirementMatches = pgTable(
+  'candidate_requirement_matches',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').notNull(),
+    jobId: uuid('job_id')
+      .notNull()
+      .references(() => jobs.id, { onDelete: 'cascade' }),
+    profileHash: text('profile_hash').notNull(),
+    jobHash: text('job_hash').notNull(),
+    matchResult: jsonb('match_result').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('candidate_req_matches_user_job_idx').on(table.userId, table.jobId),
+    index('candidate_req_matches_user_id_idx').on(table.userId),
+  ]
+).enableRLS();
+
+// 16d. ATS Analyses (Cached resume ATS inspection and job-specific terminology alignment)
+export const atsAnalyses = pgTable(
+  'ats_analyses',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').notNull(),
+    resumeId: uuid('resume_id')
+      .notNull()
+      .references(() => resumes.id, { onDelete: 'cascade' }),
+    jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'cascade' }),
+    resumeHash: text('resume_hash').notNull(),
+    jobHash: text('job_hash'),
+    analysisResult: jsonb('analysis_result').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('ats_analyses_user_resume_idx').on(table.userId, table.resumeId),
+    index('ats_analyses_user_job_idx').on(table.userId, table.jobId),
+  ]
+).enableRLS();
+
+// 16. Auth: users (Better Auth user table with UUID PK)
 export const users = pgTable(
   'users',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull().default(''),
     email: text('email').notNull(),
-    passwordHash: text('password_hash').notNull(),
+    emailVerified: boolean('email_verified').notNull().default(false),
+    image: text('image'),
+    passwordHash: text('password_hash'),
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
   (table) => [uniqueIndex('users_email_idx').on(table.email)]
 ).enableRLS();
 
-// 17. Auth: sessions. `id` is SHA-256(raw cookie token); the raw token is
-// never stored.
+// 17. Auth: sessions (Better Auth session table)
 export const sessions = pgTable(
   'sessions',
   {
@@ -571,16 +681,73 @@ export const sessions = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    token: text('token').unique(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('sessions_user_id_idx').on(table.userId),
+    uniqueIndex('sessions_token_idx').on(table.token),
+  ]
+).enableRLS();
+
+// 18. Auth: accounts (Better Auth account table for credentials & OAuth)
+export const accounts = pgTable(
+  'accounts',
+  {
+    id: text('id').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', {
+      withTimezone: true,
+    }),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
+      withTimezone: true,
+    }),
+    scope: text('scope'),
+    password: text('password'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('accounts_user_id_idx').on(table.userId)]
+).enableRLS();
+
+// 19. Auth: verifications (Better Auth verification table for tokens & codes)
+export const verifications = pgTable(
+  'verifications',
+  {
+    id: text('id').primaryKey(),
+    identifier: text('identifier').notNull(),
+    value: text('value').notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
-  (table) => [index('sessions_user_id_idx').on(table.userId)]
+  (table) => [index('verifications_identifier_idx').on(table.identifier)]
 ).enableRLS();
 
-// 18. Auth: one-time tokens for password reset and email verification.
-// `id` is SHA-256(raw emailed token).
+// 20. Legacy one-time auth tokens
 export const authTokenPurposeEnum = pgEnum('auth_token_purpose', [
   'password_reset',
   'email_verification',
@@ -602,7 +769,7 @@ export const authTokens = pgTable(
   (table) => [index('auth_tokens_user_id_idx').on(table.userId)]
 ).enableRLS();
 
-// 19. Auth: fixed-window rate limit counters.
+// 21. Rate limits
 export const rateLimits = pgTable('rate_limits', {
   key: text('key').primaryKey(),
   count: integer('count').notNull().default(0),

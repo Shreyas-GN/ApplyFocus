@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ProfileDto, SkillDto } from "@/lib/types";
+import type { ProfileDto, SkillDto, SkillEvidenceCategory } from "@/lib/types";
 import { replaceSkillsSchema } from "@applypilot/validators";
 import { api, ApiError } from "@/lib/api-client";
 import {
@@ -36,6 +36,10 @@ interface EditableSkill {
   proficiency: string;
   yearsOfExperience: string;
   evidence: string;
+  evidenceCategory?: SkillEvidenceCategory | null;
+  evidenceSentence?: string | null;
+  connectedExperience?: string | null;
+  connectedProject?: string | null;
   source: "user" | "ai";
   confidence: number | null;
 }
@@ -51,6 +55,12 @@ function toEditable(skill: SkillDto): EditableSkill {
         ? String(skill.yearsOfExperience)
         : "",
     evidence: skill.evidence ?? "",
+    evidenceCategory:
+      skill.evidenceCategory ??
+      (skill.source === "user" ? "USER_CONFIRMED" : "AI_EXTRACTED"),
+    evidenceSentence: skill.evidenceSentence ?? "",
+    connectedExperience: skill.connectedExperience ?? "",
+    connectedProject: skill.connectedProject ?? "",
     source: skill.source,
     confidence: skill.confidence,
   };
@@ -141,13 +151,27 @@ export function SkillsEditor({ skills, onUpdated }: SkillsEditorProps) {
   function confirmItem(index: number) {
     setSaved(false);
     setItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, source: "user" } : item))
+      prev.map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              source: "user",
+              evidenceCategory: "USER_CONFIRMED" as const,
+            }
+          : item
+      )
     );
   }
 
   function confirmAllAi() {
     setSaved(false);
-    setItems((prev) => prev.map((item) => ({ ...item, source: "user" })));
+    setItems((prev) =>
+      prev.map((item) => ({
+        ...item,
+        source: "user",
+        evidenceCategory: "USER_CONFIRMED" as const,
+      }))
+    );
   }
 
   function removeItem(index: number) {
@@ -169,6 +193,12 @@ export function SkillsEditor({ skills, onUpdated }: SkillsEditorProps) {
             ? Number(s.yearsOfExperience)
             : null,
         evidence: s.evidence || undefined,
+        evidenceCategory:
+          s.evidenceCategory ??
+          (s.source === "user" ? "USER_CONFIRMED" : "AI_EXTRACTED"),
+        evidenceSentence: s.evidenceSentence || undefined,
+        connectedExperience: s.connectedExperience || undefined,
+        connectedProject: s.connectedProject || undefined,
         source: s.source,
         confidence: s.confidence,
       })),
@@ -355,6 +385,18 @@ export function SkillsEditor({ skills, onUpdated }: SkillsEditorProps) {
                           {skill.evidence && (
                             <p className="mt-1 text-xs text-ui-muted">
                               {skill.evidence}
+                            </p>
+                          )}
+                          {skill.evidenceSentence && (
+                            <p className="mt-1 text-xs italic text-ui-muted">
+                              &ldquo;{skill.evidenceSentence}&rdquo;
+                            </p>
+                          )}
+                          {(skill.connectedExperience || skill.connectedProject) && (
+                            <p className="mt-0.5 text-[11px] text-ui-muted">
+                              {skill.connectedExperience ? `Role: ${skill.connectedExperience}` : ""}
+                              {skill.connectedExperience && skill.connectedProject ? " · " : ""}
+                              {skill.connectedProject ? `Project: ${skill.connectedProject}` : ""}
                             </p>
                           )}
                           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">

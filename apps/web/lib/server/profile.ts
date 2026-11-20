@@ -15,6 +15,7 @@ import type {
   ProfileIntelligenceMetadataDto,
   ProjectDto,
   SkillDto,
+  SkillEvidenceCategory,
   WorkExperienceDto,
 } from '@/lib/types';
 import type {
@@ -243,6 +244,7 @@ export async function replaceExperience(
             responsibilities,
             achievements,
             technologies,
+            evidenceSentences: cleanList(item.evidenceSentences),
             source: item.source === 'ai' ? ('ai' as const) : ('user' as const),
             confidence:
               item.confidence !== undefined && item.confidence !== null
@@ -330,6 +332,12 @@ export async function replaceSkills(
               ? String(item.yearsOfExperience)
               : null,
           evidence: item.evidence || null,
+          evidenceCategory:
+            item.evidenceCategory ||
+            (item.source === 'ai' ? 'AI_EXTRACTED' : 'USER_CONFIRMED'),
+          evidenceSentence: item.evidenceSentence || null,
+          connectedExperience: item.connectedExperience || null,
+          connectedProject: item.connectedProject || null,
           source: item.source === 'ai' ? ('ai' as const) : ('user' as const),
           confidence:
             item.confidence !== undefined && item.confidence !== null
@@ -365,6 +373,8 @@ export async function replaceProjects(
             role: item.role || null,
             technologies: cleanList(item.technologies),
             contributions: cleanList(item.contributions),
+            measurableOutcomes: cleanList(item.measurableOutcomes),
+            skillsDemonstrated: cleanList(item.skillsDemonstrated),
             url: primaryUrl,
             githubUrl,
             liveUrl,
@@ -471,6 +481,13 @@ export async function applyParsedResumeData(
     personalUpdates.summary = p.summary;
     updatedSummaryFromAi = true;
   }
+  if (p.yearsOfExperience !== undefined && p.yearsOfExperience !== null) {
+    personalUpdates.yearsOfExperience = p.yearsOfExperience;
+  }
+
+  if (p.currentRole) (meta as Record<string, unknown>).currentRole = p.currentRole;
+  if (p.careerDomain) (meta as Record<string, unknown>).careerDomain = p.careerDomain;
+  if (p.seniorityEstimate) (meta as Record<string, unknown>).seniorityEstimate = p.seniorityEstimate;
 
   if (updatedPersonalFromAi && meta.personalInfoSource !== 'user') {
     meta.personalInfoSource = 'ai';
@@ -482,12 +499,7 @@ export async function applyParsedResumeData(
 
   const seenSkills = new Map<
     string,
-    {
-      name: string;
-      category?: string;
-      source: 'user' | 'ai';
-      confidence: number;
-    }
+    (typeof parsed.skills)[number]
   >();
   for (const skill of parsed.skills) {
     seenSkills.set(skill.name.toLowerCase(), skill);
@@ -506,18 +518,32 @@ export async function applyParsedResumeData(
       .where(eq(workExperiences.userId, userId));
     if (parsed.experience.length > 0) {
       await tx.insert(workExperiences).values(
-        parsed.experience.map((item) => ({
-          userId,
-          company: item.company,
-          title: item.title,
-          location: item.location ?? null,
-          startDate: parseLooseDate(item.startDate),
-          endDate: parseLooseDate(item.endDate),
-          isCurrent: item.isCurrent ?? false,
-          description: item.description ?? null,
-          source: item.source,
-          confidence: String(item.confidence),
-        }))
+        parsed.experience.map((item) => {
+          const responsibilities = cleanList(item.responsibilities);
+          const achievements = cleanList(item.achievements);
+          const technologies = cleanList(item.technologies);
+          const evidenceSentences = cleanList(item.evidenceSentences);
+          const fallbackDesc = [...responsibilities, ...achievements].join('\n');
+          const description =
+            item.description?.trim() || (fallbackDesc ? fallbackDesc : null);
+
+          return {
+            userId,
+            company: item.company,
+            title: item.title,
+            location: item.location ?? null,
+            startDate: parseLooseDate(item.startDate),
+            endDate: parseLooseDate(item.endDate),
+            isCurrent: item.isCurrent ?? false,
+            description,
+            responsibilities,
+            achievements,
+            technologies,
+            evidenceSentences,
+            source: item.source,
+            confidence: String(item.confidence),
+          };
+        })
       );
     }
 
@@ -526,17 +552,28 @@ export async function applyParsedResumeData(
       .where(eq(educationEntries.userId, userId));
     if (parsed.education.length > 0) {
       await tx.insert(educationEntries).values(
-        parsed.education.map((item) => ({
-          userId,
-          institution: item.institution,
-          degree: item.degree ?? null,
-          fieldOfStudy: item.fieldOfStudy ?? null,
-          startDate: parseLooseDate(item.startDate),
-          endDate: parseLooseDate(item.endDate),
-          description: item.description ?? null,
-          source: item.source,
-          confidence: String(item.confidence),
-        }))
+        parsed.education.map((item) => {
+          const endDate = parseLooseDate(item.endDate);
+          const graduationYear =
+            item.graduationYear !== undefined && item.graduationYear !== null
+              ? item.graduationYear
+              : endDate
+                ? endDate.getUTCFullYear()
+                : null;
+
+          return {
+            userId,
+            institution: item.institution,
+            degree: item.degree ?? null,
+            fieldOfStudy: item.fieldOfStudy ?? null,
+            startDate: parseLooseDate(item.startDate),
+            endDate,
+            graduationYear,
+            description: item.description ?? null,
+            source: item.source,
+            confidence: String(item.confidence),
+          };
+        })
       );
     }
 
@@ -548,6 +585,12 @@ export async function applyParsedResumeData(
           userId,
           name: item.name,
           category: item.category ?? null,
+          evidenceCategory:
+            item.evidenceCategory ??
+            (item.source === 'user' ? 'USER_CONFIRMED' : 'AI_EXTRACTED'),
+          evidenceSentence: item.evidenceSentence ?? null,
+          connectedExperience: item.connectedExperience ?? null,
+          connectedProject: item.connectedProject ?? null,
           source: item.source,
           confidence: String(item.confidence),
         }))
@@ -561,6 +604,10 @@ export async function applyParsedResumeData(
           userId,
           name: item.name,
           description: item.description ?? null,
+          technologies: cleanList(item.technologies),
+          contributions: cleanList(item.responsibilities),
+          measurableOutcomes: cleanList(item.measurableOutcomes),
+          skillsDemonstrated: cleanList(item.skillsDemonstrated),
           url: item.url || null,
           startDate: parseLooseDate(item.startDate),
           endDate: parseLooseDate(item.endDate),
@@ -740,6 +787,7 @@ function toProfileDto(
         responsibilities: item.responsibilities ?? [],
         achievements: item.achievements ?? [],
         technologies: item.technologies ?? [],
+        evidenceSentences: item.evidenceSentences ?? [],
         source: item.source as 'user' | 'ai',
         confidence: toConfidence(item.confidence),
       })
@@ -769,6 +817,12 @@ function toProfileDto(
         proficiency: item.proficiency,
         yearsOfExperience: toConfidence(item.yearsOfExperience),
         evidence: item.evidence,
+        evidenceCategory:
+          (item.evidenceCategory as SkillEvidenceCategory) ??
+          (item.source === 'user' ? 'USER_CONFIRMED' : 'AI_EXTRACTED'),
+        evidenceSentence: item.evidenceSentence,
+        connectedExperience: item.connectedExperience,
+        connectedProject: item.connectedProject,
         source: item.source as 'user' | 'ai',
         confidence: toConfidence(item.confidence),
       })
@@ -781,6 +835,8 @@ function toProfileDto(
         role: item.role,
         technologies: item.technologies ?? [],
         contributions: item.contributions ?? [],
+        measurableOutcomes: item.measurableOutcomes ?? [],
+        skillsDemonstrated: item.skillsDemonstrated ?? [],
         url: item.url,
         githubUrl: item.githubUrl,
         liveUrl: item.liveUrl,

@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@applypilot/validators"],
   // Native addon: must be loaded from node_modules at runtime, not bundled.
   serverExternalPackages: ["@node-rs/argon2"],
+  experimental: {
+    agentUpgrade: "security",
+  },
   async headers() {
     return [
       {

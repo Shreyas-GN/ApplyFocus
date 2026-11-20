@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import {
   applicationEvents,
   applications,
+  applicationStrategies,
   jobs,
   resumes,
   tailoredDocuments,
@@ -176,6 +177,30 @@ export async function createApplication(
   const followUpAt = input.followUpAt ? new Date(input.followUpAt) : null;
 
   const created = await db.transaction(async (tx) => {
+    // If linked to a job, fetch strategy recommendation to record in initial event
+    let decisionNote = `Added to tracker as "${initialStatus}"`;
+    if (input.jobId) {
+      try {
+        const [strat] = await tx
+          .select({ content: applicationStrategies.content })
+          .from(applicationStrategies)
+          .where(
+            and(
+              eq(applicationStrategies.userId, userId),
+              eq(applicationStrategies.jobId, input.jobId)
+            )
+          )
+          .limit(1);
+        const rawStratContent = strat?.content as Record<string, unknown> | null | undefined;
+        const evalData = rawStratContent?.decisionEvaluation as Record<string, unknown> | undefined;
+        if (evalData && typeof evalData.recommendationTier === 'string') {
+          decisionNote += ` · Decision Evaluation: ${evalData.recommendationTier.replace('_', ' ')}`;
+        }
+      } catch {
+        // Non-blocking
+      }
+    }
+
     const [app] = await tx
       .insert(applications)
       .values({
@@ -202,27 +227,27 @@ export async function createApplication(
       applicationId: app.id,
       userId,
       type: 'created',
-      description: `Added to tracker as "${initialStatus}"`,
+      description: decisionNote,
     });
 
-    return app;
+    return { app, decisionNote };
   });
 
   await recordAudit(userId, 'application_created', {
-    applicationId: created.id,
-    company: created.company,
-    status: created.status,
+    applicationId: created.app.id,
+    company: created.app.company,
+    status: created.app.status,
   });
 
   const ctx = await loadReadinessContext(userId);
   return toApplicationDto(
-    created,
+    created.app,
     [
       {
         id: 'initial',
         type: 'created',
-        description: `Added to tracker as "${initialStatus}"`,
-        createdAt: created.createdAt.toISOString(),
+        description: created.decisionNote,
+        createdAt: created.app.createdAt.toISOString(),
       },
     ],
     ctx

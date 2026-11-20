@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ProfileDto } from "@/lib/types";
+import { calculateProfileStrength } from "@/lib/profile-strength";
 
 interface OverviewProps {
   profile: ProfileDto;
@@ -13,6 +14,7 @@ export function ProfileIntelligenceOverview({
   refreshing = false,
 }: OverviewProps) {
   const intel = profile.intelligence;
+  const strengthResult = calculateProfileStrength(profile);
   const confirmedPercent = intel?.confirmedPercent ?? profile.completionPercent;
   const totalWithAiPercent = intel?.totalWithAiPercent ?? confirmedPercent;
   const unverifiedAiCount = intel?.unverifiedAiCount ?? 0;
@@ -77,6 +79,9 @@ export function ProfileIntelligenceOverview({
               </span>
               <span className="text-sm font-medium text-ui-body">
                 Confirmed profile completeness
+              </span>
+              <span className="ml-2 rounded-full border border-ui-border bg-white px-2 py-0.5 text-xs font-semibold text-ui-ink">
+                Profile Strength: {strengthResult.overallScore}/100
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs">

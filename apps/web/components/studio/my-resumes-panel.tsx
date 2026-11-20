@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { ResumeDto } from "@/lib/types";
+import type { AtsAnalysisResult, ResumeDto } from "@/lib/types";
 import { hasAllowedResumeExtension, RESUME_MAX_FILE_SIZE_BYTES } from "@applypilot/validators";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Alert } from "@/components/ui/alert";
 import { StatusBadge } from "@/components/ui/badge";
 import { api, ApiError } from "@/lib/api-client";
 import { useApi } from "@/lib/use-api";
+import { AtsIntelligenceBreakdown } from "@/components/jobs/ats-intelligence-breakdown";
 
 const PROCESSING_STATUSES = new Set(["uploaded", "extracting", "extracted", "parsing"]);
 
@@ -18,6 +19,27 @@ export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [inspectingResumeId, setInspectingResumeId] = useState<string | null>(null);
+  const [atsReport, setAtsReport] = useState<AtsAnalysisResult | null>(null);
+  const [atsLoading, setAtsLoading] = useState(false);
+
+  async function handleInspectAts(resumeId: string) {
+    if (inspectingResumeId === resumeId) {
+      setInspectingResumeId(null);
+      setAtsReport(null);
+      return;
+    }
+    setInspectingResumeId(resumeId);
+    setAtsLoading(true);
+    try {
+      const res = await api.get<AtsAnalysisResult>(`/resumes/${resumeId}/ats`);
+      setAtsReport(res);
+    } catch (err) {
+      console.warn("Failed to load ATS analysis:", err);
+    } finally {
+      setAtsLoading(false);
+    }
+  }
 
   const stillProcessing = resumes?.some((r) => PROCESSING_STATUSES.has(r.processingStatus));
 
@@ -146,9 +168,17 @@ export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {resume.processingStatus === "parsed" && (
-                    <Link href={`/resumes/${resume.id}/review`}>
-                      <Button variant="secondary">Review</Button>
-                    </Link>
+                    <>
+                      <Button
+                        variant={inspectingResumeId === resume.id ? "secondary" : "ghost"}
+                        onClick={() => handleInspectAts(resume.id)}
+                      >
+                        ATS Check
+                      </Button>
+                      <Link href={`/resumes/${resume.id}/review`}>
+                        <Button variant="secondary">Review</Button>
+                      </Link>
+                    </>
                   )}
                   <Button variant="ghost" onClick={() => handleDownload(resume.id)}>
                     Download
@@ -167,6 +197,37 @@ export function MyResumesPanel({ embedded = false }: { embedded?: boolean }) {
           </ul>
         )}
       </Card>
+
+      {inspectingResumeId && (
+        <div className="flex flex-col gap-4 rounded-xl border border-ui-border bg-ui-surface p-6">
+          <div className="flex items-center justify-between border-b border-ui-border pb-3">
+            <div>
+              <h3 className="text-base font-bold text-ui-ink">Base Resume ATS Audit</h3>
+              <p className="text-xs text-ui-muted">
+                Document readability, structural organization, and standard ATS parsing health.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setInspectingResumeId(null);
+                setAtsReport(null);
+              }}
+            >
+              Close
+            </Button>
+          </div>
+
+          {atsLoading ? (
+            <div className="flex flex-col gap-3 py-6">
+              <div className="h-20 animate-pulse rounded-lg bg-ui-linen" />
+              <div className="h-44 animate-pulse rounded-lg bg-ui-linen" />
+            </div>
+          ) : (
+            <AtsIntelligenceBreakdown analysis={atsReport} />
+          )}
+        </div>
+      )}
     </div>
   );
 }

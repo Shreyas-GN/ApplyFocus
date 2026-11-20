@@ -24,8 +24,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-semibold text-ui-ink">2. Infrastructure & AI Processing</h2>
             <p className="mt-1.5">
-              Accounts and sessions are managed by ApplyFocus itself (passwords are stored only as Argon2id hashes). Relational data and private résumé
-              files are hosted on Supabase. When you upload a résumé or trigger AI tailoring, relevant text is
+              Accounts and sessions are managed by ApplyFocus itself (passwords are stored only as Argon2id hashes). Relational data is hosted on Neon Postgres, and private résumé
+              files are hosted on cloud storage. When you upload a résumé or trigger AI tailoring, relevant text is
               sent to Anthropic Claude solely to extract your profile or draft your requested
               material. ApplyFocus never requests or stores your third-party ATS passwords.
             </p>

@@ -11,9 +11,12 @@ describe('auth schema SQL', () => {
       'utf8'
     );
     const fromFile = file
+      .replace(/\r\n/g, '\n')
       .split('--> statement-breakpoint')
       .map((s) => s.trim().replace(/;$/, ''));
-    expect(fromFile).toEqual(AUTH_SCHEMA_STATEMENTS.map((s) => s.trim()));
+    expect(fromFile).toEqual(
+      AUTH_SCHEMA_STATEMENTS.map((s) => s.replace(/\r\n/g, '\n').trim())
+    );
   });
 
   it('is idempotent (no bare CREATE TABLE / CREATE INDEX)', () => {
